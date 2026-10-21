@@ -295,7 +295,9 @@ function fillTypes(){
 function fillLoads(){
   const t = $('fType').value;
   const loads = S.cfg.products.filter(p => p.type === t);
+  loads.sort((x,y) => x.load - y.load);
   $('fLoad').innerHTML = loads.map(p => '<option value="'+p.load+'">'+p.load+' كجم'+(p.persons?' / '+p.persons+' أشخاص':'')+'</option>').join('');
+  if (loads.some(p => p.load === 630)) $('fLoad').value = '630'; // الأساسي 630
   recalc();
 }
 function syncDoors(){ if (!$('fLanding').dataset.touched) $('fLanding').value = $('fStops').value; }

@@ -63,6 +63,8 @@
   .small{font-size:12px;color:var(--muted)}
   .actions button{font-size:12px;padding:4px 8px;margin-inline-start:4px}
   .pwbox{font-family:monospace;font-size:18px;background:#fff8e1;padding:8px 12px;border-radius:8px;display:inline-block;direction:ltr}
+  table.edit input,table.edit select{padding:6px;min-width:70px}
+  table.edit td{padding:4px}
   [hidden]{display:none!important}
   @media (max-width:760px){.layout{grid-template-columns:1fr}.price{position:static}.grid .wide{grid-column:span 1}}
 </style>
@@ -115,6 +117,7 @@
     <button data-t="tList" id="tabList">عروضي</button>
     <button data-t="tDash" class="adm">المتابعة</button>
     <button data-t="tUsers" class="adm">المستخدمين</button>
+    <button data-t="tPrices" class="adm">الأسعار والإعدادات</button>
   </nav>
   <main>
     <!-- عرض جديد -->
@@ -132,7 +135,8 @@
           <h3>المصعد</h3>
           <div class="grid">
             <div class="field"><label>نوع العرض</label><select name="type" id="fType" onchange="fillLoads()"></select></div>
-            <div class="field"><label>الحمولة</label><select name="load" id="fLoad"></select></div>
+            <div class="field"><label>الحمولة (كجم)</label><input name="load" id="fLoad" type="number" list="loadList" value="630" required oninput="onLoadChange()"><datalist id="loadList"></datalist></div>
+            <div class="field"><label>عدد الأشخاص</label><input name="persons" id="fPersons" type="number" min="1" oninput="this.dataset.touched=1"></div>
             <div class="field"><label>عدد المصاعد</label><input name="lifts" type="number" min="1" value="1" required></div>
             <div class="field"><label>عدد الوقفات</label><input name="stops" id="fStops" type="number" min="2" value="3" required oninput="syncDoors()"></div>
             <div class="field"><label>الأبواب الخارجية</label><input name="landingDoors" id="fLanding" type="number" min="1" value="3" oninput="this.dataset.touched=1"></div>
@@ -149,6 +153,7 @@
           </div>
           <h3>السعر</h3>
           <div class="grid">
+            <div class="field"><label>سعر المصعد قبل الضريبة (ريال) *</label><input name="unitPrice" id="fUnit" type="number" min="1" required oninput="this.dataset.touched=1"><div class="small" id="fSuggest"></div></div>
             <div class="field"><label>الخصم على العرض (ريال)</label><input name="discount" id="fDisc" type="number" min="0" value="0"></div>
             <div class="field wide"><label>ملاحظات</label><input name="notes"></div>
           </div>
@@ -193,6 +198,22 @@
       <div id="uMsg"></div>
       <div class="tablewrap"><table id="uTbl"></table></div>
       <p class="small">لما مندوب جديد يتوظف: غيّر اسم واحد من "احتياطي" لاسمه، وغيّر اسم المستخدم، وفعّله، واعمل له كلمة مرور جديدة.</p>
+    </div>
+    <!-- الأسعار والإعدادات -->
+    <div class="card tab adm" id="tPrices" hidden>
+      <h3 style="margin-top:0">الأسعار</h3>
+      <p class="small">السعر = سعر المصعد على 3 وقفات قبل الضريبة، وبيزيد أو يقل بقيمة "كل وقفة". ده سعر مقترح، والمندوب يقدر يعدّل عليه. خانة الأشخاص لو فاضية بتتحسب لوحدها (75 كجم للشخص).</p>
+      <div class="tablewrap"><table id="prTbl" class="edit"></table></div>
+      <datalist id="typeList"></datalist>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <button class="btn ghost" onclick="addPriceRow()">+ إضافة سطر</button>
+        <button class="btn" id="prSave" onclick="savePrices()">حفظ الأسعار</button>
+      </div>
+      <div id="prMsg"></div>
+      <h3>الإعدادات</h3>
+      <div class="grid" id="stGrid"></div>
+      <button class="btn" id="stSave" onclick="saveSettings()">حفظ الإعدادات</button>
+      <div id="stMsg"></div>
     </div>
   </main>
 </section>
@@ -284,6 +305,7 @@ function openTab(t){
   if (t==='tList') loadList();
   if (t==='tDash') loadDash(S.period);
   if (t==='tUsers') loadUsers();
+  if (t==='tPrices') loadPrices();
 }
 
 /* ---------- عرض جديد ---------- */
@@ -294,31 +316,47 @@ function fillTypes(){
 }
 function fillLoads(){
   const t = $('fType').value;
-  const loads = S.cfg.products.filter(p => p.type === t);
-  loads.sort((x,y) => x.load - y.load);
-  $('fLoad').innerHTML = loads.map(p => '<option value="'+p.load+'">'+p.load+' كجم'+(p.persons?' / '+p.persons+' أشخاص':'')+'</option>').join('');
-  if (loads.some(p => p.load === 630)) $('fLoad').value = '630'; // الأساسي 630
+  const loads = S.cfg.products.filter(p => p.type === t).sort((x,y) => x.load - y.load);
+  $('loadList').innerHTML = loads.map(p => '<option value="'+p.load+'">'+p.load+' كجم / '+p.persons+' أشخاص</option>').join('');
+  if (!$('fLoad').value) $('fLoad').value = loads.some(p => p.load === 630) ? 630 : (loads[0] ? loads[0].load : '');
+  onLoadChange();
+}
+function onLoadChange(){
+  if (!$('fPersons').dataset.touched){
+    const {prod, load} = current();
+    $('fPersons').value = prod && prod.persons ? prod.persons : (load ? Math.floor(load/75) : '');
+  }
   recalc();
 }
 function syncDoors(){ if (!$('fLanding').dataset.touched) $('fLanding').value = $('fStops').value; }
 
 function current(){
-  const f = $('fOffer');
-  const prod = S.cfg.products.find(p => p.type === f.type.value && String(p.load) === f.load.value);
-  const lifts = parseInt(f.lifts.value,10) || 0;
-  const stops = parseInt(f.stops.value,10) || 0;
-  const discount = Number(f.discount.value) || 0;
-  return {prod, lifts, stops, discount};
+  const f = $('fOffer').elements;
+  const load = Number(f['load'].value) || 0;
+  const prod = S.cfg.products.find(p => p.type === f['type'].value && p.load === load);
+  const lifts = parseInt(f['lifts'].value,10) || 0;
+  const stops = parseInt(f['stops'].value,10) || 0;
+  const discount = Number(f['discount'].value) || 0;
+  return {prod, load, lifts, stops, discount};
 }
+function suggestion(){
+  const {prod, stops} = current();
+  return prod && prod.base != null && stops ? prod.base + (stops-3)*prod.perStop : null;
+}
+function useSuggestion(){ delete $('fUnit').dataset.touched; recalc(); }
 function recalc(){
   if (!S.cfg) return;
-  const {prod, lifts, stops, discount} = current();
+  const {lifts, stops, discount} = current();
   const st = S.cfg.settings, P = $('pricePanel');
-  if (!prod){ P.innerHTML = '<div class="na">اختار النوع والحمولة</div>'; return; }
-  if (prod.base == null){ P.innerHTML = '<div class="na">النوع ده لسه ما اتسعّرش — كلّم مدير المبيعات.</div>'; return; }
+  const sug = suggestion();
+  if (!$('fUnit').dataset.touched) $('fUnit').value = sug != null ? sug : '';
+  $('fSuggest').innerHTML = sug != null
+    ? 'السعر المقترح: '+money(sug)+(Number($('fUnit').value)!==sug ? ' — <a href="#" onclick="useSuggestion();return false">رجّع المقترح</a>' : '')
+    : 'مفيش سعر مقترح للحمولة دي — اكتب السعر';
+  const unit = Number($('fUnit').value) || 0;
+  if (!unit){ P.innerHTML = '<div class="na">اكتب سعر المصعد</div>'; return; }
   if (stops < st.minStops || stops > st.maxStops){ P.innerHTML = '<div class="na">عدد الوقفات من '+st.minStops+' لـ '+st.maxStops+'</div>'; return; }
-  const unit = prod.base + (stops-3)*prod.perStop;
-  const sub = unit * lifts, maxD = prod.maxDiscount * lifts;
+  const sub = unit * lifts;
   const net = sub - discount, vat = Math.round(net*st.vat*100)/100, total = net + vat;
   P.innerHTML =
     '<h3 style="margin-top:0">السعر</h3>'+
@@ -329,8 +367,7 @@ function recalc(){
     row('بعد الخصم', money(net))+
     row('الضريبة '+Math.round(st.vat*100)+'%', money(vat))+
     '<div class="row"><span>الإجمالي شامل الضريبة</span></div><div class="total num">'+money(total)+' ريال</div>'+
-    '<p class="small">أقصى خصم للعرض ده: '+money(maxD)+' ريال</p>'+
-    (discount > maxD ? '<div class="na">الخصم أكبر من المسموح</div>' : '');
+    (discount >= sub ? '<div class="na">الخصم أكبر من قيمة العرض</div>' : '');
 }
 const row = (a,b) => '<div class="row"><span>'+a+'</span><span class="num">'+b+'</span></div>';
 
@@ -355,7 +392,7 @@ async function saveOffer(e){
   try{
     const r = await call('saveOffer', data);
     msg('oMsg', 'تم حفظ العرض رقم <b>'+r.offerNo+'</b> — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');
-    $('fOffer').reset(); delete $('fLanding').dataset.touched; fillLoads(); msg('phMsg',''); phoneBlocked = false;
+    $('fOffer').reset(); ['fLanding','fPersons','fUnit'].forEach(id => delete $(id).dataset.touched); $('fLoad').value=''; fillLoads(); msg('phMsg',''); phoneBlocked = false;
   }catch(err){ msg('oMsg', err.message); }
   $('oBtn').disabled = false;
 }
@@ -433,6 +470,62 @@ async function resetPw(id){
 }
 async function toggleUser(id, status){
   try{ await call('updateUser', {id, status}); loadUsers(); }catch(err){ msg('uMsg', err.message); }
+}
+
+/* ---------- الأسعار والإعدادات ---------- */
+const PR_COLS = [['type','النوع','text'],['load','الحمولة','number'],['persons','الأشخاص','number'],['base','السعر 3 وقفات','number'],['perStop','كل وقفة','number'],['series','الترقيم','series'],['note','ملاحظات','text']];
+function renderPrices(rows){
+  const types = [...new Set(rows.map(r => r.type).filter(Boolean))];
+  $('typeList').innerHTML = types.map(t => '<option value="'+esc(t)+'">').join('');
+  $('prTbl').innerHTML = '<tr>'+PR_COLS.map(c=>'<th>'+c[1]+'</th>').join('')+'<th></th></tr>'+
+    rows.map((r,i) => '<tr data-max="'+esc(r.maxDiscount)+'">'+PR_COLS.map(c => '<td>'+cell(c, r[c[0]])+'</td>').join('')+
+      '<td><button class="btn ghost" onclick="this.closest(\'tr\').remove()">حذف</button></td></tr>').join('');
+}
+function cell(c, v){
+  v = v == null ? '' : v;
+  if (c[2] === 'series') return '<select data-k="series"><option'+(v==='GKE'?' selected':'')+'>GKE</option><option'+(v!=='GKE'?' selected':'')+'>محلي</option></select>';
+  return '<input data-k="'+c[0]+'" type="'+c[2]+'" value="'+esc(v)+'"'+(c[0]==='type'?' list="typeList"':'')+'>';
+}
+function addPriceRow(){
+  const tr = document.createElement('tr');
+  tr.innerHTML = PR_COLS.map(c => '<td>'+cell(c, '')+'</td>').join('')+'<td><button class="btn ghost" onclick="this.closest(\'tr\').remove()">حذف</button></td>';
+  $('prTbl').appendChild(tr);
+  tr.querySelector('input').focus();
+}
+function readPriceRows(){
+  return [...$('prTbl').querySelectorAll('tr')].slice(1).map(tr => {
+    const o = {maxDiscount: tr.dataset.max || ''};
+    tr.querySelectorAll('[data-k]').forEach(el => o[el.dataset.k] = el.value);
+    return o;
+  });
+}
+function renderSettings(list){
+  $('stGrid').innerHTML = list.map(x => '<div class="field"><label>'+esc(x.key)+'</label><input type="number" data-key="'+esc(x.key)+'" value="'+esc(x.value)+'"></div>').join('');
+}
+async function loadPrices(){
+  msg('prMsg',''); msg('stMsg','');
+  $('prTbl').innerHTML = '<tr><td>جاري التحميل...</td></tr>';
+  try{ const d = await call('getAdminData'); renderPrices(d.prices); renderSettings(d.settings); }
+  catch(err){ msg('prMsg', err.message); }
+}
+async function savePrices(){
+  $('prSave').disabled = true; msg('prMsg','');
+  try{
+    const d = await call('savePrices', {rows: readPriceRows()});
+    renderPrices(d.prices); msg('prMsg','تم حفظ الأسعار','ok');
+    S.cfg = await call('config'); fillTypes();
+  }catch(err){ msg('prMsg', err.message); }
+  $('prSave').disabled = false;
+}
+async function saveSettings(){
+  $('stSave').disabled = true; msg('stMsg','');
+  const values = {};
+  $('stGrid').querySelectorAll('[data-key]').forEach(el => values[el.dataset.key] = el.value);
+  try{
+    const d = await call('saveSettings', {values}); renderSettings(d.settings); msg('stMsg','تم حفظ الإعدادات','ok');
+    S.cfg = await call('config'); recalc();
+  }catch(err){ msg('stMsg', err.message); }
+  $('stSave').disabled = false;
 }
 
 /* ---------- تشغيل ---------- */

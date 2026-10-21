@@ -137,8 +137,11 @@
           <h3>المصعد</h3>
           <div class="grid">
             <div class="field"><label>نوع العرض</label><select name="type" id="fType" onchange="fillLoads()"></select></div>
-            <div class="field"><label>الحمولة (كجم)</label><input name="load" id="fLoad" type="number" list="loadList" value="630" required oninput="onLoadChange()"><datalist id="loadList"></datalist></div>
-            <div class="field"><label>عدد الأشخاص</label><input name="persons" id="fPersons" type="number" min="1" oninput="this.dataset.touched=1"></div>
+            <div class="field"><label>الحمولة</label>
+              <select id="fLoadSel" onchange="onLoadSel()"></select>
+              <input id="fLoadTxt" hidden placeholder="مثلاً 1150 كجم / 15 أشخاص" oninput="onLoadChange()">
+              <input type="hidden" name="load" id="fLoad"><input type="hidden" name="persons" id="fPersons">
+            </div>
             <div class="field"><label>عدد المصاعد</label><input name="lifts" type="number" min="1" value="1" required></div>
             <div class="field"><label>عدد الوقفات</label><input name="stops" id="fStops" type="number" min="2" value="3" required oninput="syncDoors()"></div>
             <div class="field"><label>الأبواب الخارجية</label><input name="landingDoors" id="fLanding" type="number" min="1" value="3" oninput="this.dataset.touched=1"></div>
@@ -319,15 +322,34 @@ function fillTypes(){
 function fillLoads(){
   const t = $('fType').value;
   const loads = S.cfg.products.filter(p => p.type === t).sort((x,y) => x.load - y.load);
-  $('loadList').innerHTML = loads.map(p => '<option value="'+p.load+'">'+p.load+' كجم / '+p.persons+' أشخاص</option>').join('');
-  if (!$('fLoad').value) $('fLoad').value = loads.some(p => p.load === 630) ? 630 : (loads[0] ? loads[0].load : '');
+  $('fLoadSel').innerHTML = loads.map(p => '<option value="'+p.load+'">'+loadLabel(p.load, p.persons)+'</option>').join('') +
+    '<option value="other">حمولة تانية — اكتبها بإيدك</option>';
+  $('fLoadSel').value = loads.some(p => p.load === 630) ? '630' : (loads[0] ? String(loads[0].load) : 'other');
+  onLoadSel();
+}
+const loadLabel = (load, persons) => load+' كجم / '+(persons || Math.floor(load/75))+' أشخاص';
+function onLoadSel(){
+  const other = $('fLoadSel').value === 'other';
+  $('fLoadTxt').hidden = !other;
+  if (other){
+    const p = S.cfg.products.find(x => x.type === $('fType').value && x.load === 630);
+    if (!$('fLoadTxt').value) $('fLoadTxt').value = loadLabel(630, p && p.persons);
+    $('fLoadTxt').focus(); $('fLoadTxt').select();
+  }
   onLoadChange();
 }
+/** الحمولة والأشخاص: من القايمة، أو من اللي اتكتب (أول رقم = الحمولة، تاني رقم = الأشخاص) */
 function onLoadChange(){
-  if (!$('fPersons').dataset.touched){
-    const {prod, load} = current();
-    $('fPersons').value = prod && prod.persons ? prod.persons : (load ? Math.floor(load/75) : '');
+  let load, persons;
+  if ($('fLoadSel').value === 'other'){
+    const n = ($('fLoadTxt').value.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).match(/\d+/g) || []).map(Number);
+    load = n[0] || 0; persons = n[1] || (load ? Math.floor(load/75) : '');
+  } else {
+    load = Number($('fLoadSel').value);
+    const p = S.cfg.products.find(x => x.type === $('fType').value && x.load === load);
+    persons = p && p.persons ? p.persons : Math.floor(load/75);
   }
+  $('fLoad').value = load || ''; $('fPersons').value = persons || '';
   recalc();
 }
 function syncDoors(){ if (!$('fLanding').dataset.touched) $('fLanding').value = $('fStops').value; }
@@ -394,7 +416,7 @@ async function saveOffer(e){
   try{
     const r = await call('saveOffer', data);
     msg('oMsg', (r.revision > 1 ? 'تم تحديث العرض رقم <b>'+r.offerNo+'</b> (مراجعة '+r.revision+')' : 'تم حفظ العرض رقم <b>'+r.offerNo+'</b>')+' — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');
-    $('fOffer').reset(); ['fLanding','fPersons','fUnit'].forEach(id => delete $(id).dataset.touched); $('fLoad').value=''; fillLoads(); msg('phMsg',''); phoneBlocked = false;
+    $('fOffer').reset(); ['fLanding','fUnit'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); msg('phMsg',''); phoneBlocked = false;
   }catch(err){ msg('oMsg', err.message); }
   $('oBtn').disabled = false;
 }

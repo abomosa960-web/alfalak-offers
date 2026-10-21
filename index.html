@@ -40,6 +40,8 @@
   .msg.err{background:#fbe9e7;color:var(--err)}
   .msg.ok{background:#e6f4ec;color:var(--ok)}
   .msg.warn{background:#fff6e0;color:#7a5a00}
+  .files{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+  .files a{display:inline-flex;align-items:center;gap:6px;text-decoration:none}
   .layout{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start}
   .price{background:#faf7f0;border:1px solid #eadfc6;border-radius:12px;padding:14px;position:sticky;top:12px}
   .price .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #e3d8bf;font-size:14px}
@@ -154,7 +156,8 @@
             <div class="field"><label>الأوفر هيد (مم)</label><input name="overhead" type="number" value="4100"></div>
             <div class="field"><label>عمق الحفرة (مم)</label><input name="pit" type="number" value="1200"></div>
             <div class="field"><label>مقاس الكابينة</label><input name="cabin" placeholder="مثلاً 1100 × 1400"></div>
-            <div class="field"><label>مقاس الباب</label><input name="door" placeholder="مثلاً 800 سنتر"></div>
+            <div class="field"><label>عرض الباب (مم)</label><input name="doorW" type="number" value="800"></div>
+            <div class="field"><label>نوع الباب</label><select name="doorType"><option>جانبي</option><option>سنتر</option></select></div>
           </div>
           <h3>السعر</h3>
           <div class="grid">
@@ -163,6 +166,7 @@
             <div class="field wide"><label>ملاحظات</label><input name="notes"></div>
           </div>
           <div id="oMsg"></div>
+          <div id="oFiles"></div>
           <button class="btn" id="oBtn">حفظ العرض</button>
         </form>
         <aside class="price" id="pricePanel"></aside>
@@ -416,9 +420,30 @@ async function saveOffer(e){
   try{
     const r = await call('saveOffer', data);
     msg('oMsg', (r.revision > 1 ? 'تم تحديث العرض رقم <b>'+r.offerNo+'</b> (مراجعة '+r.revision+')' : 'تم حفظ العرض رقم <b>'+r.offerNo+'</b>')+' — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');
-    $('fOffer').reset(); ['fLanding','fUnit'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); msg('phMsg',''); phoneBlocked = false;
+    $('fOffer').reset();  ['fLanding','fUnit'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); msg('phMsg',''); phoneBlocked = false;
+    getFiles(r.offerNo, r.revision, 'oFiles');
   }catch(err){ msg('oMsg', err.message); }
   $('oBtn').disabled = false;
+}
+
+/* ---------- ملفات العرض ---------- */
+function b64Url(b64, type){
+  const bin = atob(b64), arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return URL.createObjectURL(new Blob([arr], {type}));
+}
+async function getFiles(offerNo, revision, box){
+  const el = $(box);
+  el.innerHTML = '<div class="msg warn">جاري تجهيز ملف Word و PDF... (ممكن ياخد نص دقيقة)</div>';
+  try{
+    const f = await call('makeDocs', {offerNo, revision});
+    const w = b64Url(f.docx, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    let h = '<div class="files"><a class="btn" href="'+w+'" download="'+esc(f.name)+'.docx">تحميل Word</a>';
+    if (f.pdf) h += '<a class="btn" href="'+b64Url(f.pdf,'application/pdf')+'" download="'+esc(f.name)+'.pdf">تحميل PDF</a>';
+    el.innerHTML = h + '</div><p class="small">'+esc(f.name)+'</p>';
+  }catch(err){
+    el.innerHTML = '<div class="msg err">'+esc(err.message)+' — <a href="#" onclick="getFiles('+JSON.stringify(offerNo)+','+JSON.stringify(revision)+',\''+box+'\');return false">حاول تاني</a></div>';
+  }
 }
 
 /* ---------- قائمة العروض ---------- */
@@ -432,10 +457,11 @@ async function loadList(){
     const groups = {}, order = [];
     rows.forEach(r => { const k = r.userId+'|'+r.offerNo; if (!groups[k]){ groups[k] = []; order.push(k); } groups[k].push(r); });
     S.groups = groups;
-    $('listTbl').innerHTML = '<tr><th>آخر تعديل</th><th>رقم العرض</th>'+(admin?'<th>المندوب</th>':'')+'<th>العميل</th><th>الجوال</th><th>المدينة</th><th>النوع</th><th>المصاعد</th><th>الوقفات</th><th>سعر المصعد</th><th>الخصم</th><th>الإجمالي شامل الضريبة</th><th>المراجعات</th></tr>'+
+    $('listTbl').innerHTML = '<tr><th>آخر تعديل</th><th>رقم العرض</th>'+(admin?'<th>المندوب</th>':'')+'<th>العميل</th><th>الجوال</th><th>المدينة</th><th>النوع</th><th>المصاعد</th><th>الوقفات</th><th>سعر المصعد</th><th>الخصم</th><th>الإجمالي شامل الضريبة</th><th>المراجعات</th><th>الملفات</th></tr>'+
       order.map(k => { const g = groups[k], r = g[0];
         return '<tr><td>'+esc(r.date)+'</td><td>'+esc(r.offerNo)+'</td>'+(admin?'<td>'+esc(r.repName)+'</td>':'')+'<td>'+esc(r.client)+'</td><td dir="ltr">'+esc(r.phone)+'</td><td>'+esc(r.city)+'</td><td>'+esc(r.type)+'</td><td>'+r.lifts+'</td><td>'+esc(r.stops)+'</td><td class="num">'+money(r.unit)+'</td><td class="num">'+money(r.discount)+'</td><td class="num">'+money(r.total)+'</td>'+
-          '<td>'+(g.length > 1 ? '<a href="#" onclick="toggleHist(this,\''+k+'\');return false">'+g.length+' — عرض التاريخ</a>' : '1')+'</td></tr>'; }).join('');
+          '<td>'+(g.length > 1 ? '<a href="#" onclick="toggleHist(this,\''+k+'\');return false">'+g.length+' — عرض التاريخ</a>' : '1')+'</td>'+
+          '<td><span id="lf'+r.offerNo+'"><a href="#" onclick="getFiles('+JSON.stringify(r.offerNo)+','+(r.revision||1)+',\'lf'+r.offerNo+'\');return false">Word / PDF</a></span></td></tr>'; }).join('');
   }catch(err){ $('listTbl').innerHTML = '<tr><td>'+esc(err.message)+'</td></tr>'; }
 }
 function toggleHist(a, k){

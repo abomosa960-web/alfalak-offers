@@ -40,6 +40,8 @@
   .msg.err{background:#fbe9e7;color:var(--err)}
   .msg.ok{background:#e6f4ec;color:var(--ok)}
   .msg.warn{background:#fff6e0;color:#7a5a00}
+  .files{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+  .files a{display:inline-flex;align-items:center;gap:6px;text-decoration:none}
   .layout{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start}
   .price{background:#faf7f0;border:1px solid #eadfc6;border-radius:12px;padding:14px;position:sticky;top:12px}
   .price .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #e3d8bf;font-size:14px}
@@ -126,6 +128,7 @@
     <div class="card tab" id="tNew">
       <div class="layout">
         <form id="fOffer" onsubmit="saveOffer(event)" oninput="recalc()">
+          <div id="editNote" class="msg warn" hidden></div>
           <h3 style="margin-top:0">بيانات العميل</h3>
           <div class="grid">
             <div class="field wide"><label>اسم العميل *</label><input name="client" required></div>
@@ -145,16 +148,23 @@
             <div class="field"><label>عدد المصاعد</label><input name="lifts" type="number" min="1" value="1" required></div>
             <div class="field"><label>عدد الوقفات</label><input name="stops" id="fStops" type="number" min="2" value="3" required oninput="syncDoors()"></div>
             <div class="field"><label>الأبواب الخارجية</label><input name="landingDoors" id="fLanding" type="number" min="1" value="3" oninput="this.dataset.touched=1"></div>
-            <div class="field"><label>مداخل الكابينة</label><input name="carDoors" type="number" min="1" max="3" value="1"></div>
+            <div class="field"><label>مداخل الكابينة</label><select name="carDoors"><option value="1">مدخل واحد</option><option value="2">مدخلين</option></select></div>
+            <div class="field"><label>السرعة</label><select name="speed"><option value="1">1 متر/ث</option><option value="1.5">1.5 متر/ث</option><option value="2">2 متر/ث</option></select></div>
           </div>
           <h3>المقاسات</h3>
           <div class="grid">
-            <div class="field"><label>عرض البئر (مم)</label><input name="shaftW" type="number" inputmode="numeric"></div>
-            <div class="field"><label>عمق البئر (مم)</label><input name="shaftD" type="number" inputmode="numeric"></div>
+            <div class="field"><label>عرض البئر (مم)</label><input name="shaftW" id="fShaftW" type="number" inputmode="numeric" value="1800" oninput="autoDoorType()"></div>
+            <div class="field"><label>عمق البئر (مم)</label><input name="shaftD" type="number" inputmode="numeric" value="1800"></div>
             <div class="field"><label>الأوفر هيد (مم)</label><input name="overhead" type="number" value="4100"></div>
             <div class="field"><label>عمق الحفرة (مم)</label><input name="pit" type="number" value="1200"></div>
-            <div class="field"><label>مقاس الكابينة</label><input name="cabin" placeholder="مثلاً 1100 × 1400"></div>
-            <div class="field"><label>مقاس الباب</label><input name="door" placeholder="مثلاً 800 سنتر"></div>
+            <div class="field wide"><label>مقاس الكابينة</label><input name="cabin" id="fCabin" placeholder="سيبها فاضية = أكبر كابينة ممكنة"></div>
+          </div>
+          <h3>الأبواب</h3>
+          <div class="grid">
+            <div class="field"><label>عرض الباب</label><select name="doorW"><option value="800">800 مم</option><option value="700">700 مم</option><option value="650">650 مم</option></select></div>
+            <div class="field"><label>نوع الباب</label><select name="doorType" id="fDoorType" onchange="this.dataset.touched=1"><option>سنتر</option><option>جانبي</option><option>نص أوتوماتيك</option></select><div class="small" id="fDoorHint"></div></div>
+            <div class="field"><label>تلبيس الأبواب</label><select name="doorFinish"><option>ستانلس ستيل فضي</option><option>ستانلس ستيل فضي هيرلاين</option><option>ستانلس ستيل فضي مراية</option><option>ستانلس ستيل نحاسي</option><option>ستانلس ستيل أسود</option></select></div>
+            <div class="field"><label>موديل الأبواب</label><input name="doorBrand" list="brandList" value="سيلكوم"><datalist id="brandList"><option value="سيلكوم"><option value="SJ"></datalist></div>
           </div>
           <h3>السعر</h3>
           <div class="grid">
@@ -163,6 +173,7 @@
             <div class="field wide"><label>ملاحظات</label><input name="notes"></div>
           </div>
           <div id="oMsg"></div>
+          <div id="oFiles"></div>
           <button class="btn" id="oBtn">حفظ العرض</button>
         </form>
         <aside class="price" id="pricePanel"></aside>
@@ -324,7 +335,8 @@ function fillLoads(){
   const loads = S.cfg.products.filter(p => p.type === t).sort((x,y) => x.load - y.load);
   $('fLoadSel').innerHTML = loads.map(p => '<option value="'+p.load+'">'+loadLabel(p.load, p.persons)+'</option>').join('') +
     '<option value="other">حمولة تانية — اكتبها بإيدك</option>';
-  $('fLoadSel').value = loads.some(p => p.load === 630) ? '630' : (loads[0] ? String(loads[0].load) : 'other');
+  const def = /GKE/i.test(t) ? 630 : 450;  // الافتراضي: GKE 630، والمحلي 450
+  $('fLoadSel').value = loads.some(p => p.load === def) ? String(def) : (loads[0] ? String(loads[0].load) : 'other');
   onLoadSel();
 }
 const loadLabel = (load, persons) => load+' كجم / '+(persons || Math.floor(load/75))+' أشخاص';
@@ -351,6 +363,12 @@ function onLoadChange(){
   }
   $('fLoad').value = load || ''; $('fPersons').value = persons || '';
   recalc();
+}
+/** البئر 1600 أو أكتر = باب سنتر تلقائي. أقل من كده المندوب يختار. */
+function autoDoorType(){
+  const w = Number($('fShaftW').value) || 0, dt = $('fDoorType');
+  if (w >= 1600){ if (!dt.dataset.touched) dt.value = 'سنتر'; $('fDoorHint').textContent = ''; }
+  else if (w) $('fDoorHint').textContent = 'البئر أقل من 1600 — اختار سنتر أو جانبي';
 }
 function syncDoors(){ if (!$('fLanding').dataset.touched) $('fLanding').value = $('fStops').value; }
 
@@ -416,9 +434,31 @@ async function saveOffer(e){
   try{
     const r = await call('saveOffer', data);
     msg('oMsg', (r.revision > 1 ? 'تم تحديث العرض رقم <b>'+r.offerNo+'</b> (مراجعة '+r.revision+')' : 'تم حفظ العرض رقم <b>'+r.offerNo+'</b>')+' — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');
-    $('fOffer').reset(); ['fLanding','fUnit'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); msg('phMsg',''); phoneBlocked = false;
+    $('fOffer').reset();  ['fLanding','fUnit','fDoorType'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; msg('phMsg',''); phoneBlocked = false;
+    getFiles(r.offerNo, r.revision, 'oFiles');
   }catch(err){ msg('oMsg', err.message); }
   $('oBtn').disabled = false;
+}
+
+/* ---------- ملفات العرض ---------- */
+function b64Url(b64, type){
+  const bin = atob(b64), arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return URL.createObjectURL(new Blob([arr], {type}));
+}
+async function getFiles(offerNo, revision, box){
+  const el = $(box);
+  el.innerHTML = '<div class="msg warn">جاري تجهيز ملف الـ Word...</div>';
+  try{
+    const f = await call('makeDocs', {offerNo, revision});
+    const w = b64Url(f.docx, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    let h = '<div class="files"><a class="btn" href="'+w+'" download="'+esc(f.name)+'.docx">تحميل Word</a>';
+    if (f.pdf) h += '<a class="btn" href="'+b64Url(f.pdf,'application/pdf')+'" download="'+esc(f.name)+'.pdf">تحميل PDF</a>';
+    h += '</div><p class="small">افتح ملف الـ Word واعمل منه Save as PDF (لازم خط DIN Next يكون متركّب على الجهاز).</p><div>';
+    el.innerHTML = h + '</div><p class="small">'+esc(f.name)+'</p>';
+  }catch(err){
+    el.innerHTML = '<div class="msg err">'+esc(err.message)+' — <a href="#" onclick="getFiles('+JSON.stringify(offerNo)+','+JSON.stringify(revision)+',\''+box+'\');return false">حاول تاني</a></div>';
+  }
 }
 
 /* ---------- قائمة العروض ---------- */
@@ -432,10 +472,12 @@ async function loadList(){
     const groups = {}, order = [];
     rows.forEach(r => { const k = r.userId+'|'+r.offerNo; if (!groups[k]){ groups[k] = []; order.push(k); } groups[k].push(r); });
     S.groups = groups;
-    $('listTbl').innerHTML = '<tr><th>آخر تعديل</th><th>رقم العرض</th>'+(admin?'<th>المندوب</th>':'')+'<th>العميل</th><th>الجوال</th><th>المدينة</th><th>النوع</th><th>المصاعد</th><th>الوقفات</th><th>سعر المصعد</th><th>الخصم</th><th>الإجمالي شامل الضريبة</th><th>المراجعات</th></tr>'+
+    $('listTbl').innerHTML = '<tr><th>آخر تعديل</th><th>رقم العرض</th>'+(admin?'<th>المندوب</th>':'')+'<th>العميل</th><th>الجوال</th><th>المدينة</th><th>النوع</th><th>المصاعد</th><th>الوقفات</th><th>سعر المصعد</th><th>الخصم</th><th>الإجمالي شامل الضريبة</th><th>المراجعات</th><th>الملفات</th><th></th></tr>'+
       order.map(k => { const g = groups[k], r = g[0];
         return '<tr><td>'+esc(r.date)+'</td><td>'+esc(r.offerNo)+'</td>'+(admin?'<td>'+esc(r.repName)+'</td>':'')+'<td>'+esc(r.client)+'</td><td dir="ltr">'+esc(r.phone)+'</td><td>'+esc(r.city)+'</td><td>'+esc(r.type)+'</td><td>'+r.lifts+'</td><td>'+esc(r.stops)+'</td><td class="num">'+money(r.unit)+'</td><td class="num">'+money(r.discount)+'</td><td class="num">'+money(r.total)+'</td>'+
-          '<td>'+(g.length > 1 ? '<a href="#" onclick="toggleHist(this,\''+k+'\');return false">'+g.length+' — عرض التاريخ</a>' : '1')+'</td></tr>'; }).join('');
+          '<td>'+(g.length > 1 ? '<a href="#" onclick="toggleHist(this,\''+k+'\');return false">'+g.length+' — عرض التاريخ</a>' : '1')+'</td>'+
+          '<td><span id="lf'+r.offerNo+'"><a href="#" onclick="getFiles('+JSON.stringify(r.offerNo)+','+(r.revision||1)+',\'lf'+r.offerNo+'\');return false">Word</a></span></td>'+
+          '<td><button class="btn ghost" style="padding:4px 10px;font-size:13px" onclick="reprice('+JSON.stringify(r.offerNo)+')">إعادة تسعير</button></td></tr>'; }).join('');
   }catch(err){ $('listTbl').innerHTML = '<tr><td>'+esc(err.message)+'</td></tr>'; }
 }
 function toggleHist(a, k){
@@ -448,6 +490,30 @@ function toggleHist(a, k){
     g.map((r,i) => '<tr><td>'+(r.revision||i+1)+'</td><td>'+esc(r.date)+'</td><td>'+esc(r.stops)+'</td><td>'+r.lifts+'</td><td class="num">'+(r.suggested===''?'—':money(r.suggested))+'</td><td class="num">'+money(r.unit)+'</td><td class="num">'+money(r.discount)+'</td><td class="num">'+money(r.total)+'</td></tr>').join('')+'</table></td>';
   tr.after(h);
 }
+
+/* ---------- إعادة تسعير: نرجّع العرض للصفحة الرئيسية ---------- */
+async function reprice(offerNo){
+  try{
+    const o = await call('getOffer', {offerNo});
+    openTab('tNew');
+    const f = $('fOffer').elements;
+    $('fType').value = o.type; fillLoads();
+    const opt = [...$('fLoadSel').options].find(x => x.value === String(o.load));
+    if (opt){ $('fLoadSel').value = String(o.load); $('fLoadTxt').value = ''; }
+    else { $('fLoadSel').value = 'other'; $('fLoadTxt').value = o.load + ' كجم / ' + o.persons + ' أشخاص'; }
+    onLoadSel();
+    ['client','phone','city','district','lifts','stops','landingDoors','carDoors','speed','shaftW','shaftD','overhead','pit','cabin','doorW','doorType','doorFinish','doorBrand','discount','notes']
+      .forEach(k => { if (f[k] != null && o[k] !== '' && o[k] != null) f[k].value = o[k]; });
+    $('fLanding').dataset.touched = 1; $('fDoorType').dataset.touched = 1;
+    $('fUnit').value = o.unitPrice; $('fUnit').dataset.touched = 1;
+    S.editing = o.offerNo;
+    $('editNote').hidden = false;
+    $('editNote').innerHTML = 'بتعدّل على العرض رقم <b>'+esc(o.offerNo)+'</b> (آخر مراجعة '+esc(o.revision)+') — لما تحفظ هيتسجّل مراجعة جديدة بنفس الرقم. <a href="#" onclick="cancelEdit();return false">إلغاء</a>';
+    msg('oMsg',''); $('oFiles').innerHTML = ''; checkPhone(); recalc();
+    window.scrollTo(0,0);
+  }catch(err){ alert(err.message); }
+}
+function cancelEdit(){ $('fOffer').reset(); ['fLanding','fUnit','fDoorType'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; }
 
 /* ---------- المتابعة ---------- */
 $('dChips').addEventListener('click', e => {

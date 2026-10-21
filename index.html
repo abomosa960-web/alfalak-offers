@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>عروض أسعار مصاعد الفلك</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#9a7b3c; --gold-d:#7d6330; --ink:#1f1f1f; --muted:#6b6b6b; --line:#e4e0d8;
+    --bg:#f6f4ef; --card:#ffffff; --ok:#1e7d4f; --err:#b3261e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Tajawal',Tahoma,sans-serif;background:var(--bg);color:var(--ink);font-size:15px}
+  header{background:#1f1f1f;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  header .brand{font-weight:700;font-size:17px;letter-spacing:.3px}
+  header .brand span{color:var(--gold)}
+  header .who{margin-inline-start:auto;font-size:13px;color:#ddd;display:flex;gap:10px;align-items:center}
+  header button{background:transparent;border:1px solid #555;color:#eee;border-radius:8px;padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+  nav{display:flex;gap:6px;padding:10px 16px 0;flex-wrap:wrap;max-width:1100px;margin:0 auto}
+  nav button{background:#fff;border:1px solid var(--line);border-radius:10px 10px 0 0;padding:9px 16px;font:inherit;cursor:pointer;color:var(--muted)}
+  nav button.on{color:var(--ink);border-bottom-color:#fff;font-weight:700}
+  main{max-width:1100px;margin:0 auto;padding:0 16px 40px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:0 12px 12px 12px;padding:18px}
+  .login{max-width:380px;margin:60px auto;border-radius:14px}
+  h2{margin:0 0 14px;font-size:19px}
+  h3{margin:18px 0 10px;font-size:15px;color:var(--gold-d)}
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+  input,select,textarea{width:100%;font:inherit;padding:9px 10px;border:1px solid #d6d1c6;border-radius:8px;background:#fff;color:var(--ink)}
+  input:focus,select:focus,textarea:focus{outline:2px solid #d9c391;border-color:var(--gold)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+  .grid .wide{grid-column:span 2}
+  .field{margin-bottom:12px}
+  .btn{background:var(--gold);color:#fff;border:0;border-radius:9px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer}
+  .btn:hover{background:var(--gold-d)}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:500}
+  .btn:disabled{opacity:.55;cursor:default}
+  .msg{padding:10px 12px;border-radius:8px;margin:10px 0;font-size:14px}
+  .msg.err{background:#fbe9e7;color:var(--err)}
+  .msg.ok{background:#e6f4ec;color:var(--ok)}
+  .msg.warn{background:#fff6e0;color:#7a5a00}
+  .layout{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start}
+  .price{background:#faf7f0;border:1px solid #eadfc6;border-radius:12px;padding:14px;position:sticky;top:12px}
+  .price .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #e3d8bf;font-size:14px}
+  .price .row:last-of-type{border:0}
+  .price .total{font-size:20px;font-weight:700;color:var(--gold-d)}
+  .price .na{color:var(--err);font-size:14px;padding:8px 0}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+  th{background:#f3efe6;font-weight:700}
+  .tablewrap{overflow-x:auto}
+  .num{font-variant-numeric:tabular-nums}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .chips button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 14px;font:inherit;cursor:pointer}
+  .chips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+  .stat{background:#faf7f0;border:1px solid #eadfc6;border-radius:10px;padding:10px 12px}
+  .stat b{display:block;font-size:22px}
+  .stat span{font-size:12px;color:var(--muted)}
+  .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:10px;background:#eee}
+  .tag.on{background:#e6f4ec;color:var(--ok)} .tag.off{background:#fbe9e7;color:var(--err)}
+  .small{font-size:12px;color:var(--muted)}
+  .actions button{font-size:12px;padding:4px 8px;margin-inline-start:4px}
+  .pwbox{font-family:monospace;font-size:18px;background:#fff8e1;padding:8px 12px;border-radius:8px;display:inline-block;direction:ltr}
+  [hidden]{display:none!important}
+  @media (max-width:760px){.layout{grid-template-columns:1fr}.price{position:static}.grid .wide{grid-column:span 1}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span>AL FALAK</span> · عروض الأسعار</div>
+  <div class="who" id="who" hidden>
+    <span id="whoName"></span>
+    <button onclick="showPwChange(false)">تغيير بيانات الدخول</button>
+    <button onclick="logout()">خروج</button>
+  </div>
+</header>
+
+<!-- الدخول -->
+<section id="vLogin">
+  <div class="card login">
+    <h2>تسجيل الدخول</h2>
+    <form onsubmit="doLogin(event)">
+      <div class="field"><label>اسم المستخدم</label><input id="lUser" autocomplete="username" dir="ltr" required></div>
+      <div class="field"><label>كلمة المرور</label><input id="lPass" type="password" autocomplete="current-password" dir="ltr" required></div>
+      <div id="lMsg"></div>
+      <button class="btn" id="lBtn" style="width:100%">دخول</button>
+    </form>
+  </div>
+</section>
+
+<!-- تغيير بيانات الدخول -->
+<section id="vPw" hidden>
+  <div class="card login">
+    <h2>تغيير بيانات الدخول</h2>
+    <p class="small" id="pwNote"></p>
+    <form onsubmit="doPwChange(event)">
+      <div class="field"><label>كلمة المرور الحالية</label><input id="pOld" type="password" dir="ltr" required></div>
+      <div class="field"><label>اسم المستخدم الجديد (اختياري)</label><input id="pUser" dir="ltr" placeholder="سيبه زي ما هو لو مش عايز تغيّره"></div>
+      <div class="field"><label>كلمة المرور الجديدة (6 على الأقل)</label><input id="pNew" type="password" dir="ltr" required minlength="6"></div>
+      <div class="field"><label>أعد كتابة كلمة المرور الجديدة</label><input id="pNew2" type="password" dir="ltr" required></div>
+      <div id="pMsg"></div>
+      <button class="btn" id="pBtn" style="width:100%">حفظ</button>
+      <button type="button" class="btn ghost" id="pCancel" style="width:100%;margin-top:8px" onclick="showApp()">رجوع</button>
+    </form>
+  </div>
+</section>
+
+<!-- التطبيق -->
+<section id="vApp" hidden>
+  <nav id="tabs">
+    <button data-t="tNew" class="on">عرض جديد</button>
+    <button data-t="tList" id="tabList">عروضي</button>
+    <button data-t="tDash" class="adm">المتابعة</button>
+    <button data-t="tUsers" class="adm">المستخدمين</button>
+  </nav>
+  <main>
+    <!-- عرض جديد -->
+    <div class="card tab" id="tNew">
+      <div class="layout">
+        <form id="fOffer" onsubmit="saveOffer(event)" oninput="recalc()">
+          <h3 style="margin-top:0">بيانات العميل</h3>
+          <div class="grid">
+            <div class="field wide"><label>اسم العميل *</label><input name="client" required></div>
+            <div class="field"><label>جوال العميل *</label><input name="phone" id="fPhone" dir="ltr" inputmode="tel" required placeholder="05xxxxxxxx" onchange="checkPhone()" onblur="checkPhone()"></div>
+            <div class="field"><label>المدينة *</label><input name="city" value="الرياض" required></div>
+            <div class="field"><label>الحي</label><input name="district"></div>
+          </div>
+          <div id="phMsg"></div>
+          <h3>المصعد</h3>
+          <div class="grid">
+            <div class="field"><label>نوع العرض</label><select name="type" id="fType" onchange="fillLoads()"></select></div>
+            <div class="field"><label>الحمولة</label><select name="load" id="fLoad"></select></div>
+            <div class="field"><label>عدد المصاعد</label><input name="lifts" type="number" min="1" value="1" required></div>
+            <div class="field"><label>عدد الوقفات</label><input name="stops" id="fStops" type="number" min="2" value="3" required oninput="syncDoors()"></div>
+            <div class="field"><label>الأبواب الخارجية</label><input name="landingDoors" id="fLanding" type="number" min="1" value="3" oninput="this.dataset.touched=1"></div>
+            <div class="field"><label>مداخل الكابينة</label><input name="carDoors" type="number" min="1" max="3" value="1"></div>
+          </div>
+          <h3>المقاسات</h3>
+          <div class="grid">
+            <div class="field"><label>عرض البئر (مم)</label><input name="shaftW" type="number" inputmode="numeric"></div>
+            <div class="field"><label>عمق البئر (مم)</label><input name="shaftD" type="number" inputmode="numeric"></div>
+            <div class="field"><label>الأوفر هيد (مم)</label><input name="overhead" type="number" value="4100"></div>
+            <div class="field"><label>عمق الحفرة (مم)</label><input name="pit" type="number" value="1200"></div>
+            <div class="field"><label>مقاس الكابينة</label><input name="cabin" placeholder="مثلاً 1100 × 1400"></div>
+            <div class="field"><label>مقاس الباب</label><input name="door" placeholder="مثلاً 800 سنتر"></div>
+          </div>
+          <h3>السعر</h3>
+          <div class="grid">
+            <div class="field"><label>الخصم على العرض (ريال)</label><input name="discount" id="fDisc" type="number" min="0" value="0"></div>
+            <div class="field wide"><label>ملاحظات</label><input name="notes"></div>
+          </div>
+          <div id="oMsg"></div>
+          <button class="btn" id="oBtn">حفظ العرض</button>
+        </form>
+        <aside class="price" id="pricePanel"></aside>
+      </div>
+    </div>
+
+    <!-- العروض -->
+    <div class="card tab" id="tList" hidden>
+      <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:12px">
+        <div class="adm" style="min-width:200px"><label>المندوب</label><select id="listRep" onchange="loadList()"><option value="">الكل</option></select></div>
+        <button class="btn ghost" onclick="loadList()">تحديث</button>
+      </div>
+      <div class="tablewrap"><table id="listTbl"></table></div>
+    </div>
+
+    <!-- المتابعة -->
+    <div class="card tab adm" id="tDash" hidden>
+      <div class="chips" id="dChips">
+        <button data-p="week" class="on">الأسبوع ده</button>
+        <button data-p="lastWeek">الأسبوع اللي فات</button>
+        <button data-p="month">الشهر ده</button>
+        <button data-p="lastMonth">الشهر اللي فات</button>
+        <button data-p="all">الكل</button>
+        <button data-p="custom">فترة محددة</button>
+      </div>
+      <div id="dCustom" hidden style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:12px">
+        <div><label>من</label><input type="date" id="dFrom"></div>
+        <div><label>إلى</label><input type="date" id="dTo"></div>
+        <button class="btn ghost" onclick="loadDash('custom')">عرض</button>
+      </div>
+      <p class="small" id="dLabel"></p>
+      <div class="stats" id="dStats"></div>
+      <div class="tablewrap"><table id="dTbl"></table></div>
+    </div>
+
+    <!-- المستخدمين -->
+    <div class="card tab adm" id="tUsers" hidden>
+      <div id="uMsg"></div>
+      <div class="tablewrap"><table id="uTbl"></table></div>
+      <p class="small">لما مندوب جديد يتوظف: غيّر اسم واحد من "احتياطي" لاسمه، وغيّر اسم المستخدم، وفعّله، واعمل له كلمة مرور جديدة.</p>
+    </div>
+  </main>
+</section>
+
+<script>
+const S = {token:null, user:null, cfg:null, period:'week'};
+const store = {
+  get(){ try{ return sessionStorage.getItem('alfalak_t') || localStorage.getItem('alfalak_t'); }catch(e){ return null; } },
+  set(t){ try{ localStorage.setItem('alfalak_t', t); }catch(e){} try{ sessionStorage.setItem('alfalak_t', t); }catch(e){} },
+  clear(){ try{ localStorage.removeItem('alfalak_t'); sessionStorage.removeItem('alfalak_t'); }catch(e){} }
+};
+const $ = id => document.getElementById(id);
+const money = n => Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2});
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const msg = (el, text, kind) => { $(el).innerHTML = text ? '<div class="msg '+(kind||'err')+'">'+text+'</div>' : ''; };
+
+const API = 'https://script.google.com/macros/s/AKfycbzd84J7w9XnBwh1N6LazHpsEYieBlOtewDC2i3hhY46V6Xf0qoKnD6GcAiUi06q-Qfb6Q/exec';
+async function call(action, p){
+  let r;
+  try{
+    const res = await fetch(API, {method:'POST', body: JSON.stringify({action, token:S.token, p:p||{}})});
+    r = await res.json();
+  }catch(e){ throw new Error('مشكلة في الاتصال — اتأكد من النت وجرّب تاني'); }
+  if (r && r.ok) return r.data;
+  if (r && r.auth) { logout(true); }
+  if (r && r.mustChange) { showPwChange(true); }
+  throw new Error(r && r.error ? r.error : 'حصل خطأ، جرّب تاني');
+}
+
+function show(id){ ['vLogin','vPw','vApp'].forEach(v => $(v).hidden = (v !== id)); }
+
+/* ---------- الدخول ---------- */
+async function doLogin(e){
+  e.preventDefault(); msg('lMsg',''); $('lBtn').disabled = true;
+  try{
+    const r = await call('login', {username:$('lUser').value, password:$('lPass').value});
+    S.token = r.token; S.user = r.user; store.set(r.token); $('lPass').value='';
+    if (r.user.mustChange) showPwChange(true); else await start();
+  }catch(err){ msg('lMsg', err.message); }
+  $('lBtn').disabled = false;
+}
+
+function logout(silent){
+  if (S.token && !silent) call('logout').catch(()=>{});
+  S.token = null; S.user = null; store.clear();
+  $('who').hidden = true; show('vLogin');
+}
+
+function showPwChange(forced){
+  msg('pMsg',''); $('pOld').value=''; $('pNew').value=''; $('pNew2').value='';
+  $('pUser').value = S.user ? S.user.username : '';
+  $('pNote').textContent = forced ? 'أول دخول: لازم تختار كلمة مرور خاصة بيك (وممكن تغيّر اسم المستخدم كمان).' : '';
+  $('pCancel').hidden = !!forced;
+  show('vPw');
+}
+
+async function doPwChange(e){
+  e.preventDefault(); msg('pMsg','');
+  if ($('pNew').value !== $('pNew2').value) return msg('pMsg','كلمتين المرور مش زي بعض');
+  $('pBtn').disabled = true;
+  try{
+    S.user = await call('changeCredentials', {oldPassword:$('pOld').value, newUsername:$('pUser').value, newPassword:$('pNew').value});
+    await start();
+  }catch(err){ msg('pMsg', err.message); }
+  $('pBtn').disabled = false;
+}
+
+/* ---------- بداية التطبيق ---------- */
+async function start(){
+  S.cfg = await call('config');
+  S.user = S.cfg.user;
+  $('whoName').textContent = S.user.name + (S.user.role==='مدير' ? ' — مدير' : '');
+  $('who').hidden = false;
+  const admin = S.user.role === 'مدير';
+  document.querySelectorAll('.adm').forEach(el => el.hidden = !admin);
+  $('tabList').textContent = admin ? 'كل العروض' : 'عروضي';
+  fillTypes(); recalc();
+  showApp(); openTab('tNew');
+  if (admin) loadUsersIntoFilter();
+}
+function showApp(){ show('vApp'); }
+
+document.getElementById('tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return; openTab(b.dataset.t);
+});
+function openTab(t){
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t===t));
+  document.querySelectorAll('.tab').forEach(x => x.hidden = (x.id !== t) || (x.classList.contains('adm') && S.user.role!=='مدير'));
+  if (t==='tList') loadList();
+  if (t==='tDash') loadDash(S.period);
+  if (t==='tUsers') loadUsers();
+}
+
+/* ---------- عرض جديد ---------- */
+function fillTypes(){
+  const types = [...new Set(S.cfg.products.map(p => p.type))];
+  $('fType').innerHTML = types.map(t => '<option>'+esc(t)+'</option>').join('');
+  fillLoads();
+}
+function fillLoads(){
+  const t = $('fType').value;
+  const loads = S.cfg.products.filter(p => p.type === t);
+  $('fLoad').innerHTML = loads.map(p => '<option value="'+p.load+'">'+p.load+' كجم'+(p.persons?' / '+p.persons+' أشخاص':'')+'</option>').join('');
+  recalc();
+}
+function syncDoors(){ if (!$('fLanding').dataset.touched) $('fLanding').value = $('fStops').value; }
+
+function current(){
+  const f = $('fOffer');
+  const prod = S.cfg.products.find(p => p.type === f.type.value && String(p.load) === f.load.value);
+  const lifts = parseInt(f.lifts.value,10) || 0;
+  const stops = parseInt(f.stops.value,10) || 0;
+  const discount = Number(f.discount.value) || 0;
+  return {prod, lifts, stops, discount};
+}
+function recalc(){
+  if (!S.cfg) return;
+  const {prod, lifts, stops, discount} = current();
+  const st = S.cfg.settings, P = $('pricePanel');
+  if (!prod){ P.innerHTML = '<div class="na">اختار النوع والحمولة</div>'; return; }
+  if (prod.base == null){ P.innerHTML = '<div class="na">النوع ده لسه ما اتسعّرش — كلّم مدير المبيعات.</div>'; return; }
+  if (stops < st.minStops || stops > st.maxStops){ P.innerHTML = '<div class="na">عدد الوقفات من '+st.minStops+' لـ '+st.maxStops+'</div>'; return; }
+  const unit = prod.base + (stops-3)*prod.perStop;
+  const sub = unit * lifts, maxD = prod.maxDiscount * lifts;
+  const net = sub - discount, vat = Math.round(net*st.vat*100)/100, total = net + vat;
+  P.innerHTML =
+    '<h3 style="margin-top:0">السعر</h3>'+
+    row('سعر المصعد', money(unit))+
+    row('عدد المصاعد', lifts)+
+    row('الإجمالي', money(sub))+
+    row('الخصم', discount ? '- '+money(discount) : '0')+
+    row('بعد الخصم', money(net))+
+    row('الضريبة '+Math.round(st.vat*100)+'%', money(vat))+
+    '<div class="row"><span>الإجمالي شامل الضريبة</span></div><div class="total num">'+money(total)+' ريال</div>'+
+    '<p class="small">أقصى خصم للعرض ده: '+money(maxD)+' ريال</p>'+
+    (discount > maxD ? '<div class="na">الخصم أكبر من المسموح</div>' : '');
+}
+const row = (a,b) => '<div class="row"><span>'+a+'</span><span class="num">'+b+'</span></div>';
+
+let phoneBlocked = false, phoneSeq = 0;
+async function checkPhone(){
+  const v = $('fPhone').value.trim(), seq = ++phoneSeq;
+  const digits = v.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/\D/g,'');
+  if (digits.length < 9){ phoneBlocked = false; msg('phMsg',''); $('oBtn').disabled = false; return; }
+  try{
+    const r = await call('checkPhone', {phone:v});
+    if (seq !== phoneSeq) return;
+    phoneBlocked = !!r.blocked;
+    $('oBtn').disabled = phoneBlocked;
+    msg('phMsg', r.found ? esc(r.message) : '', r.blocked ? 'err' : 'warn');
+  }catch(err){}
+}
+
+async function saveOffer(e){
+  e.preventDefault(); msg('oMsg','');
+  const data = Object.fromEntries(new FormData($('fOffer')).entries());
+  $('oBtn').disabled = true;
+  try{
+    const r = await call('saveOffer', data);
+    msg('oMsg', 'تم حفظ العرض رقم <b>'+r.offerNo+'</b> — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');
+    $('fOffer').reset(); delete $('fLanding').dataset.touched; fillLoads(); msg('phMsg',''); phoneBlocked = false;
+  }catch(err){ msg('oMsg', err.message); }
+  $('oBtn').disabled = false;
+}
+
+/* ---------- قائمة العروض ---------- */
+async function loadList(){
+  const admin = S.user.role === 'مدير';
+  $('listTbl').innerHTML = '<tr><td>جاري التحميل...</td></tr>';
+  try{
+    const rows = await call('listOffers', {userId: admin ? $('listRep').value : ''});
+    if (!rows.length){ $('listTbl').innerHTML = '<tr><td>مفيش عروض لسه</td></tr>'; return; }
+    $('listTbl').innerHTML = '<tr><th>التاريخ</th><th>رقم العرض</th>'+(admin?'<th>المندوب</th>':'')+'<th>العميل</th><th>الجوال</th><th>المدينة</th><th>الحي</th><th>النوع</th><th>المصاعد</th><th>الوقفات</th><th>الإجمالي شامل الضريبة</th><th>الحالة</th></tr>'+
+      rows.map(r => '<tr><td>'+esc(r.date)+'</td><td>'+esc(r.offerNo)+'</td>'+(admin?'<td>'+esc(r.repName)+'</td>':'')+'<td>'+esc(r.client)+'</td><td dir="ltr">'+esc(r.phone)+'</td><td>'+esc(r.city)+'</td><td>'+esc(r.district)+'</td><td>'+esc(r.type)+'</td><td>'+r.lifts+'</td><td>'+esc(r.stops)+'</td><td class="num">'+money(r.total)+'</td><td>'+esc(r.status)+'</td></tr>').join('');
+  }catch(err){ $('listTbl').innerHTML = '<tr><td>'+esc(err.message)+'</td></tr>'; }
+}
+
+/* ---------- المتابعة ---------- */
+$('dChips').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#dChips button').forEach(x => x.classList.toggle('on', x===b));
+  $('dCustom').hidden = b.dataset.p !== 'custom';
+  if (b.dataset.p !== 'custom') loadDash(b.dataset.p);
+});
+async function loadDash(period){
+  S.period = period;
+  $('dTbl').innerHTML = '<tr><td>جاري التحميل...</td></tr>';
+  try{
+    const d = await call('dashboard', {period, from:$('dFrom').value, to:$('dTo').value});
+    $('dLabel').textContent = d.label + ': من ' + d.from + ' إلى ' + d.to;
+    const tot = d.reps.reduce((a,r) => ({o:a.o+r.offers, l:a.l+r.lifts, t:a.t+r.total}), {o:0,l:0,t:0});
+    $('dStats').innerHTML = stat(tot.o,'عرض سعر') + stat(tot.l,'مصعد') + stat(money(tot.t),'ريال شامل الضريبة');
+    const types = [...new Set(d.reps.flatMap(r => Object.keys(r.types)))];
+    $('dTbl').innerHTML = '<tr><th>المندوب</th><th>عدد العروض</th><th>عدد المصاعد</th>'+types.map(t=>'<th>'+esc(t)+'</th>').join('')+'<th>الإجمالي قبل الضريبة</th><th>الإجمالي شامل الضريبة</th></tr>'+
+      d.reps.map(r => '<tr><td>'+esc(r.name)+'</td><td>'+r.offers+'</td><td>'+r.lifts+'</td>'+types.map(t=>'<td>'+(r.types[t]||0)+'</td>').join('')+'<td class="num">'+money(r.net)+'</td><td class="num">'+money(r.total)+'</td></tr>').join('');
+  }catch(err){ $('dTbl').innerHTML = '<tr><td>'+esc(err.message)+'</td></tr>'; }
+}
+const stat = (v,l) => '<div class="stat"><b class="num">'+v+'</b><span>'+l+'</span></div>';
+
+/* ---------- المستخدمين ---------- */
+async function loadUsersIntoFilter(){
+  try{
+    const us = await call('listUsers');
+    $('listRep').innerHTML = '<option value="">الكل</option>' + us.map(u => '<option value="'+u.id+'">'+esc(u.name)+'</option>').join('');
+  }catch(e){}
+}
+async function loadUsers(){
+  $('uTbl').innerHTML = '<tr><td>جاري التحميل...</td></tr>';
+  try{
+    const us = await call('listUsers'); S.users = us;
+    $('uTbl').innerHTML = '<tr><th>الاسم</th><th>اسم المستخدم</th><th>الصلاحية</th><th>الحالة</th><th>آخر دخول</th><th></th></tr>'+
+      us.map(u => '<tr><td>'+esc(u.name)+'</td><td dir="ltr">'+esc(u.username)+'</td><td>'+esc(u.role)+'</td>'+
+        '<td><span class="tag '+(u.status==='نشط'?'on':'off')+'">'+esc(u.status)+'</span>'+(u.mustChange?' <span class="small">(لسه ما غيّرش الباسورد)</span>':'')+'</td>'+
+        '<td class="small">'+esc(u.lastLogin)+'</td><td class="actions">'+
+        '<button class="btn ghost" onclick="editUser(\''+u.id+'\')">تعديل</button>'+
+        '<button class="btn ghost" onclick="resetPw(\''+u.id+'\')">كلمة مرور جديدة</button>'+
+        (u.id===S.user.id ? '' : '<button class="btn ghost" onclick="toggleUser(\''+u.id+'\',\''+(u.status==='نشط'?'موقوف':'نشط')+'\')">'+(u.status==='نشط'?'إيقاف':'تفعيل')+'</button>')+
+        '</td></tr>').join('');
+  }catch(err){ $('uTbl').innerHTML = '<tr><td>'+esc(err.message)+'</td></tr>'; }
+}
+async function editUser(id){
+  const cur = (S.users||[]).find(x => x.id === id) || {};
+  const name = cur.name || '', username = cur.username || '';
+  const n = prompt('الاسم:', name); if (n === null) return;
+  const u = prompt('اسم المستخدم (إنجليزي):', username); if (u === null) return;
+  try{ await call('updateUser', {id, name:n, username:u}); msg('uMsg','تم التعديل','ok'); loadUsers(); loadUsersIntoFilter(); }
+  catch(err){ msg('uMsg', err.message); }
+}
+async function resetPw(id){
+  if (!confirm('هيتعمل كلمة مرور مؤقتة جديدة، والقديمة هتبطل. تكمل؟')) return;
+  try{
+    const r = await call('resetPassword', {id});
+    msg('uMsg', 'بيانات دخول '+esc(r.name)+':<br>اسم المستخدم: <span class="pwbox">'+esc(r.username)+'</span><br>كلمة المرور المؤقتة: <span class="pwbox">'+esc(r.password)+'</span><br><span class="small">ابعتهاله — هيُطلب منه يغيّرها أول ما يدخل.</span>', 'ok');
+    loadUsers();
+  }catch(err){ msg('uMsg', err.message); }
+}
+async function toggleUser(id, status){
+  try{ await call('updateUser', {id, status}); loadUsers(); }catch(err){ msg('uMsg', err.message); }
+}
+
+/* ---------- تشغيل ---------- */
+(async function(){
+  S.token = store.get();
+  if (!S.token) return show('vLogin');
+  try{ await start(); }catch(e){ if (!S.token) show('vLogin'); else if (!$('vPw').hidden) {} else { logout(true); } }
+})();
+</script>
+</body>
+</html>

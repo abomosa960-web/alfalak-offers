@@ -89,10 +89,20 @@
   <div class="card login">
     <h2>تسجيل الدخول</h2>
     <form onsubmit="doLogin(event)">
-      <div class="field"><label>اسم المستخدم</label><input id="lUser" autocomplete="username" dir="ltr" required></div>
+      <div class="field"><label>اسم المستخدم أو الإيميل</label><input id="lUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" dir="ltr" required></div>
       <div class="field"><label>كلمة المرور</label><input id="lPass" type="password" autocomplete="current-password" dir="ltr" required></div>
       <div id="lMsg"></div>
       <button class="btn" id="lBtn" style="width:100%">دخول</button>
+    </form>
+    <p style="text-align:center;margin:14px 0 0;display:flex;justify-content:center;gap:18px;flex-wrap:wrap">
+      <a href="#" onclick="toggleForgot('password');return false">نسيت كلمة المرور؟</a>
+      <a href="#" onclick="toggleForgot('username');return false">نسيت اسم المستخدم؟</a>
+    </p>
+    <form id="fForgot" hidden onsubmit="doForgot(event)" style="margin-top:10px">
+      <p class="small" id="fgNote"></p>
+      <div class="field"><label>الإيميل</label><input id="fgEmail" type="email" autocapitalize="none" dir="ltr" required></div>
+      <div id="fgMsg"></div>
+      <button class="btn ghost" id="fgBtn" style="width:100%">ابعت كلمة مرور جديدة</button>
     </form>
   </div>
 </section>
@@ -104,7 +114,8 @@
     <p class="small" id="pNote"></p>
     <form onsubmit="doPwChange(event)">
       <div class="field"><label>كلمة المرور الحالية</label><input id="pOld" type="password" dir="ltr" required></div>
-      <div class="field"><label>اسم المستخدم الجديد (اختياري)</label><input id="pUser" dir="ltr" placeholder="سيبه زي ما هو لو مش عايز تغيّره"></div>
+      <div class="field"><label>اسم المستخدم (تقدر تغيّره)</label><input id="pUser" dir="ltr" autocapitalize="none" placeholder="سيبه زي ما هو لو مش عايز تغيّره"></div>
+      <div class="field"><label>إيميلك (لاستعادة الحساب لو نسيت كلمة المرور)</label><input id="pEmail" type="email" dir="ltr" autocapitalize="none"></div>
       <div class="field"><label>كلمة المرور الجديدة (6 على الأقل)</label><input id="pNew" type="password" dir="ltr" required minlength="6"></div>
       <div class="field"><label>أعد كتابة كلمة المرور الجديدة</label><input id="pNew2" type="password" dir="ltr" required></div>
       <div id="pMsg"></div>
@@ -262,6 +273,28 @@ async function call(action, p){
 function show(id){ ['vLogin','vPw','vApp'].forEach(v => $(v).hidden = (v !== id)); }
 
 /* ---------- الدخول ---------- */
+function toggleForgot(kind){
+  const f = $('fForgot');
+  f.hidden = (f.dataset.kind === kind) ? !f.hidden : false;
+  f.dataset.kind = kind; msg('fgMsg','');
+  $('fgNote').textContent = kind === 'username'
+    ? 'اكتب الإيميل المتسجّل على حسابك، وهيوصلك عليه اسم المستخدم (كلمة المرور مش هتتغير). وتقدر تدخل بالإيميل نفسه بدل اسم المستخدم.'
+    : 'اكتب الإيميل المتسجّل على حسابك، وهيوصلك عليه كلمة مرور جديدة.';
+  $('fgBtn').textContent = kind === 'username' ? 'ابعت اسم المستخدم' : 'ابعت كلمة مرور جديدة';
+  if (!f.hidden){ const v = $('lUser').value.trim(); if (v.indexOf('@') > 0) $('fgEmail').value = v; $('fgEmail').focus(); }
+}
+async function doForgot(e){
+  e.preventDefault(); msg('fgMsg',''); $('fgBtn').disabled = true;
+  try{
+    const kind = $('fForgot').dataset.kind;
+    await call('forgotPassword', {email:$('fgEmail').value, kind});
+    msg('fgMsg', kind === 'username'
+      ? 'تم — بصّ على الإيميل (ولو مش لاقيه شوف الـ Spam).'
+      : 'تم — بصّ على الإيميل (ولو مش لاقيه شوف الـ Spam). ادخل بكلمة المرور اللي وصلتك.','ok');
+    $('lUser').value = $('fgEmail').value; $('lPass').value = ''; $('lPass').focus();
+  }catch(err){ msg('fgMsg', err.message); }
+  $('fgBtn').disabled = false;
+}
 async function doLogin(e){
   e.preventDefault(); msg('lMsg',''); $('lBtn').disabled = true;
   try{
@@ -281,6 +314,7 @@ function logout(silent){
 function showPwChange(forced){
   msg('pMsg',''); $('pOld').value=''; $('pNew').value=''; $('pNew2').value='';
   $('pUser').value = S.user ? S.user.username : '';
+  $('pEmail').value = S.user ? (S.user.email || '') : '';
   $('pNote').textContent = forced ? 'أول دخول: لازم تختار كلمة مرور خاصة بيك (وممكن تغيّر اسم المستخدم كمان).' : '';
   $('pCancel').hidden = !!forced;
   show('vPw');
@@ -291,7 +325,7 @@ async function doPwChange(e){
   if ($('pNew').value !== $('pNew2').value) return msg('pMsg','كلمتين المرور مش زي بعض');
   $('pBtn').disabled = true;
   try{
-    S.user = await call('changeCredentials', {oldPassword:$('pOld').value, newUsername:$('pUser').value, newPassword:$('pNew').value});
+    S.user = await call('changeCredentials', {oldPassword:$('pOld').value, newUsername:$('pUser').value, email:$('pEmail').value, newPassword:$('pNew').value});
     await start();
   }catch(err){ msg('pMsg', err.message); }
   $('pBtn').disabled = false;
@@ -548,8 +582,8 @@ async function loadUsers(){
   $('uTbl').innerHTML = '<tr><td>جاري التحميل...</td></tr>';
   try{
     const us = await call('listUsers'); S.users = us;
-    $('uTbl').innerHTML = '<tr><th>الاسم</th><th>اسم المستخدم</th><th>الصلاحية</th><th>الحالة</th><th>آخر دخول</th><th></th></tr>'+
-      us.map(u => '<tr><td>'+esc(u.name)+'</td><td dir="ltr">'+esc(u.username)+'</td><td>'+esc(u.role)+'</td>'+
+    $('uTbl').innerHTML = '<tr><th>الاسم</th><th>اسم المستخدم</th><th>الإيميل</th><th>الصلاحية</th><th>الحالة</th><th>آخر دخول</th><th></th></tr>'+
+      us.map(u => '<tr><td>'+esc(u.name)+'</td><td dir="ltr">'+esc(u.username)+'</td><td dir="ltr" class="small">'+(esc(u.email)||'—')+'</td><td>'+esc(u.role)+'</td>'+
         '<td><span class="tag '+(u.status==='نشط'?'on':'off')+'">'+esc(u.status)+'</span>'+(u.mustChange?' <span class="small">(لسه ما غيّرش الباسورد)</span>':'')+'</td>'+
         '<td class="small">'+esc(u.lastLogin)+'</td><td class="actions">'+
         '<button class="btn ghost" onclick="editUser(\''+u.id+'\')">تعديل</button>'+
@@ -563,7 +597,8 @@ async function editUser(id){
   const name = cur.name || '', username = cur.username || '';
   const n = prompt('الاسم:', name); if (n === null) return;
   const u = prompt('اسم المستخدم (إنجليزي):', username); if (u === null) return;
-  try{ await call('updateUser', {id, name:n, username:u}); msg('uMsg','تم التعديل','ok'); loadUsers(); loadUsersIntoFilter(); }
+  const em = prompt('الإيميل (لاستعادة كلمة المرور):', cur.email || ''); if (em === null) return;
+  try{ await call('updateUser', {id, name:n, username:u, email:em}); msg('uMsg','تم التعديل','ok'); loadUsers(); loadUsersIntoFilter(); }
   catch(err){ msg('uMsg', err.message); }
 }
 async function resetPw(id){

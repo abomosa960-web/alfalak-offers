@@ -142,10 +142,15 @@
           <div id="editNote" class="msg warn" hidden></div>
           <h3 style="margin-top:0">بيانات العميل</h3>
           <div class="grid">
-            <div class="field wide"><label>اسم العميل *</label><input name="client" required></div>
+            <div class="field wide"><label>اسم العميل *</label><input name="client" id="fClient" required oninput="autoEn()"></div>
             <div class="field"><label>جوال العميل *</label><input name="phone" id="fPhone" dir="ltr" inputmode="tel" required placeholder="05xxxxxxxx" onchange="checkPhone()" onblur="checkPhone()"></div>
             <div class="field"><label>المدينة *</label><input name="city" value="الرياض" required></div>
-            <div class="field"><label>الحي</label><input name="district"></div>
+            <div class="field"><label>الحي</label><input name="district" id="fDist" oninput="autoEn()"></div>
+          </div>
+          <div class="grid" id="enBox" hidden>
+            <div class="field wide"><label>اسم العميل بالإنجليزي (للعرض الإنجليزي)</label><input name="clientEn" id="fClientEn" dir="ltr" oninput="enTouched(this)"></div>
+            <div class="field"><label>الحي بالإنجليزي</label><input name="districtEn" id="fDistEn" dir="ltr" oninput="enTouched(this)"></div>
+            <div class="small" style="grid-column:1/-1">بيتكتب لوحده بالنطق — راجعه وصلّحه لو فيه غلطة، والتصليح بيتحفظ للمرة الجاية.</div>
           </div>
           <div id="phMsg"></div>
           <h3>المصعد</h3>
@@ -257,6 +262,115 @@ const money = n => Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2}
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const msg = (el, text, kind) => { $(el).innerHTML = text ? '<div class="msg '+(kind||'err')+'">'+text+'</div>' : ''; };
 
+/* ===== تحويل الأسماء العربي للإنجليزي بالنطق (مش ترجمة) — نفس الكود في Code.gs و Index.html ===== */
+const TR_WORDS = {
+  // أحياء ومدن
+  'الرياض': 'Riyadh', 'جدة': 'Jeddah', 'جده': 'Jeddah', 'الدمام': 'Dammam', 'الخبر': 'Khobar', 'مكة': 'Makkah', 'مكه': 'Makkah',
+  'المدينة': 'Madinah', 'المدينه': 'Madinah', 'بريدة': 'Buraidah', 'بريده': 'Buraidah', 'القصيم': 'Qassim', 'ابها': 'Abha', 'أبها': 'Abha',
+  'تبوك': 'Tabuk', 'حائل': 'Hail', 'الطائف': 'Taif', 'الخرج': 'Al-Kharj', 'جازان': 'Jazan', 'نجران': 'Najran', 'الجبيل': 'Jubail',
+  'الاحساء': 'Al-Ahsa', 'الأحساء': 'Al-Ahsa', 'الدرعية': 'Diriyah', 'نجد': 'Najd',
+  'العليا': 'Al-Olaya', 'الملز': 'Al-Malaz', 'السليمانية': 'Al-Sulaimaniyah', 'الياسمين': 'Al-Yasmin', 'النرجس': 'Al-Narjis',
+  'الملقا': 'Al-Malqa', 'القادسية': 'Al-Qadisiyah', 'الربوة': 'Al-Rabwah', 'الندوة': 'Al-Nadwa', 'عرقة': 'Irqah', 'حطين': 'Hittin',
+  'الصحافة': 'Al-Sahafa', 'العقيق': 'Al-Aqiq', 'الغدير': 'Al-Ghadir', 'النخيل': 'Al-Nakheel', 'الرحمانية': 'Al-Rahmaniyah',
+  'المروج': 'Al-Muruj', 'المرسلات': 'Al-Mursalat', 'الورود': 'Al-Wurud', 'الوادي': 'Al-Wadi', 'النفل': 'Al-Nafal',
+  'التعاون': 'Al-Taawun', 'الازدهار': 'Al-Izdihar', 'المصيف': 'Al-Masif', 'الفلاح': 'Al-Falah', 'النسيم': 'Al-Naseem',
+  'الروضة': 'Al-Rawdah', 'الريان': 'Al-Rayyan', 'الحمراء': 'Al-Hamra', 'قرطبة': 'Qurtubah', 'اشبيلية': 'Ishbiliyah',
+  'إشبيلية': 'Ishbiliyah', 'غرناطة': 'Ghirnatah', 'اليرموك': 'Al-Yarmouk', 'المونسية': 'Al-Munsiyah', 'الرمال': 'Al-Rimal',
+  'النظيم': 'Al-Nadhim', 'السلي': 'Al-Sulay', 'الشفا': 'Al-Shifa', 'العزيزية': 'Al-Aziziyah', 'عكاظ': 'Okaz', 'بدر': 'Badr',
+  'المنصورة': 'Al-Mansourah', 'الشميسي': 'Al-Shumaisi', 'البديعة': 'Al-Badiah', 'عتيقة': 'Utaiqah', 'نمار': 'Namar',
+  'العريجاء': 'Al-Uraija', 'السويدي': 'Al-Suwaidi', 'الحزم': 'Al-Hazm', 'طويق': 'Tuwaiq', 'المهدية': 'Al-Mahdiyah', 'لبن': 'Laban',
+  'الخليج': 'Al-Khaleej', 'النهضة': 'Al-Nahdah', 'الروابي': 'Al-Rawabi', 'السعادة': 'Al-Saadah', 'الجنادرية': 'Al-Janadriyah',
+  'القيروان': 'Al-Qairawan', 'العارض': 'Al-Arid', 'الخير': 'Al-Khair', 'بنبان': 'Banban', 'الواحة': 'Al-Waha', 'الفيحاء': 'Al-Fayha',
+  'الجزيرة': 'Al-Jazirah', 'السلام': 'Al-Salam', 'المعذر': 'Al-Mathar', 'الرائد': 'Al-Raed', 'الخزامى': 'Al-Khuzama',
+  'المحمدية': 'Al-Muhammadiyah', 'الدار': 'Al-Dar', 'البيضاء': 'Al-Baida', 'ظهرة': 'Dhahrat', 'الملك': 'King',
+  'المعيزيلة': 'Al-Muaizilah', 'الرفيعة': 'Al-Rafiah', 'المغرزات': 'Al-Mughrizat', 'الوزارات': 'Al-Wizarat', 'المربع': 'Al-Murabba',
+  'الفوطة': 'Al-Futah', 'منفوحة': 'Manfuhah', 'الديرة': 'Al-Dirah', 'العود': 'Al-Oud', 'الدفاع': 'Al-Difa', 'الرحاب': 'Al-Rehab',
+  // أسماء
+  'محمد': 'Mohammed', 'أحمد': 'Ahmed', 'احمد': 'Ahmed', 'محمود': 'Mahmoud', 'مصطفى': 'Mostafa', 'خالد': 'Khaled', 'فهد': 'Fahad',
+  'سعود': 'Saud', 'سعد': 'Saad', 'سلطان': 'Sultan', 'فيصل': 'Faisal', 'ناصر': 'Nasser', 'صالح': 'Saleh', 'علي': 'Ali', 'عمر': 'Omar',
+  'عثمان': 'Othman', 'إبراهيم': 'Ibrahim', 'ابراهيم': 'Ibrahim', 'يوسف': 'Youssef', 'حسن': 'Hassan', 'حسين': 'Hussein',
+  'سامي': 'Sami', 'ماجد': 'Majed', 'نايف': 'Naif', 'نواف': 'Nawaf', 'بندر': 'Bandar', 'تركي': 'Turki', 'مشعل': 'Mishal',
+  'منصور': 'Mansour', 'ياسر': 'Yasser', 'وليد': 'Waleed', 'طارق': 'Tariq', 'هاني': 'Hany', 'إيهاب': 'Ehab', 'ايهاب': 'Ehab',
+  'عادل': 'Adel', 'صادق': 'Sadeq', 'مالك': 'Malik', 'مازن': 'Mazen', 'سلمان': 'Salman', 'زياد': 'Ziad', 'حمد': 'Hamad',
+  'راشد': 'Rashed', 'سالم': 'Salem', 'ماهر': 'Maher', 'رمضان': 'Ramadan', 'فوزي': 'Fawzy', 'عبدالله': 'Abdullah',
+  'عبدالرحمن': 'Abdulrahman', 'عبدالعزيز': 'Abdulaziz', 'عبدالكريم': 'Abdulkarim', 'عبدالمجيد': 'Abdulmajeed',
+  'عبدالمحسن': 'Abdulmohsen', 'عبدالإله': 'Abdulelah', 'عبدالاله': 'Abdulelah', 'عبدالرحيم': 'Abdulrahim', 'عبدالملك': 'Abdulmalik',
+  'متعب': 'Miteb', 'مشاري': 'Mishari', 'نادر': 'Nader', 'هشام': 'Hisham', 'وائل': 'Wael', 'أسامة': 'Osama', 'اسامة': 'Osama',
+  'أنس': 'Anas', 'انس': 'Anas', 'بدر': 'Badr', 'جمال': 'Jamal', 'حمزة': 'Hamza', 'رائد': 'Raed', 'ريان': 'Rayan', 'سامر': 'Samer',
+  'شريف': 'Sherif', 'عماد': 'Emad', 'فارس': 'Fares', 'كريم': 'Karim', 'ماجدة': 'Majda', 'نورة': 'Noura', 'سارة': 'Sarah',
+  'فاطمة': 'Fatimah', 'مريم': 'Maryam', 'حجي': 'Hajji', 'زهران': 'Zahran', 'العتيبي': 'Al-Otaibi', 'القحطاني': 'Al-Qahtani',
+  'الدوسري': 'Al-Dosari', 'الشمري': 'Al-Shammari', 'الغامدي': 'Al-Ghamdi', 'الزهراني': 'Al-Zahrani', 'المطيري': 'Al-Mutairi',
+  'الحربي': 'Al-Harbi', 'العنزي': 'Al-Anazi', 'السبيعي': 'Al-Subaie', 'الشهري': 'Al-Shehri', 'العمري': 'Al-Omari',
+  'الفيفي': 'Al-Faifi', 'السهلي': 'Al-Sahli', 'الرشيدي': 'Al-Rashidi', 'التميمي': 'Al-Tamimi', 'المالكي': 'Al-Malki',
+  'سعيد': 'Saeed', 'يحيى': 'Yahya', 'عيسى': 'Eisa', 'موسى': 'Musa', 'مرتضى': 'Murtada', 'الديار': 'Al-Diyar', 'الذهبية': 'Al-Dhahabiya',
+  'الراجحي': 'Al-Rajhi', 'جرير': 'Jarir', 'سما': 'Sama', 'ابعاد': 'Abaad', 'أبعاد': 'Abaad', 'طيبة': 'Taibah',
+  'أبو': 'Abu', 'ابو': 'Abu', 'أم': 'Umm', 'ام': 'Umm', 'بن': 'Bin', 'ابن': 'Bin', 'آل': 'Al',
+  'مهندس': 'Eng.', 'المهندس': 'Eng.', 'م': 'Eng.', 'م.': 'Eng.', 'دكتور': 'Dr.', 'الدكتور': 'Dr.', 'د': 'Dr.', 'د.': 'Dr.',
+  'الشيخ': 'Sheikh', 'شيخ': 'Sheikh', 'السيد': '', 'السادة': '', 'الاستاذ': 'Mr.', 'الأستاذ': 'Mr.', 'استاذ': 'Mr.', 'أستاذ': 'Mr.',
+  'حي': '', 'مشروع': '', 'عمارة': 'Building', 'عماره': 'Building', 'فيلا': 'Villa', 'برج': 'Tower', 'مجمع': 'Complex',
+  'شركة': 'Company', 'شركه': 'Company', 'مؤسسة': 'Est.', 'مؤسسه': 'Est.', 'مكتب': 'Office',
+};
+const TR_LET = { 'ا': 'a', 'أ': 'a', 'إ': 'i', 'آ': 'aa', 'ب': 'b', 'ت': 't', 'ث': 'th', 'ج': 'j', 'ح': 'h', 'خ': 'kh', 'د': 'd',
+  'ذ': 'dh', 'ر': 'r', 'ز': 'z', 'س': 's', 'ش': 'sh', 'ص': 's', 'ض': 'd', 'ط': 't', 'ظ': 'z', 'ع': 'a', 'غ': 'gh', 'ف': 'f',
+  'ق': 'q', 'ك': 'k', 'ل': 'l', 'م': 'm', 'ن': 'n', 'ه': 'h', 'و': 'w', 'ي': 'y', 'ى': 'a', 'ة': 'ah', 'ء': '', 'ئ': 'e', 'ؤ': 'o' };
+const TR_SUFFIX = ['Company', 'Est.', 'Office', 'Building', 'Villa', 'Tower', 'Complex'];
+const TR_DIGITS = '٠١٢٣٤٥٦٧٨٩';
+
+function trCap_(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+/** كلمة واحدة من غير قاموس: حرف بحرف، مع حروف علة تقريبية */
+function trWord_(w) {
+  const ch = w.replace(/[ً-ْـ]/g, '').split('');
+  let out = '';
+  for (let i = 0; i < ch.length; i++) {
+    const c = ch[i], prev = ch[i - 1], next = ch[i + 1];
+    const vowelLetter = c === 'ا' || c === 'و' || c === 'ي' || c === 'ى' || c === 'أ' || c === 'إ' || c === 'آ';
+    let t;
+    if (c === 'و') t = (i === 0 || (prev && 'اوي'.indexOf(prev) >= 0)) ? 'w' : 'o';
+    else if (c === 'ي') t = (i === 0 || (prev && 'اوي'.indexOf(prev) >= 0) || (next && 'اوي'.indexOf(next) >= 0 && i > 0)) ? 'y' : 'i';
+    else if (c === 'ع' && i === 0) t = 'A';
+    else if (c === 'ع') t = (prev && 'اوي'.indexOf(prev) >= 0) ? '' : 'a';
+    else t = TR_LET[c] != null ? TR_LET[c] : c;
+    out += t;
+    // أول حرفين ساكنين ورا بعض في أول الكلمة: نحط بينهم a (قحطان ← Qahtan)
+    if (i === 0 && !vowelLetter && next && 'اويىأإآة'.indexOf(next) < 0 && ch.length > 2) out += 'a';
+  }
+  return trCap_(out.replace(/aa+/g, 'aa').replace(/([^a])\1\1+/g, '$1$1'));
+}
+
+/** النص كله: القاموس الأول (والتصليحات اللي المندوبين عملوها قبل كده)، وبعدين حرف بحرف */
+function translitAr(text, learned) {
+  let s = String(text || '').trim().replace(/\s+/g, ' ');
+  if (!s) return '';
+  s = s.replace(/[٠-٩]/g, d => String(TR_DIGITS.indexOf(d)));
+  if (learned && learned[s]) return learned[s];
+  if (!/[؀-ۿ]/.test(s)) return s;
+  // عبد + الاسم = اسم واحد (عبد الله ← Abdullah)
+  s = s.replace(/عبد\s+ال/g, 'عبدال');
+  let words = s.split(' ');
+  let company = '', out = [];
+  words.forEach(w => {
+    if (learned && learned[w]) { out.push(learned[w]); return; }
+    if (Object.prototype.hasOwnProperty.call(TR_WORDS, w)) {
+      const t = TR_WORDS[w];
+      if (TR_SUFFIX.indexOf(t) >= 0) company = t; else if (t) out.push(t);
+      return;
+    }
+    if (!/[؀-ۿ]/.test(w)) { out.push(w); return; }
+    if (/^عبدال/.test(w)) { out.push('Abdul' + trWord_(w.slice(5)).toLowerCase()); return; }
+    if (/^(ال|بال|وال)/.test(w) && w.length > 3) {
+      const rest = w.replace(/^(ب|و)?ال/, '');
+      out.push('Al-' + trWord_(rest));
+      return;
+    }
+    out.push(trWord_(w));
+  });
+  let r = out.join(' ').replace(/\s+/g, ' ').trim();
+  if (company) r = (r + ' ' + company).trim();
+  return r;
+}
+/* ===== نهاية التحويل ===== */
+
 const API = 'https://script.google.com/macros/s/AKfycbzd84J7w9XnBwh1N6LazHpsEYieBlOtewDC2i3hhY46V6Xf0qoKnD6GcAiUi06q-Qfb6Q/exec';
 async function call(action, p){
   let r;
@@ -364,8 +478,15 @@ function fillTypes(){
   $('fType').innerHTML = types.map(t => '<option>'+esc(t)+'</option>').join('');
   fillLoads();
 }
+function autoEn(){
+  const L = (S.cfg && S.cfg.learned) || {};
+  if (!$('fClientEn').dataset.touched) $('fClientEn').value = translitAr($('fClient').value, L);
+  if (!$('fDistEn').dataset.touched) $('fDistEn').value = translitAr($('fDist').value, L);
+}
+function enTouched(el){ if (el.value.trim()) el.dataset.touched = 1; else { delete el.dataset.touched; autoEn(); } }
 function fillLoads(){
   const t = $('fType').value;
+  $('enBox').hidden = !/GKE/i.test(t);
   const loads = S.cfg.products.filter(p => p.type === t).sort((x,y) => x.load - y.load);
   $('fLoadSel').innerHTML = loads.map(p => '<option value="'+p.load+'">'+loadLabel(p.load, p.persons)+'</option>').join('') +
     '<option value="other">حمولة تانية — اكتبها بإيدك</option>';
@@ -468,7 +589,8 @@ async function saveOffer(e){
   try{
     const r = await call('saveOffer', data);
     msg('oMsg', (r.revision > 1 ? 'تم تحديث العرض رقم <b>'+r.offerNo+'</b> (مراجعة '+r.revision+')' : 'تم حفظ العرض رقم <b>'+r.offerNo+'</b>')+' — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');
-    $('fOffer').reset();  ['fLanding','fUnit','fDoorType'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; msg('phMsg',''); phoneBlocked = false;
+    if (data.clientEn && S.cfg.learned){ S.cfg.learned[String(data.client).trim().replace(/\s+/g,' ')] = data.clientEn; if (data.district && data.districtEn) S.cfg.learned[String(data.district).trim().replace(/\s+/g,' ')] = data.districtEn; }
+    $('fOffer').reset();  ['fLanding','fUnit','fDoorType','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; msg('phMsg',''); phoneBlocked = false;
     getFiles(r.offerNo, r.revision, 'oFiles');
   }catch(err){ msg('oMsg', err.message); }
   $('oBtn').disabled = false;
@@ -536,9 +658,10 @@ async function reprice(offerNo){
     if (opt){ $('fLoadSel').value = String(o.load); $('fLoadTxt').value = ''; }
     else { $('fLoadSel').value = 'other'; $('fLoadTxt').value = o.load + ' كجم / ' + o.persons + ' أشخاص'; }
     onLoadSel();
-    ['client','phone','city','district','lifts','stops','landingDoors','carDoors','speed','shaftW','shaftD','overhead','pit','cabin','doorW','doorType','doorFinish','doorBrand','discount','notes']
+    ['client','phone','city','district','clientEn','districtEn','lifts','stops','landingDoors','carDoors','speed','shaftW','shaftD','overhead','pit','cabin','doorW','doorType','doorFinish','doorBrand','discount','notes']
       .forEach(k => { if (f[k] != null && o[k] !== '' && o[k] != null) f[k].value = o[k]; });
     $('fLanding').dataset.touched = 1; $('fDoorType').dataset.touched = 1;
+    ['fClientEn','fDistEn'].forEach(id => { if ($(id).value) $(id).dataset.touched = 1; else delete $(id).dataset.touched; }); autoEn();
     $('fUnit').value = o.unitPrice; $('fUnit').dataset.touched = 1;
     S.editing = o.offerNo;
     $('editNote').hidden = false;
@@ -547,7 +670,7 @@ async function reprice(offerNo){
     window.scrollTo(0,0);
   }catch(err){ alert(err.message); }
 }
-function cancelEdit(){ $('fOffer').reset(); ['fLanding','fUnit','fDoorType'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; }
+function cancelEdit(){ $('fOffer').reset(); ['fLanding','fUnit','fDoorType','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; }
 
 /* ---------- المتابعة ---------- */
 $('dChips').addEventListener('click', e => {

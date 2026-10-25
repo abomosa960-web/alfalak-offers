@@ -218,7 +218,7 @@
           <div class="grid">
             <div class="field"><label>سعر المصعد قبل الضريبة (ريال) *</label><input name="unitPrice" id="fUnit" type="number" min="1" required oninput="this.dataset.touched=1"><div class="small" id="fSuggest"></div></div>
             <div class="field"><label>الخصم على العرض (ريال)</label><input name="discount" id="fDisc" type="number" min="0" value="0"></div>
-            <div class="field wide"><label>ملاحظات</label><input name="notes"></div>
+            <div class="field wide"><label>ملاحظات <span class="small">(بتتكتب في آخر العرض)</span></label><textarea name="notes" id="fNotes" rows="2" oninput="checkNotes()" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;width:100%;box-sizing:border-box"></textarea><div id="fNotesMsg"></div></div>
           </div>
           <div id="oMsg"></div>
           <div id="oFiles"></div>
@@ -596,7 +596,18 @@ function autoDoorType(){
   $('fInstall').placeholder = gke ? '180 (زي القالب)' : '60 (زي القالب)';
   $('fWarranty').placeholder = gke ? '2 (زي القالب)' : '10 (زي القالب)';
   $('fMaint').placeholder = '1 (زي القالب)';
-  checkInstall();
+  checkInstall(); checkNotes();
+}
+/** الملاحظات: GKE بالإنجليزي بس — المحلي بالعربي بس */
+function checkNotes(){
+  const v = $('fNotes').value, gke = /GKE/i.test($('fType').value);
+  $('fNotes').dir = gke ? 'ltr' : 'rtl';
+  $('fNotes').placeholder = gke ? 'English only — e.g. The price does not include scaffolding.' : 'بالعربي بس — مثلاً: السعر لا يشمل السقالات.';
+  let bad = '';
+  if (v.trim() && gke && /[\u0600-\u06FF]/.test(v)) bad = '⚠️ عرض GKE إنجليزي — اكتب الملاحظات بالإنجليزي بس';
+  if (v.trim() && !gke && /[A-Za-z]/.test(v)) bad = '⚠️ العرض ده عربي — اكتب الملاحظات بالعربي بس (من غير حروف إنجليزي)';
+  msg('fNotesMsg', bad, 'err');
+  return !bad;
 }
 /** مدة التركيب: أقل حاجة شهر، وفي GKE أقل من 180 يوم = تحذير (مسموح) */
 function checkInstall(){
@@ -707,6 +718,7 @@ async function checkPhone(){
 
 async function saveOffer(e){
   e.preventDefault(); msg('oMsg','');
+  if (!checkNotes()) { msg('oMsg', $('fNotesMsg').textContent); $('fNotes').focus(); return; }
   const data = Object.fromEntries(new FormData($('fOffer')).entries());
   [...document.querySelectorAll('#xItems [data-k]')].forEach(el => { delete data[el.name]; });
   data.extraItems = readItems();
@@ -931,7 +943,7 @@ async function reprice(offerNo){
     window.scrollTo(0,0);
   }catch(err){ alert(err.message); }
 }
-function cancelEdit(){ $('fOffer').reset(); toggleMore(false); clearItems(); msg('fInstallMsg',''); ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; }
+function cancelEdit(){ $('fOffer').reset(); msg('fNotesMsg',''); toggleMore(false); clearItems(); msg('fInstallMsg',''); ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; }
 
 /* ---------- المتابعة ---------- */
 $('dChips').addEventListener('click', e => {

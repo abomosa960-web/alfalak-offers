@@ -195,17 +195,20 @@
             <div class="field"><label>عرض الباب</label><select name="doorW"><option value="800">800 مم</option><option value="700">700 مم</option><option value="650">650 مم</option></select></div>
             <div class="field"><label>نوع الباب</label><select name="doorType" id="fDoorType" onchange="this.dataset.touched=1"><option>جانبي</option><option>سنتر</option><option>نص أوتوماتيك</option></select><div class="small" id="fDoorHint"></div></div>
             <div class="field"><label>تلبيس الأبواب</label><select name="doorFinish"><option>ستانلس ستيل فضي</option><option>ستانلس ستيل فضي هيرلاين</option><option>ستانلس ستيل فضي مراية</option><option>ستانلس ستيل نحاسي</option><option>ستانلس ستيل أسود</option></select></div>
-            <div class="field"><label>موديل الأبواب</label><input name="doorBrand" id="fBrand" list="brandList" value="سيلكوم" oninput="this.dataset.touched=1;autoDoorH()" onchange="autoDoorH()"><datalist id="brandList"></datalist></div>
+            <div class="field"><label>موديل الأبواب</label><select name="doorBrand" id="fBrand" onchange="this.dataset.touched=1;autoDoorH()"><option>سيلكوم</option></select></div>
             <div class="field" style="max-width:120px"><label>ارتفاع الباب</label><select name="doorH" id="fDoorH" onchange="this.dataset.touched=1" style="font-size:13px;padding:6px"><option value="2000">2000 مم</option><option value="2100">2100 مم</option></select></div>
           </div>
           <button type="button" class="btn ghost" id="moreBtn" style="margin-top:12px" onclick="toggleMore()">+ خيارات إضافية</button>
           <div id="moreBox" hidden>
             <p class="small">سيبها فاضية عشان يفضل المكتوب في العرض زي ما هو.</p>
             <div class="grid">
-              <div class="field"><label>مدة التوريد والتركيب (يوم)</label><input name="installDays" id="fInstall" type="number" min="1" inputmode="numeric"></div>
+              <div class="field"><label>مدة التوريد والتركيب (يوم)</label><input name="installDays" id="fInstall" type="number" min="30" inputmode="numeric" oninput="checkInstall()"><div id="fInstallMsg"></div></div>
               <div class="field"><label>مدة الضمان (سنة)</label><input name="warrantyYears" id="fWarranty" type="number" min="1" inputmode="numeric"></div>
               <div class="field"><label>الصيانة المجانية (سنة)</label><input name="maintYears" id="fMaint" type="number" min="1" inputmode="numeric"></div>
             </div>
+            <h4 style="margin:14px 0 6px">بنود تسعير إضافية <span class="small">(زي فك مصعد قديم — بتتضاف تحت المصعد في جدول العرض المالي)</span></h4>
+            <div id="xItems"></div>
+            <button type="button" class="btn ghost" onclick="addItem()">+ إضافة بند</button>
           </div>
           <h3>السعر</h3>
           <div class="grid">
@@ -572,15 +575,51 @@ function onLoadChange(){
 function autoDoorType(){
   const gke = /GKE/i.test($('fType').value), dt = $('fDoorType'), br = $('fBrand');
   if (!dt.dataset.touched) dt.value = gke ? 'سنتر' : 'جانبي';
-  if (!br.dataset.touched) br.value = gke ? 'GKE' : 'سيلكوم';
-  $('brandList').innerHTML = (gke ? ['GKE','SJ','سيلكوم','سيلكوم صيني'] : ['سيلكوم','SJ','سيلكوم صيني']).map(x => '<option value="'+x+'">').join('');
+  // GKE: موديل GKE بس — المحلي: سيلكوم، سيلكوم صيني، SJ
+  const list = gke ? ['GKE'] : ['سيلكوم','سيلكوم صيني','SJ'];
+  const cur = br.value;
+  br.innerHTML = list.map(x => '<option>'+x+'</option>').join('');
+  if (br.dataset.touched && list.indexOf(cur) >= 0) br.value = cur; else { br.value = list[0]; delete br.dataset.touched; }
   autoDoorH();
   $('fDoorHint').textContent = '';
   // الافتراضي المكتوب في القوالب
   $('fInstall').placeholder = gke ? '180 (زي القالب)' : '60 (زي القالب)';
   $('fWarranty').placeholder = gke ? '2 (زي القالب)' : '10 (زي القالب)';
   $('fMaint').placeholder = '1 (زي القالب)';
+  checkInstall();
 }
+/** مدة التركيب: أقل حاجة شهر، وفي GKE أقل من 180 يوم = تحذير (مسموح) */
+function checkInstall(){
+  const v = Number($('fInstall').value) || 0, gke = /GKE/i.test($('fType').value);
+  if (!$('fInstall').value) return msg('fInstallMsg','');
+  if (v < 30) return msg('fInstallMsg','أقل مدة تركيب 30 يوم');
+  if (gke && v < 180) return msg('fInstallMsg','⚠️ تأكد من مدة التركيب حيث أن المصعد المختار مستورد — تأكد إن تسليم المصعد هيكون في الوقت المحدد.','warn');
+  msg('fInstallMsg','');
+}
+/* ---------- بنود التسعير الإضافية ---------- */
+function addItem(it){
+  it = it || {};
+  const box = $('xItems'), n = box.children.length + 2;
+  const d = document.createElement('div');
+  d.className = 'grid xitem';
+  d.style.cssText = 'border:1px dashed var(--line);border-radius:10px;padding:8px;margin-bottom:8px';
+  d.innerHTML =
+    '<div class="field" style="max-width:80px"><label>رقم البند</label><input data-k="no" value="'+esc(it.no || n)+'"></div>'+
+    '<div class="field"><label>النوع</label><input data-k="type" placeholder="مثلاً: فك المصعد القديم" value="'+esc(it.type || '')+'"></div>'+
+    '<div class="field wide"><label>المواصفات</label><input data-k="spec" placeholder="مثلاً: فك المصعد" value="'+esc(it.spec || '')+'"></div>'+
+    '<div class="field" style="max-width:90px"><label>الكمية</label><input data-k="qty" type="number" min="1" value="'+esc(it.qty || 1)+'"></div>'+
+    '<div class="field"><label>سعر الوحدة (قبل الضريبة)</label><input data-k="price" type="number" min="0" value="'+esc(it.price == null ? '' : it.price)+'"></div>'+
+    '<div class="field" style="max-width:70px;align-self:end"><button type="button" class="btn ghost" title="حذف البند" onclick="this.closest(\'.xitem\').remove();recalc()">×</button></div>';
+  box.appendChild(d);
+  recalc();
+}
+function readItems(){
+  return [...document.querySelectorAll('#xItems .xitem')].map(d => {
+    const o = {}; d.querySelectorAll('[data-k]').forEach(el => o[el.dataset.k] = el.value.trim()); return o;
+  }).filter(o => o.type || o.spec || o.price);
+}
+function itemsTotal(){ return readItems().reduce((a, o) => a + (Number(o.qty) || 1) * (Number(o.price) || 0), 0); }
+function clearItems(){ $('xItems').innerHTML = ''; }
 function toggleMore(show){
   const b = $('moreBox'); b.hidden = show === undefined ? !b.hidden : !show;
   $('moreBtn').textContent = (b.hidden ? '+ ' : '− ') + 'خيارات إضافية';
@@ -624,12 +663,13 @@ function recalc(){
   const unit = Number($('fUnit').value) || 0;
   if (!unit){ P.innerHTML = '<div class="na">اكتب سعر المصعد</div>'; return; }
   if (stops < st.minStops || stops > st.maxStops){ P.innerHTML = '<div class="na">عدد الوقفات من '+st.minStops+' لـ '+st.maxStops+'</div>'; return; }
-  const sub = unit * lifts;
+  const xt = itemsTotal(), sub = unit * lifts + xt;
   const net = sub - discount, vat = Math.round(net*st.vat*100)/100, total = net + vat;
   P.innerHTML =
     '<h3 style="margin-top:0">السعر</h3>'+
     row('سعر المصعد', money(unit))+
     row('عدد المصاعد', lifts)+
+    (xt ? row('بنود إضافية', money(xt)) : '')+
     row('الإجمالي', money(sub))+
     row('الخصم', discount ? '- '+money(discount) : '0')+
     row('بعد الخصم', money(net))+
@@ -656,12 +696,14 @@ async function checkPhone(){
 async function saveOffer(e){
   e.preventDefault(); msg('oMsg','');
   const data = Object.fromEntries(new FormData($('fOffer')).entries());
+  [...document.querySelectorAll('#xItems [data-k]')].forEach(el => { delete data[el.name]; });
+  data.extraItems = readItems();
   $('oBtn').disabled = true;
   try{
     const r = await call('saveOffer', data);
     msg('oMsg', (r.revision > 1 ? 'تم تحديث العرض رقم <b>'+r.offerNo+'</b> (مراجعة '+r.revision+')' : 'تم حفظ العرض رقم <b>'+r.offerNo+'</b>')+' — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');
     if (data.clientEn && S.cfg.learned){ S.cfg.learned[String(data.client).trim().replace(/\s+/g,' ')] = data.clientEn; if (data.district && data.districtEn) S.cfg.learned[String(data.district).trim().replace(/\s+/g,' ')] = data.districtEn; }
-    $('fOffer').reset();  toggleMore(false); ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; msg('phMsg',''); phoneBlocked = false;
+    $('fOffer').reset();  toggleMore(false); clearItems(); msg('fInstallMsg',''); ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; msg('phMsg',''); phoneBlocked = false;
     getFiles(r.offerNo, r.revision, 'oFiles');
   }catch(err){ msg('oMsg', err.message); }
   $('oBtn').disabled = false;
@@ -719,7 +761,12 @@ async function downloadDoc(box){
   const f = S.files && S.files[box]; if (!f) return;
   if (canPickDir){
     try{
-      const d = await kv.get('saveDir');
+      let d = await kv.get('saveDir');
+      if (!d && !sessionStorage.getItem('skipDir')){
+        // أول مرة: نسأله يختار فولدر الحفظ (ولو قفل الاختيار ننزّل عادي)
+        try{ d = await window.showDirectoryPicker({ id: 'alfalak-offers', mode: 'readwrite' }); await kv.set('saveDir', d); }
+        catch(e){ try{ sessionStorage.setItem('skipDir','1'); }catch(_){} d = null; }
+      }
       if (d){
         let ok = (await d.queryPermission({mode:'readwrite'})) === 'granted';
         if (!ok) ok = (await d.requestPermission({mode:'readwrite'})) === 'granted';
@@ -786,14 +833,15 @@ async function reprice(offerNo){
     ['fClientEn','fDistEn'].forEach(id => { if ($(id).value) $(id).dataset.touched = 1; else delete $(id).dataset.touched; }); autoEn();
     $('fUnit').value = o.unitPrice; $('fUnit').dataset.touched = 1;
     S.editing = o.offerNo;
-    toggleMore(!!(o.installDays || o.warrantyYears || o.maintYears));
+    clearItems(); (o.extraItems || []).forEach(it => addItem(it));
+    toggleMore(!!(o.installDays || o.warrantyYears || o.maintYears || (o.extraItems || []).length)); checkInstall();
     $('editNote').hidden = false;
     $('editNote').innerHTML = 'بتعدّل على العرض رقم <b>'+esc(o.offerNo)+'</b> (آخر مراجعة '+esc(o.revision)+') — لما تحفظ هيتسجّل مراجعة جديدة بنفس الرقم. <a href="#" onclick="cancelEdit();return false">إلغاء</a>';
     msg('oMsg',''); $('oFiles').innerHTML = ''; checkPhone(); recalc();
     window.scrollTo(0,0);
   }catch(err){ alert(err.message); }
 }
-function cancelEdit(){ $('fOffer').reset(); toggleMore(false); ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; }
+function cancelEdit(){ $('fOffer').reset(); toggleMore(false); clearItems(); msg('fInstallMsg',''); ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; }
 
 /* ---------- المتابعة ---------- */
 $('dChips').addEventListener('click', e => {

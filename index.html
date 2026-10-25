@@ -151,6 +151,7 @@
   </nav>
   <main>
     <!-- عرض جديد -->
+    <div id="syncBar" class="msg warn" hidden style="margin-bottom:10px"></div>
     <div class="card tab" id="tNew">
       <div class="layout">
         <form id="fOffer" onsubmit="saveOffer(event)" oninput="recalc()">
@@ -510,7 +511,10 @@ async function start(){
   fillTypes(); recalc();
   showApp(); openTab('tNew');
   if (admin) loadUsersIntoFilter();
+  if (canPickDir) setTimeout(() => syncPending(false), 800);
 }
+// لما ترجع للصفحة (من تاب تاني) نشوف لو فيه عروض جديدة اتعملت من الموبايل
+window.addEventListener('focus', () => { if (S.user && canPickDir) syncPending(false); });
 function showApp(){ show('vApp'); }
 
 document.getElementById('tabs').addEventListener('click', e => {
@@ -729,7 +733,7 @@ async function getFiles(offerNo, revision, box){
     const bin = atob(f.docx), arr = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
     S.files = S.files || {};
-    S.files[box] = { blob: new Blob([arr], {type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}), name: f.name + '.docx', client: f.client || '' };
+    S.files[box] = { blob: new Blob([arr], {type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}), name: f.name + '.docx', client: f.client || '', offerNo: String(offerNo) };
     let h = '<div class="files"><button type="button" class="btn" onclick="downloadDoc(\''+box+'\')">تحميل Word</button>';
     if (f.pdf) h += '<a class="btn" href="'+b64Url(f.pdf,'application/pdf')+'" download="'+esc(f.name)+'.pdf">تحميل PDF</a>';
     h += '</div><p class="small">افتح ملف الـ Word واعمل منه Save as PDF (لازم خط DIN Next يكون متركّب على الجهاز).</p><div>';
@@ -760,9 +764,78 @@ function toggleSettings(){ const b = $('setBox'); b.hidden = !b.hidden; if (!b.h
 async function pickSaveDir(){
   if (!canPickDir) return showSaveDir();
   try{ const d = await window.showDirectoryPicker({ id: 'alfalak-offers', mode: 'readwrite' }); await kv.set('saveDir', d); }catch(e){}
-  showSaveDir();
+  showSaveDir(); syncPending(true);
 }
 async function clearSaveDir(){ await kv.del('saveDir'); showSaveDir(); }
+/** يكتب الملف في الفولدر (وجوه فولدر العميل) من غير ما يمسح ملف قديم بنفس الاسم */
+async function writeToDir(d, blob, fileName, client){
+  let dir = d, where = d.name;
+  if (perClient() && client){ dir = await d.getDirectoryHandle(client, {create:true}); where += ' / ' + client; }
+  let name = fileName;
+  const base = name.replace(/\.docx$/i, '');
+  for (let i = 2; i < 100; i++){
+    try{ await dir.getFileHandle(name); name = base + ' (' + i + ').docx'; }catch(e){ break; }
+  }
+  const fh = await dir.getFileHandle(name, {create:true});
+  const w = await fh.createWritable(); await w.write(blob); await w.close();
+  return where + ' / ' + name;
+}
+async function savedSet(){ const a = await kv.get('savedOffers'); return new Set(Array.isArray(a) ? a.map(String) : []); }
+async function markSaved(no){ const s = await savedSet(); s.add(String(no)); await kv.set('savedOffers', [...s]); }
+
+/* ---------- العروض اللي اتعملت من الموبايل (أو جهاز تاني) بتتحفظ هنا لوحدها ---------- */
+const SYNC_DAYS = 30;
+async function pendingOffers(){
+  const d = canPickDir ? await kv.get('saveDir') : null;
+  if (!d || !S.user) return {d: null, rows: []};
+  const rows = await call('listOffers', {userId: S.user.id});
+  const saved = await savedSet(), since = Date.now() - SYNC_DAYS * 86400000;
+  const mine = rows.filter(r => r.userId === S.user.id && !saved.has(String(r.offerNo)) &&
+    (new Date(String(r.date).replace(' ', 'T')).getTime() || Date.now()) >= since);
+  return {d, rows: mine};
+}
+let syncing = false;
+async function syncPending(fromClick){
+  const bar = $('syncBar');
+  if (syncing) return;
+  syncing = true;
+  try{
+    const {d, rows} = await pendingOffers();
+    if (!d || !rows.length){ bar.hidden = true; return; }
+    let ok = (await d.queryPermission({mode:'readwrite'})) === 'granted';
+    if (!ok && fromClick) ok = (await d.requestPermission({mode:'readwrite'})) === 'granted';
+    if (!ok){
+      bar.hidden = false;
+      bar.className = 'msg warn';
+      bar.innerHTML = 'عندك <b>'+rows.length+'</b> عرض اتعملوا من جهاز تاني ولسه ما اتحفظوش على الجهاز ده. '+
+        '<button type="button" class="btn" style="padding:4px 12px" onclick="syncPending(true)">احفظهم في فولدر '+esc(d.name)+'</button>'+
+        ' <a href="#" onclick="skipPending();return false" class="small">مش دلوقتي</a>';
+      return;
+    }
+    bar.hidden = false; bar.className = 'msg warn';
+    let n = 0;
+    for (const r of rows.slice().reverse()){
+      bar.textContent = 'بيحفظ العروض على الجهاز ده... (' + (++n) + ' من ' + rows.length + ')';
+      const f = await call('makeDocs', {offerNo: r.offerNo, revision: r.revision});
+      const bin = atob(f.docx), arr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      await writeToDir(d, new Blob([arr]), f.name + '.docx', f.client || '');
+      await markSaved(r.offerNo);
+    }
+    bar.className = 'msg ok';
+    bar.textContent = 'اتحفظ ' + rows.length + ' عرض في فولدر ' + d.name + ' ✔';
+    setTimeout(() => { bar.hidden = true; }, 6000);
+  }catch(e){
+    bar.hidden = false; bar.className = 'msg err';
+    bar.innerHTML = 'ما قدرتش أحفظ العروض على الجهاز: ' + esc(e.message || e) + ' — <a href="#" onclick="syncPending(true);return false">حاول تاني</a>';
+  }finally{ syncing = false; }
+}
+async function skipPending(){
+  const {rows} = await pendingOffers();
+  for (const r of rows) await markSaved(r.offerNo);
+  $('syncBar').hidden = true;
+}
+
 async function downloadDoc(box){
   const f = S.files && S.files[box]; if (!f) return;
   if (canPickDir){
@@ -777,23 +850,25 @@ async function downloadDoc(box){
         let ok = (await d.queryPermission({mode:'readwrite'})) === 'granted';
         if (!ok) ok = (await d.requestPermission({mode:'readwrite'})) === 'granted';
         if (ok){
-          let dir = d, where = d.name;
-          if (perClient() && f.client){ dir = await d.getDirectoryHandle(f.client, {create:true}); where += ' / ' + f.client; }
-          // ما نمسحش ملف قديم بنفس الاسم: لو موجود نزود (2)، (3)...
-          let name = f.name;
-          const base = name.replace(/\.docx$/i, '');
-          for (let i = 2; i < 100; i++){
-            try{ await dir.getFileHandle(name); name = base + ' (' + i + ').docx'; }catch(e){ break; }
+          if (f.offerNo && (await savedSet()).has(f.offerNo)){
+            const el0 = $(box).querySelector('.saved') || $(box).appendChild(Object.assign(document.createElement('div'), {className:'msg ok saved'}));
+            el0.innerHTML = 'العرض ده متحفظ بالفعل في فولدر ' + esc(d.name) + (f.client && perClient() ? ' / ' + esc(f.client) : '') +
+              ' — <a href="#" onclick="forceDownload(\''+box+'\');return false">نزّله في التنزيلات</a>';
+            return;
           }
-          const fh = await dir.getFileHandle(name, {create:true});
-          const w = await fh.createWritable(); await w.write(f.blob); await w.close();
+          const where = await writeToDir(d, f.blob, f.name, f.client);
+          if (f.offerNo) await markSaved(f.offerNo);
           const el = $(box).querySelector('.saved') || $(box).appendChild(Object.assign(document.createElement('div'), {className:'msg ok saved'}));
-          el.textContent = 'اتحفظ في: ' + where + ' / ' + name;
+          el.textContent = 'اتحفظ في: ' + where;
           return;
         }
       }
     }catch(e){ /* لو حصلت مشكلة نرجع للتنزيل العادي */ }
   }
+  forceDownload(box);
+}
+function forceDownload(box){
+  const f = S.files && S.files[box]; if (!f) return;
   const a = document.createElement('a'); a.href = URL.createObjectURL(f.blob); a.download = f.name;
   document.body.appendChild(a); a.click(); a.remove();
 }

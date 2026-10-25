@@ -79,10 +79,25 @@
   <div class="brand"><span>AL FALAK</span> · عروض الأسعار</div>
   <div class="who" id="who" hidden>
     <span id="whoName"></span>
+    <button onclick="toggleSettings()" title="الإعدادات">⚙ الإعدادات</button>
     <button onclick="showPwChange(false)">تغيير بيانات الدخول</button>
     <button onclick="logout()">خروج</button>
   </div>
 </header>
+
+<!-- الإعدادات المتقدمة -->
+<div class="card" id="setBox" hidden style="max-width:560px;margin:12px auto">
+  <h3 style="margin-top:0">⚙ الإعدادات</h3>
+  <b>مكان حفظ ملفات العروض</b>
+  <p class="small" id="setDirName"></p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn" onclick="pickSaveDir()">اختيار فولدر</button>
+    <button class="btn ghost" onclick="clearSaveDir()">رجّعها للتنزيلات العادية</button>
+  </div>
+  <label style="display:block;margin-top:10px"><input type="checkbox" id="setPerClient" onchange="savePerClient()"> اعمل فولدر باسم العميل جوه الفولدر ده (زي فولدرات العملاء)</label>
+  <p class="small" id="setNote"></p>
+  <button class="btn ghost" style="margin-top:8px" onclick="toggleSettings()">قفل</button>
+</div>
 
 <!-- الدخول -->
 <section id="vLogin">
@@ -182,6 +197,15 @@
             <div class="field"><label>تلبيس الأبواب</label><select name="doorFinish"><option>ستانلس ستيل فضي</option><option>ستانلس ستيل فضي هيرلاين</option><option>ستانلس ستيل فضي مراية</option><option>ستانلس ستيل نحاسي</option><option>ستانلس ستيل أسود</option></select></div>
             <div class="field"><label>موديل الأبواب</label><input name="doorBrand" id="fBrand" list="brandList" value="سيلكوم" oninput="this.dataset.touched=1;autoDoorH()" onchange="autoDoorH()"><datalist id="brandList"></datalist></div>
             <div class="field" style="max-width:120px"><label>ارتفاع الباب</label><select name="doorH" id="fDoorH" onchange="this.dataset.touched=1" style="font-size:13px;padding:6px"><option value="2000">2000 مم</option><option value="2100">2100 مم</option></select></div>
+          </div>
+          <button type="button" class="btn ghost" id="moreBtn" style="margin-top:12px" onclick="toggleMore()">+ خيارات إضافية</button>
+          <div id="moreBox" hidden>
+            <p class="small">سيبها فاضية عشان يفضل المكتوب في العرض زي ما هو.</p>
+            <div class="grid">
+              <div class="field"><label>مدة التوريد والتركيب (يوم)</label><input name="installDays" id="fInstall" type="number" min="1" inputmode="numeric"></div>
+              <div class="field"><label>مدة الضمان (سنة)</label><input name="warrantyYears" id="fWarranty" type="number" min="1" inputmode="numeric"></div>
+              <div class="field"><label>الصيانة المجانية (سنة)</label><input name="maintYears" id="fMaint" type="number" min="1" inputmode="numeric"></div>
+            </div>
           </div>
           <h3>السعر</h3>
           <div class="grid">
@@ -549,9 +573,17 @@ function autoDoorType(){
   const gke = /GKE/i.test($('fType').value), dt = $('fDoorType'), br = $('fBrand');
   if (!dt.dataset.touched) dt.value = gke ? 'سنتر' : 'جانبي';
   if (!br.dataset.touched) br.value = gke ? 'GKE' : 'سيلكوم';
-  $('brandList').innerHTML = (gke ? ['GKE','SJ','SCG','سيلكوم','سيلكوم صيني'] : ['سيلكوم','SJ','SCG','سيلكوم صيني']).map(x => '<option value="'+x+'">').join('');
+  $('brandList').innerHTML = (gke ? ['GKE','SJ','سيلكوم','سيلكوم صيني'] : ['سيلكوم','SJ','سيلكوم صيني']).map(x => '<option value="'+x+'">').join('');
   autoDoorH();
   $('fDoorHint').textContent = '';
+  // الافتراضي المكتوب في القوالب
+  $('fInstall').placeholder = gke ? '180 (زي القالب)' : '60 (زي القالب)';
+  $('fWarranty').placeholder = gke ? '2 (زي القالب)' : '10 (زي القالب)';
+  $('fMaint').placeholder = '1 (زي القالب)';
+}
+function toggleMore(show){
+  const b = $('moreBox'); b.hidden = show === undefined ? !b.hidden : !show;
+  $('moreBtn').textContent = (b.hidden ? '+ ' : '− ') + 'خيارات إضافية';
 }
 /** ارتفاع الباب لوحده حسب الموديل (GKE دايماً 2100) — والمندوب يقدر يغيّره في المحلي */
 function autoDoorH(){
@@ -629,7 +661,7 @@ async function saveOffer(e){
     const r = await call('saveOffer', data);
     msg('oMsg', (r.revision > 1 ? 'تم تحديث العرض رقم <b>'+r.offerNo+'</b> (مراجعة '+r.revision+')' : 'تم حفظ العرض رقم <b>'+r.offerNo+'</b>')+' — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');
     if (data.clientEn && S.cfg.learned){ S.cfg.learned[String(data.client).trim().replace(/\s+/g,' ')] = data.clientEn; if (data.district && data.districtEn) S.cfg.learned[String(data.district).trim().replace(/\s+/g,' ')] = data.districtEn; }
-    $('fOffer').reset();  ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; msg('phMsg',''); phoneBlocked = false;
+    $('fOffer').reset();  toggleMore(false); ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; msg('phMsg',''); phoneBlocked = false;
     getFiles(r.offerNo, r.revision, 'oFiles');
   }catch(err){ msg('oMsg', err.message); }
   $('oBtn').disabled = false;
@@ -646,14 +678,65 @@ async function getFiles(offerNo, revision, box){
   el.innerHTML = '<div class="msg warn">جاري تجهيز ملف الـ Word...</div>';
   try{
     const f = await call('makeDocs', {offerNo, revision});
-    const w = b64Url(f.docx, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-    let h = '<div class="files"><a class="btn" href="'+w+'" download="'+esc(f.name)+'.docx">تحميل Word</a>';
+    const bin = atob(f.docx), arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    S.files = S.files || {};
+    S.files[box] = { blob: new Blob([arr], {type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}), name: f.name + '.docx', client: f.client || '' };
+    let h = '<div class="files"><button type="button" class="btn" onclick="downloadDoc(\''+box+'\')">تحميل Word</button>';
     if (f.pdf) h += '<a class="btn" href="'+b64Url(f.pdf,'application/pdf')+'" download="'+esc(f.name)+'.pdf">تحميل PDF</a>';
     h += '</div><p class="small">افتح ملف الـ Word واعمل منه Save as PDF (لازم خط DIN Next يكون متركّب على الجهاز).</p><div>';
     el.innerHTML = h + '</div><p class="small">'+esc(f.name)+'</p>';
   }catch(err){
     el.innerHTML = '<div class="msg err">'+esc(err.message)+' — <a href="#" onclick="getFiles('+JSON.stringify(offerNo)+','+JSON.stringify(revision)+',\''+box+'\');return false">حاول تاني</a></div>';
   }
+}
+
+/* ---------- الحفظ في فولدر على الجهاز (Chrome / Edge على الكمبيوتر) ---------- */
+const canPickDir = typeof window.showDirectoryPicker === 'function';
+const kv = {
+  db(){ return new Promise((res, rej) => { const r = indexedDB.open('alfalak-offers', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  async get(k){ try{ const d = await this.db(); return await new Promise(res => { const q = d.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => res(null); }); }catch(e){ return null; } },
+  async set(k, v){ try{ const d = await this.db(); await new Promise(res => { const t = d.transaction('kv','readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = res; t.onerror = res; }); }catch(e){} },
+  async del(k){ try{ const d = await this.db(); await new Promise(res => { const t = d.transaction('kv','readwrite'); t.objectStore('kv').delete(k); t.oncomplete = res; t.onerror = res; }); }catch(e){} },
+};
+function perClient(){ try{ return localStorage.getItem('perClient') !== '0'; }catch(e){ return true; } }
+function savePerClient(){ try{ localStorage.setItem('perClient', $('setPerClient').checked ? '1' : '0'); }catch(e){} }
+async function showSaveDir(){
+  const d = canPickDir ? await kv.get('saveDir') : null;
+  $('setDirName').textContent = d ? 'الحفظ دلوقتي في فولدر: ' + d.name : 'الحفظ دلوقتي في التنزيلات (Downloads) العادية.';
+  $('setPerClient').checked = perClient();
+  $('setNote').textContent = canPickDir ? 'أول مرة تحفظ بعد ما تفتح الصفحة، المتصفح هيسألك تسمح بالحفظ في الفولدر — اضغط "Allow / سماح".'
+    : 'المتصفح ده (زي الموبايل) مش بيدعم اختيار فولدر — الملفات هتنزل في التنزيلات. اختيار الفولدر بيشتغل من Chrome أو Edge على الكمبيوتر.';
+}
+function toggleSettings(){ const b = $('setBox'); b.hidden = !b.hidden; if (!b.hidden) showSaveDir(); }
+async function pickSaveDir(){
+  if (!canPickDir) return showSaveDir();
+  try{ const d = await window.showDirectoryPicker({ id: 'alfalak-offers', mode: 'readwrite' }); await kv.set('saveDir', d); }catch(e){}
+  showSaveDir();
+}
+async function clearSaveDir(){ await kv.del('saveDir'); showSaveDir(); }
+async function downloadDoc(box){
+  const f = S.files && S.files[box]; if (!f) return;
+  if (canPickDir){
+    try{
+      const d = await kv.get('saveDir');
+      if (d){
+        let ok = (await d.queryPermission({mode:'readwrite'})) === 'granted';
+        if (!ok) ok = (await d.requestPermission({mode:'readwrite'})) === 'granted';
+        if (ok){
+          let dir = d, where = d.name;
+          if (perClient() && f.client){ dir = await d.getDirectoryHandle(f.client, {create:true}); where += ' / ' + f.client; }
+          const fh = await dir.getFileHandle(f.name, {create:true});
+          const w = await fh.createWritable(); await w.write(f.blob); await w.close();
+          const el = $(box).querySelector('.saved') || $(box).appendChild(Object.assign(document.createElement('div'), {className:'msg ok saved'}));
+          el.textContent = 'اتحفظ في: ' + where + ' / ' + f.name;
+          return;
+        }
+      }
+    }catch(e){ /* لو حصلت مشكلة نرجع للتنزيل العادي */ }
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(f.blob); a.download = f.name;
+  document.body.appendChild(a); a.click(); a.remove();
 }
 
 /* ---------- قائمة العروض ---------- */
@@ -697,19 +780,20 @@ async function reprice(offerNo){
     if (opt){ $('fLoadSel').value = String(o.load); $('fLoadTxt').value = ''; }
     else { $('fLoadSel').value = 'other'; $('fLoadTxt').value = o.load + ' كجم / ' + o.persons + ' أشخاص'; }
     onLoadSel();
-    ['client','phone','city','district','clientEn','districtEn','lifts','stops','landingDoors','carDoors','speed','shaftW','shaftD','overhead','pit','cabin','doorW','doorType','doorFinish','doorBrand','doorH','discount','notes']
+    ['client','phone','city','district','clientEn','districtEn','lifts','stops','landingDoors','carDoors','speed','shaftW','shaftD','overhead','pit','cabin','doorW','doorType','doorFinish','doorBrand','doorH','discount','notes','installDays','warrantyYears','maintYears']
       .forEach(k => { if (f[k] != null && o[k] !== '' && o[k] != null) f[k].value = o[k]; });
     $('fLanding').dataset.touched = 1; $('fDoorType').dataset.touched = 1; $('fBrand').dataset.touched = 1; if (o.doorH) $('fDoorH').dataset.touched = 1; autoDoorH();
     ['fClientEn','fDistEn'].forEach(id => { if ($(id).value) $(id).dataset.touched = 1; else delete $(id).dataset.touched; }); autoEn();
     $('fUnit').value = o.unitPrice; $('fUnit').dataset.touched = 1;
     S.editing = o.offerNo;
+    toggleMore(!!(o.installDays || o.warrantyYears || o.maintYears));
     $('editNote').hidden = false;
     $('editNote').innerHTML = 'بتعدّل على العرض رقم <b>'+esc(o.offerNo)+'</b> (آخر مراجعة '+esc(o.revision)+') — لما تحفظ هيتسجّل مراجعة جديدة بنفس الرقم. <a href="#" onclick="cancelEdit();return false">إلغاء</a>';
     msg('oMsg',''); $('oFiles').innerHTML = ''; checkPhone(); recalc();
     window.scrollTo(0,0);
   }catch(err){ alert(err.message); }
 }
-function cancelEdit(){ $('fOffer').reset(); ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; }
+function cancelEdit(){ $('fOffer').reset(); toggleMore(false); ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; }
 
 /* ---------- المتابعة ---------- */
 $('dChips').addEventListener('click', e => {

@@ -597,9 +597,11 @@ function checkInstall(){
   msg('fInstallMsg','');
 }
 /* ---------- بنود التسعير الإضافية ---------- */
+const maxItems = () => /GKE/i.test($('fType').value) ? 5 : 6;
 function addItem(it){
   it = it || {};
   const box = $('xItems'), n = box.children.length + 2;
+  if (box.children.length >= maxItems()) return alert('أقصى عدد بنود إضافية ' + maxItems() + ' — عشان ترتيب صفحات العرض ما يبوظش');
   const d = document.createElement('div');
   d.className = 'grid xitem';
   d.style.cssText = 'border:1px dashed var(--line);border-radius:10px;padding:8px;margin-bottom:8px';
@@ -773,10 +775,16 @@ async function downloadDoc(box){
         if (ok){
           let dir = d, where = d.name;
           if (perClient() && f.client){ dir = await d.getDirectoryHandle(f.client, {create:true}); where += ' / ' + f.client; }
-          const fh = await dir.getFileHandle(f.name, {create:true});
+          // ما نمسحش ملف قديم بنفس الاسم: لو موجود نزود (2)، (3)...
+          let name = f.name;
+          const base = name.replace(/\.docx$/i, '');
+          for (let i = 2; i < 100; i++){
+            try{ await dir.getFileHandle(name); name = base + ' (' + i + ').docx'; }catch(e){ break; }
+          }
+          const fh = await dir.getFileHandle(name, {create:true});
           const w = await fh.createWritable(); await w.write(f.blob); await w.close();
           const el = $(box).querySelector('.saved') || $(box).appendChild(Object.assign(document.createElement('div'), {className:'msg ok saved'}));
-          el.textContent = 'اتحفظ في: ' + where + ' / ' + f.name;
+          el.textContent = 'اتحفظ في: ' + where + ' / ' + name;
           return;
         }
       }

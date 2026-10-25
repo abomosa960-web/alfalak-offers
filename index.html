@@ -52,6 +52,9 @@
   th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
   th{background:#f3efe6;font-weight:700}
   .tablewrap{overflow-x:auto}
+  /* شريط التمرير يمين/شمال فوق الجدول بدل تحته */
+  .tablewrap.topbar{transform:rotateX(180deg)}
+  .tablewrap.topbar > table{transform:rotateX(180deg)}
   .num{font-variant-numeric:tabular-nums}
   .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
   .chips button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 14px;font:inherit;cursor:pointer}
@@ -234,7 +237,7 @@
         <div class="adm" style="min-width:200px"><label>المندوب</label><select id="listRep" onchange="loadList()"><option value="">الكل</option></select></div>
         <button class="btn ghost" onclick="loadList()">تحديث</button>
       </div>
-      <div class="tablewrap"><table id="listTbl"></table></div>
+      <div class="tablewrap topbar"><table id="listTbl"></table></div>
     </div>
 
     <!-- المتابعة -->
@@ -254,7 +257,7 @@
       </div>
       <p class="small" id="dLabel"></p>
       <div class="stats" id="dStats"></div>
-      <div class="tablewrap"><table id="dTbl"></table></div>
+      <div class="tablewrap topbar"><table id="dTbl"></table></div>
     </div>
 
     <!-- المستخدمين -->
@@ -884,12 +887,12 @@ async function loadList(){
     const groups = {}, order = [];
     rows.forEach(r => { const k = r.userId+'|'+(r.origNo || r.offerNo); if (!groups[k]){ groups[k] = []; order.push(k); } groups[k].push(r); });
     S.groups = groups;
-    $('listTbl').innerHTML = '<tr><th>آخر تعديل</th><th>رقم العرض</th>'+(admin?'<th>المندوب</th>':'')+'<th>العميل</th><th>الجوال</th><th>المدينة</th><th>النوع</th><th>المصاعد</th><th>الوقفات</th><th>سعر المصعد</th><th>الخصم</th><th>الإجمالي شامل الضريبة</th><th>المراجعات</th><th>الملفات</th><th></th></tr>'+
+    $('listTbl').innerHTML = '<tr><th></th><th>الملفات</th><th>آخر تعديل</th><th>رقم العرض</th>'+(admin?'<th>المندوب</th>':'')+'<th>العميل</th><th>الجوال</th><th>المدينة</th><th>النوع</th><th>المصاعد</th><th>الوقفات</th><th>سعر المصعد</th><th>الخصم</th><th>الإجمالي شامل الضريبة</th><th>المراجعات</th></tr>'+
       order.map(k => { const g = groups[k], r = g[0];
-        return '<tr><td>'+esc(r.date)+'</td><td>'+esc(r.offerNo)+'</td>'+(admin?'<td>'+esc(r.repName)+'</td>':'')+'<td>'+esc(r.client)+'</td><td dir="ltr">'+esc(r.phone)+'</td><td>'+esc(r.city)+'</td><td>'+esc(r.type)+'</td><td>'+r.lifts+'</td><td>'+esc(r.stops)+'</td><td class="num">'+money(r.unit)+'</td><td class="num">'+money(r.discount)+'</td><td class="num">'+money(r.total)+'</td>'+
-          '<td>'+(g.length > 1 ? '<a href="#" onclick="toggleHist(this,\''+k+'\');return false">'+g.length+' — عرض التاريخ</a>' : '1')+'</td>'+
+        return '<tr><td><button class="btn ghost" style="padding:4px 10px;font-size:13px;white-space:nowrap" onclick="reprice('+JSON.stringify(r.offerNo)+')">إعادة تسعير</button></td>'+
           '<td><span id="lf'+r.offerNo+'"><a href="#" onclick="getFiles('+JSON.stringify(r.offerNo)+','+(r.revision||1)+',\'lf'+r.offerNo+'\');return false">Word</a></span></td>'+
-          '<td><button class="btn ghost" style="padding:4px 10px;font-size:13px" onclick="reprice('+JSON.stringify(r.offerNo)+')">إعادة تسعير</button></td></tr>'; }).join('');
+          '<td>'+esc(r.date)+'</td><td>'+esc(r.offerNo)+'</td>'+(admin?'<td>'+esc(r.repName)+'</td>':'')+'<td>'+esc(r.client)+'</td><td dir="ltr">'+esc(r.phone)+'</td><td>'+esc(r.city)+'</td><td>'+esc(r.type)+'</td><td>'+r.lifts+'</td><td>'+esc(r.stops)+'</td><td class="num">'+money(r.unit)+'</td><td class="num">'+money(r.discount)+'</td><td class="num">'+money(r.total)+'</td>'+
+          '<td>'+(g.length > 1 ? '<a href="#" onclick="toggleHist(this,\''+k+'\');return false">'+g.length+' — عرض التاريخ</a>' : '1')+'</td></tr>'; }).join('');
   }catch(err){ $('listTbl').innerHTML = '<tr><td>'+esc(err.message)+'</td></tr>'; }
 }
 function toggleHist(a, k){

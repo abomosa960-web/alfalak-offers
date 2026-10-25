@@ -218,7 +218,10 @@
           </div>
           <div id="oMsg"></div>
           <div id="oFiles"></div>
-          <button class="btn" id="oBtn">حفظ العرض</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn" id="oBtn">حفظ العرض</button>
+            <button type="button" class="btn ghost" onclick="if(confirm('تفضّي كل الخانات وتبدأ عرض جديد؟')){cancelEdit();msg('oMsg','');$('oFiles').innerHTML='';msg('phMsg','');phoneBlocked=false;}">عميل جديد (فضّي الخانات)</button>
+          </div>
         </form>
         <aside class="price" id="pricePanel"></aside>
       </div>
@@ -597,7 +600,7 @@ function checkInstall(){
   msg('fInstallMsg','');
 }
 /* ---------- بنود التسعير الإضافية ---------- */
-const maxItems = () => /GKE/i.test($('fType').value) ? 5 : 6;
+const maxItems = () => 6;
 function addItem(it){
   it = it || {};
   const box = $('xItems'), n = box.children.length + 2;
@@ -703,9 +706,10 @@ async function saveOffer(e){
   $('oBtn').disabled = true;
   try{
     const r = await call('saveOffer', data);
-    msg('oMsg', (r.revision > 1 ? 'تم تحديث العرض رقم <b>'+r.offerNo+'</b> (مراجعة '+r.revision+')' : 'تم حفظ العرض رقم <b>'+r.offerNo+'</b>')+' — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');
+    msg('oMsg', 'تم حفظ العرض رقم <b>'+r.offerNo+'</b>'+(r.revision > 1 ? ' (تعديل رقم '+r.revision+' لنفس العميل)' : '')+' — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');
     if (data.clientEn && S.cfg.learned){ S.cfg.learned[String(data.client).trim().replace(/\s+/g,' ')] = data.clientEn; if (data.district && data.districtEn) S.cfg.learned[String(data.district).trim().replace(/\s+/g,' ')] = data.districtEn; }
-    $('fOffer').reset();  toggleMore(false); clearItems(); msg('fInstallMsg',''); ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; msg('phMsg',''); phoneBlocked = false;
+    // البيانات بتفضل زي ما هي بعد الحفظ — عشان تعمل نوع تاني لنفس العميل أو تعدّل وتحفظ تاني
+    S.editing = null; $('editNote').hidden = true;
     getFiles(r.offerNo, r.revision, 'oFiles');
   }catch(err){ msg('oMsg', err.message); }
   $('oBtn').disabled = false;
@@ -803,7 +807,7 @@ async function loadList(){
     if (!rows.length){ $('listTbl').innerHTML = '<tr><td>مفيش عروض لسه</td></tr>'; return; }
     // تجميع المراجعات تحت رقم العرض (الأحدث فوق)
     const groups = {}, order = [];
-    rows.forEach(r => { const k = r.userId+'|'+r.offerNo; if (!groups[k]){ groups[k] = []; order.push(k); } groups[k].push(r); });
+    rows.forEach(r => { const k = r.userId+'|'+(r.origNo || r.offerNo); if (!groups[k]){ groups[k] = []; order.push(k); } groups[k].push(r); });
     S.groups = groups;
     $('listTbl').innerHTML = '<tr><th>آخر تعديل</th><th>رقم العرض</th>'+(admin?'<th>المندوب</th>':'')+'<th>العميل</th><th>الجوال</th><th>المدينة</th><th>النوع</th><th>المصاعد</th><th>الوقفات</th><th>سعر المصعد</th><th>الخصم</th><th>الإجمالي شامل الضريبة</th><th>المراجعات</th><th>الملفات</th><th></th></tr>'+
       order.map(k => { const g = groups[k], r = g[0];
@@ -819,8 +823,8 @@ function toggleHist(a, k){
   const g = S.groups[k].slice().reverse();
   const cols = tr.children.length;
   const h = document.createElement('tr'); h.className = 'hist';
-  h.innerHTML = '<td colspan="'+cols+'"><table><tr><th>المراجعة</th><th>التاريخ</th><th>الوقفات</th><th>المصاعد</th><th>السعر المقترح</th><th>سعر المصعد</th><th>الخصم</th><th>الإجمالي شامل الضريبة</th></tr>'+
-    g.map((r,i) => '<tr><td>'+(r.revision||i+1)+'</td><td>'+esc(r.date)+'</td><td>'+esc(r.stops)+'</td><td>'+r.lifts+'</td><td class="num">'+(r.suggested===''?'—':money(r.suggested))+'</td><td class="num">'+money(r.unit)+'</td><td class="num">'+money(r.discount)+'</td><td class="num">'+money(r.total)+'</td></tr>').join('')+'</table></td>';
+  h.innerHTML = '<td colspan="'+cols+'"><table><tr><th>التعديل</th><th>رقم العرض</th><th>التاريخ</th><th>الوقفات</th><th>المصاعد</th><th>السعر المقترح</th><th>سعر المصعد</th><th>الخصم</th><th>الإجمالي شامل الضريبة</th></tr>'+
+    g.map((r,i) => '<tr><td>'+(r.revision||i+1)+'</td><td>'+esc(r.offerNo)+' <span id="hf'+r.offerNo+'"><a href="#" onclick="getFiles('+JSON.stringify(r.offerNo)+','+(r.revision||1)+',\'hf'+r.offerNo+'\');return false">Word</a></span></td><td>'+esc(r.date)+'</td><td>'+esc(r.stops)+'</td><td>'+r.lifts+'</td><td class="num">'+(r.suggested===''?'—':money(r.suggested))+'</td><td class="num">'+money(r.unit)+'</td><td class="num">'+money(r.discount)+'</td><td class="num">'+money(r.total)+'</td></tr>').join('')+'</table></td>';
   tr.after(h);
 }
 

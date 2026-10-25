@@ -217,7 +217,7 @@
           <h3>السعر</h3>
           <div class="grid">
             <div class="field"><label>سعر المصعد قبل الضريبة (ريال) *</label><input name="unitPrice" id="fUnit" type="number" min="1" required oninput="this.dataset.touched=1"><div class="small" id="fSuggest"></div></div>
-            <div class="field"><label>الخصم على العرض (ريال)</label><input name="discount" id="fDisc" type="number" min="0" value="0"></div>
+            <div class="field"><label>الخصم على العرض (ريال)</label><input name="discount" id="fDisc" type="number" min="0" value="" placeholder="من غير خصم"></div>
             <div class="field wide"><label>ملاحظات <span class="small">(بتتكتب في آخر العرض)</span></label><textarea name="notes" id="fNotes" rows="2" oninput="checkNotes()" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;width:100%;box-sizing:border-box"></textarea><div id="fNotesMsg"></div></div>
           </div>
           <div id="oMsg"></div>
@@ -501,7 +501,8 @@ async function doPwChange(e){
 /* ---------- بداية التطبيق ---------- */
 function applyDefaults(){
   const d = S.cfg && S.cfg.settings && S.cfg.settings.discount;
-  if (d != null){ $('fDisc').defaultValue = String(d); if (!S.editing) $('fDisc').value = String(d); }
+  // الخصم مش بيتحط لوحده — لو المندوب ما كتبش خصم العرض بيطلع من غير سطر خصم
+  if (d != null) $('fDisc').placeholder = 'من غير خصم' + (Number(d) ? ' (المقترح ' + Number(d).toLocaleString('en') + ')' : '');
 }
 async function start(){
   S.cfg = await call('config'); applyDefaults();

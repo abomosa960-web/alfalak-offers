@@ -163,7 +163,7 @@
             </div>
             <div class="field"><label>عدد المصاعد</label><input name="lifts" type="number" min="1" value="1" required></div>
             <div class="field"><label>عدد الوقفات</label><input name="stops" id="fStops" type="number" min="2" value="3" required oninput="syncDoors()"></div>
-            <div class="field"><label>الأبواب الخارجية</label><input name="landingDoors" id="fLanding" type="number" min="1" value="3" oninput="this.dataset.touched=1"></div>
+            <div class="field"><label>الأبواب الخارجية</label><input name="landingDoors" id="fLanding" type="number" min="2" value="3" oninput="this.dataset.touched=1"></div>
             <div class="field"><label>مداخل الكابينة</label><select name="carDoors"><option value="1">مدخل واحد</option><option value="2">مدخلين</option></select></div>
             <div class="field"><label>السرعة</label><select name="speed"><option value="1">1 متر/ث</option><option value="1.5">1.5 متر/ث</option><option value="2">2 متر/ث</option></select></div>
           </div>
@@ -180,7 +180,8 @@
             <div class="field"><label>عرض الباب</label><select name="doorW"><option value="800">800 مم</option><option value="700">700 مم</option><option value="650">650 مم</option></select></div>
             <div class="field"><label>نوع الباب</label><select name="doorType" id="fDoorType" onchange="this.dataset.touched=1"><option>جانبي</option><option>سنتر</option><option>نص أوتوماتيك</option></select><div class="small" id="fDoorHint"></div></div>
             <div class="field"><label>تلبيس الأبواب</label><select name="doorFinish"><option>ستانلس ستيل فضي</option><option>ستانلس ستيل فضي هيرلاين</option><option>ستانلس ستيل فضي مراية</option><option>ستانلس ستيل نحاسي</option><option>ستانلس ستيل أسود</option></select></div>
-            <div class="field"><label>موديل الأبواب</label><input name="doorBrand" id="fBrand" list="brandList" value="سيلكوم" oninput="this.dataset.touched=1"><datalist id="brandList"><option value="سيلكوم"><option value="SJ"></datalist></div>
+            <div class="field"><label>موديل الأبواب</label><input name="doorBrand" id="fBrand" list="brandList" value="سيلكوم" oninput="this.dataset.touched=1;autoDoorH()" onchange="autoDoorH()"><datalist id="brandList"></datalist></div>
+            <div class="field" style="max-width:120px"><label>ارتفاع الباب</label><select name="doorH" id="fDoorH" onchange="this.dataset.touched=1" style="font-size:13px;padding:6px"><option value="2000">2000 مم</option><option value="2100">2100 مم</option></select></div>
           </div>
           <h3>السعر</h3>
           <div class="grid">
@@ -371,6 +372,24 @@ function translitAr(text, learned) {
 }
 /* ===== نهاية التحويل ===== */
 
+/* ===== زيادات السعر المقترح (نفس الكود في Code.gs و Index.html) ===== */
+function priceExtras(x, carDoors, pit, overhead) {
+  const items = [];
+  if (Number(carDoors) === 2 && x.carDoor2) items.push(['مدخل تاني بالكابينة', x.carDoor2]);
+  const lowPit = Number(pit) > 0 && Number(pit) < x.minPit;
+  const lowOH = Number(overhead) > 0 && Number(overhead) < x.minOverhead;
+  if (lowPit && lowOH) items.push(['حفرة وهيدروم صغيرين', x.both]);
+  else if (lowPit) items.push(['حفرة أقل من ' + x.minPit + ' مم', x.lowPit]);
+  else if (lowOH) items.push(['هيدروم أقل من ' + x.minOverhead + ' مم', x.lowOverhead]);
+  return { add: items.reduce((a, i) => a + Number(i[1] || 0), 0), items: items };
+}
+/** ارتفاع الباب حسب الموديل: سيلكوم وسيلكوم صيني 2000، SJ و GKE 2100 */
+function doorHeightFor(brand, isGke) {
+  if (isGke) return 2100;
+  return /SJ|GKE/i.test(String(brand || '')) && !/SCG/i.test(String(brand || '')) ? 2100 : 2000;
+}
+/* ===== نهاية الزيادات ===== */
+
 const API = 'https://script.google.com/macros/s/AKfycbzd84J7w9XnBwh1N6LazHpsEYieBlOtewDC2i3hhY46V6Xf0qoKnD6GcAiUi06q-Qfb6Q/exec';
 async function call(action, p){
   let r;
@@ -446,8 +465,12 @@ async function doPwChange(e){
 }
 
 /* ---------- بداية التطبيق ---------- */
+function applyDefaults(){
+  const d = S.cfg && S.cfg.settings && S.cfg.settings.discount;
+  if (d != null){ $('fDisc').defaultValue = String(d); if (!S.editing) $('fDisc').value = String(d); }
+}
 async function start(){
-  S.cfg = await call('config');
+  S.cfg = await call('config'); applyDefaults();
   S.user = S.cfg.user;
   $('whoName').textContent = S.user.name + (S.user.role==='مدير' ? ' — مدير' : '');
   $('who').hidden = false;
@@ -526,8 +549,16 @@ function autoDoorType(){
   const gke = /GKE/i.test($('fType').value), dt = $('fDoorType'), br = $('fBrand');
   if (!dt.dataset.touched) dt.value = gke ? 'سنتر' : 'جانبي';
   if (!br.dataset.touched) br.value = gke ? 'GKE' : 'سيلكوم';
-  $('brandList').innerHTML = (gke ? ['GKE','SJ'] : ['سيلكوم','SJ']).map(x => '<option value="'+x+'">').join('');
+  $('brandList').innerHTML = (gke ? ['GKE','SJ','SCG','سيلكوم','سيلكوم صيني'] : ['سيلكوم','SJ','SCG','سيلكوم صيني']).map(x => '<option value="'+x+'">').join('');
+  autoDoorH();
   $('fDoorHint').textContent = '';
+}
+/** ارتفاع الباب لوحده حسب الموديل (GKE دايماً 2100) — والمندوب يقدر يغيّره في المحلي */
+function autoDoorH(){
+  const gke = /GKE/i.test($('fType').value), h = $('fDoorH');
+  h.disabled = gke;
+  if (gke) h.value = '2100';
+  else if (!h.dataset.touched) h.value = String(doorHeightFor($('fBrand').value, false));
 }
 function syncDoors(){ if (!$('fLanding').dataset.touched) $('fLanding').value = $('fStops').value; }
 
@@ -538,11 +569,15 @@ function current(){
   const lifts = parseInt(f['lifts'].value,10) || 0;
   const stops = parseInt(f['stops'].value,10) || 0;
   const discount = Number(f['discount'].value) || 0;
-  return {prod, load, lifts, stops, discount};
+  return {prod, load, lifts, stops, discount, carDoors: f['carDoors'].value, pit: f['pit'].value, overhead: f['overhead'].value};
+}
+function sugExtras(){
+  const c = current(), x = S.cfg.settings.extras;
+  return x ? priceExtras(x, c.carDoors, c.pit, c.overhead) : {add: 0, items: []};
 }
 function suggestion(){
   const {prod, stops} = current();
-  return prod && prod.base != null && stops ? prod.base + (stops-3)*prod.perStop : null;
+  return prod && prod.base != null && stops ? prod.base + (stops-3)*prod.perStop + sugExtras().add : null;
 }
 function useSuggestion(){ delete $('fUnit').dataset.touched; recalc(); }
 function recalc(){
@@ -552,7 +587,7 @@ function recalc(){
   const sug = suggestion();
   if (!$('fUnit').dataset.touched) $('fUnit').value = sug != null ? sug : '';
   $('fSuggest').innerHTML = sug != null
-    ? 'السعر المقترح: '+money(sug)+(Number($('fUnit').value)!==sug ? ' — <a href="#" onclick="useSuggestion();return false">رجّع المقترح</a>' : '')
+    ? 'السعر المقترح: '+money(sug)+(sugExtras().items.length ? ' <span class="small">(شامل '+sugExtras().items.map(i => i[0]+' +'+money(i[1])).join('، ')+')</span>' : '')+(Number($('fUnit').value)!==sug ? ' — <a href="#" onclick="useSuggestion();return false">رجّع المقترح</a>' : '')
     : 'مفيش سعر مقترح للحمولة دي — اكتب السعر';
   const unit = Number($('fUnit').value) || 0;
   if (!unit){ P.innerHTML = '<div class="na">اكتب سعر المصعد</div>'; return; }
@@ -594,7 +629,7 @@ async function saveOffer(e){
     const r = await call('saveOffer', data);
     msg('oMsg', (r.revision > 1 ? 'تم تحديث العرض رقم <b>'+r.offerNo+'</b> (مراجعة '+r.revision+')' : 'تم حفظ العرض رقم <b>'+r.offerNo+'</b>')+' — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');
     if (data.clientEn && S.cfg.learned){ S.cfg.learned[String(data.client).trim().replace(/\s+/g,' ')] = data.clientEn; if (data.district && data.districtEn) S.cfg.learned[String(data.district).trim().replace(/\s+/g,' ')] = data.districtEn; }
-    $('fOffer').reset();  ['fLanding','fUnit','fDoorType','fBrand','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; msg('phMsg',''); phoneBlocked = false;
+    $('fOffer').reset();  ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; msg('phMsg',''); phoneBlocked = false;
     getFiles(r.offerNo, r.revision, 'oFiles');
   }catch(err){ msg('oMsg', err.message); }
   $('oBtn').disabled = false;
@@ -662,9 +697,9 @@ async function reprice(offerNo){
     if (opt){ $('fLoadSel').value = String(o.load); $('fLoadTxt').value = ''; }
     else { $('fLoadSel').value = 'other'; $('fLoadTxt').value = o.load + ' كجم / ' + o.persons + ' أشخاص'; }
     onLoadSel();
-    ['client','phone','city','district','clientEn','districtEn','lifts','stops','landingDoors','carDoors','speed','shaftW','shaftD','overhead','pit','cabin','doorW','doorType','doorFinish','doorBrand','discount','notes']
+    ['client','phone','city','district','clientEn','districtEn','lifts','stops','landingDoors','carDoors','speed','shaftW','shaftD','overhead','pit','cabin','doorW','doorType','doorFinish','doorBrand','doorH','discount','notes']
       .forEach(k => { if (f[k] != null && o[k] !== '' && o[k] != null) f[k].value = o[k]; });
-    $('fLanding').dataset.touched = 1; $('fDoorType').dataset.touched = 1; $('fBrand').dataset.touched = 1;
+    $('fLanding').dataset.touched = 1; $('fDoorType').dataset.touched = 1; $('fBrand').dataset.touched = 1; if (o.doorH) $('fDoorH').dataset.touched = 1; autoDoorH();
     ['fClientEn','fDistEn'].forEach(id => { if ($(id).value) $(id).dataset.touched = 1; else delete $(id).dataset.touched; }); autoEn();
     $('fUnit').value = o.unitPrice; $('fUnit').dataset.touched = 1;
     S.editing = o.offerNo;
@@ -674,7 +709,7 @@ async function reprice(offerNo){
     window.scrollTo(0,0);
   }catch(err){ alert(err.message); }
 }
-function cancelEdit(){ $('fOffer').reset(); ['fLanding','fUnit','fDoorType','fBrand','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; }
+function cancelEdit(){ $('fOffer').reset(); ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; }
 
 /* ---------- المتابعة ---------- */
 $('dChips').addEventListener('click', e => {

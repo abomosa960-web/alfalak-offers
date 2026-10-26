@@ -172,7 +172,7 @@
             <div class="small" style="grid-column:1/-1">بيتكتب لوحده بالنطق — راجعه وصلّحه لو فيه غلطة، والتصليح بيتحفظ للمرة الجاية.</div>
           </div>
           <div id="phMsg"></div>
-          <h3>المصعد</h3>
+          <h3 id="hL1">المصعد</h3>
           <div class="grid">
             <div class="field"><label>نوع العرض</label><select name="type" id="fType" onchange="fillLoads()"></select></div>
             <div class="field"><label>الحمولة</label>
@@ -202,7 +202,12 @@
             <div class="field"><label>موديل الأبواب</label><select name="doorBrand" id="fBrand" onchange="this.dataset.touched=1;autoDoorH()"><option>سيلكوم</option></select></div>
             <div class="field" style="max-width:120px"><label>ارتفاع الباب</label><select name="doorH" id="fDoorH" onchange="this.dataset.touched=1" style="font-size:13px;padding:6px"><option value="2000">2000 مم</option><option value="2100">2100 مم</option></select></div>
           </div>
-          <button type="button" class="btn ghost" id="moreBtn" style="margin-top:12px" onclick="toggleMore()">+ خيارات إضافية</button>
+          <h3 id="hLifts" hidden>مصاعد تانية في نفس العرض <span class="small">(بتتعبّى لوحدها من المصعد اللي فوقها — غيّر اللي محتاجه بس)</span></h3>
+          <div id="xLifts"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+            <button type="button" class="btn ghost" id="addLiftBtn" onclick="addLift()">+ إضافة مصعد (L2)</button>
+            <button type="button" class="btn ghost" id="moreBtn" onclick="toggleMore()">+ خيارات إضافية</button>
+          </div>
           <div id="moreBox" hidden>
             <p class="small">سيبها فاضية عشان يفضل المكتوب في العرض زي ما هو.</p>
             <div class="grid">
@@ -554,6 +559,7 @@ function fillLoads(){
     '<option value="other">حمولة تانية — اكتبها بإيدك</option>';
   const def = /GKE/i.test(t) ? 630 : 450;  // الافتراضي: GKE 630، والمحلي 450
   $('fLoadSel').value = loads.some(p => p.load === def) ? String(def) : (loads[0] ? String(loads[0].load) : 'other');
+  refreshLiftLoads();
   onLoadSel();
 }
 const loadLabel = (load, persons) => load+' كجم / '+(persons || Math.floor(load/75))+' أشخاص';
@@ -622,8 +628,8 @@ function checkInstall(){
 const maxItems = () => 6;
 function addItem(it){
   it = it || {};
-  const box = $('xItems'), n = box.children.length + 2;
-  if (box.children.length >= maxItems()) return alert('أقصى عدد بنود إضافية ' + maxItems() + ' — عشان ترتيب صفحات العرض ما يبوظش');
+  const box = $('xItems'), n = box.children.length + 2 + liftCards().length;
+  if (box.children.length + liftCards().length >= maxItems()) return alert('أقصى عدد سطور زيادة في جدول العرض المالي ' + maxItems() + ' (مصاعد تانية + بنود) — عشان ترتيب صفحات العرض ما يبوظش');
   const d = document.createElement('div');
   d.className = 'grid xitem';
   d.style.cssText = 'border:1px dashed var(--line);border-radius:10px;padding:8px;margin-bottom:8px';
@@ -644,6 +650,96 @@ function readItems(){
 }
 function itemsTotal(){ return readItems().reduce((a, o) => a + (Number(o.qty) || 1) * (Number(o.price) || 0), 0); }
 function clearItems(){ $('xItems').innerHTML = ''; }
+
+/* ---------- مصاعد تانية في نفس العرض (L2، L3…) ---------- */
+const MAX_MORE_LIFTS = 4;
+const liftCards = () => [...document.querySelectorAll('#xLifts .xlift')];
+/** الحمولة المقترحة للمصعد الجديد: 450 → 630، و630 → 1000 (محلي) أو 1050 (GKE)، وغير كده الحمولة اللي بعدها */
+function nextLoad(load){
+  const gke = /GKE/i.test($('fType').value);
+  if (load === 450) return 630;
+  if (load === 630) return gke ? 1050 : 1000;
+  const loads = S.cfg.products.filter(p => p.type === $('fType').value).map(p => p.load).sort((a,b) => a - b);
+  return loads.find(l => l > load) || load;
+}
+function mainLift(){
+  const f = $('fOffer').elements;
+  return {label:'L1', lifts:f['lifts'].value, load:Number(f['load'].value) || 630, stops:f['stops'].value, landingDoors:f['landingDoors'].value,
+    carDoors:f['carDoors'].value, speed:f['speed'].value, shaftW:f['shaftW'].value, shaftD:f['shaftD'].value,
+    overhead:f['overhead'].value, pit:f['pit'].value, cabin:'', doorW:f['doorW'].value, doorType:f['doorType'].value};
+}
+function liftLoadOptions(cur){
+  const loads = S.cfg.products.filter(p => p.type === $('fType').value).map(p => p.load).sort((a,b) => a - b);
+  if (cur && loads.indexOf(Number(cur)) < 0) loads.push(Number(cur));
+  return loads.sort((a,b) => a - b).map(l => '<option value="'+l+'"'+(Number(cur) === l ? ' selected' : '')+'>'+l+' كجم</option>').join('');
+}
+/** مصعد جديد = نسخة من اللي فوقه (نفس الوقفات والبئر والحفرة والهيدروم والسرعة والأبواب) والحمولة بس اللي بتكبر */
+function addLift(o, saved){
+  const box = $('xLifts');
+  if (box.children.length >= MAX_MORE_LIFTS) return alert('أقصى عدد مصاعد في العرض ' + (MAX_MORE_LIFTS + 1) + ' (L1 لـ L' + (MAX_MORE_LIFTS + 1) + ')');
+  if (!saved && box.children.length + readItems().length >= maxItems()) return alert('أقصى عدد سطور زيادة في جدول العرض المالي ' + maxItems() + ' (مصاعد تانية + بنود)');
+  if (!o){
+    const ls = readLifts(), prev = ls.length ? ls[ls.length - 1] : mainLift();
+    o = Object.assign({}, prev, {lifts: 1, load: nextLoad(Number(prev.load)), cabin: '', price: '', label: ''});
+  }
+  const used = new Set(['L1'].concat(readLifts().map(l => String(l.label).toUpperCase())));
+  let n = 2; while (used.has('L' + n)) n++;
+  const label = saved && o.label ? o.label : 'L' + n;
+  const sel = (k, opts) => '<select data-k="'+k+'">' + opts.map(v => '<option value="'+esc(v[0])+'"'+(String(o[k]) === String(v[0]) ? ' selected' : '')+'>'+esc(v[1])+'</option>').join('') + '</select>';
+  const num = (k, lbl, extra) => '<div class="field"><label>'+lbl+'</label><input data-k="'+k+'" type="number" inputmode="numeric" value="'+esc(o[k] == null ? '' : o[k])+'"'+(extra || '')+'></div>';
+  const d = document.createElement('div');
+  d.className = 'xlift';
+  d.style.cssText = 'border:1px dashed var(--gold);border-radius:10px;padding:10px;margin-bottom:10px';
+  d.innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b class="xl-title">المصعد '+esc(label)+'</b>'+
+    '<button type="button" class="btn ghost" title="شيل المصعد ده" onclick="this.closest(\'.xlift\').remove();recalc()">×</button></div>'+
+    '<div class="grid">'+
+      '<div class="field" style="max-width:90px"><label>الاسم</label><input data-k="label" value="'+esc(label)+'" oninput="this.closest(\'.xlift\').querySelector(\'.xl-title\').textContent=\'المصعد \'+this.value"></div>'+
+      num('lifts', 'عدد المصاعد', ' min="1"')+
+      '<div class="field"><label>الحمولة</label><select data-k="load">'+liftLoadOptions(o.load)+'</select></div>'+
+      num('stops', 'عدد الوقفات', ' min="2" oninput="liftStops(this)"')+
+      num('landingDoors', 'الأبواب الخارجية', ' min="2" oninput="this.dataset.touched=1"')+
+      '<div class="field"><label>مداخل الكابينة</label>'+sel('carDoors', [['1','مدخل واحد'],['2','مدخلين']])+'</div>'+
+      '<div class="field"><label>السرعة</label>'+sel('speed', [['1','1 متر/ث'],['1.5','1.5 متر/ث'],['2','2 متر/ث']])+'</div>'+
+      num('shaftW', 'عرض البئر (مم)')+num('shaftD', 'عمق البئر (مم)')+
+      num('overhead', 'الأوفر هيد (مم)')+num('pit', 'عمق الحفرة (مم)')+
+      '<div class="field wide"><label>مقاس الكابينة</label><input data-k="cabin" placeholder="سيبها فاضية = أكبر كابينة ممكنة" value="'+esc(o.cabin || '')+'"></div>'+
+      '<div class="field"><label>عرض الباب</label>'+sel('doorW', [['800','800 مم'],['700','700 مم'],['650','650 مم']])+'</div>'+
+      '<div class="field"><label>نوع الباب</label>'+sel('doorType', [['جانبي','جانبي'],['سنتر','سنتر'],['نص أوتوماتيك','نص أوتوماتيك']])+'</div>'+
+      '<div class="field"><label>سعر المصعد قبل الضريبة</label><input data-k="price" type="number" min="1" value="'+esc(o.price || '')+'" oninput="this.dataset.touched=1"'+(saved ? ' data-touched="1"' : '')+'><div class="small xl-sug"></div></div>'+
+    '</div>';
+  box.appendChild(d);
+  if (saved) d.querySelector('[data-k=landingDoors]').dataset.touched = 1;
+  recalc();
+  if (!saved && d.scrollIntoView) d.scrollIntoView({behavior:'smooth', block:'center'});
+}
+function liftStops(el){
+  const l = el.closest('.xlift').querySelector('[data-k=landingDoors]');
+  if (!l.dataset.touched) l.value = el.value;
+}
+function readLifts(){
+  return liftCards().map(d => { const o = {}; d.querySelectorAll('[data-k]').forEach(el => o[el.dataset.k] = el.value.trim()); return o; });
+}
+function clearLifts(){ $('xLifts').innerHTML = ''; }
+function refreshLiftLoads(){ liftCards().forEach(d => { const s = d.querySelector('[data-k=load]'); s.innerHTML = liftLoadOptions(s.value); }); }
+function liftSuggest(o){
+  const prod = S.cfg.products.find(p => p.type === $('fType').value && p.load === Number(o.load));
+  if (!prod || prod.base == null || !Number(o.stops)) return null;
+  const x = S.cfg.settings.extras;
+  return prod.base + (Number(o.stops) - 3) * prod.perStop + (x ? priceExtras(x, o.carDoors, o.pit, o.overhead).add : 0);
+}
+/** سعر المصاعد التانية: المقترح لو المندوب ما كتبش سعر بنفسه */
+function liftsTotal(){
+  let t = 0;
+  liftCards().forEach(d => {
+    const o = {}; d.querySelectorAll('[data-k]').forEach(el => o[el.dataset.k] = el.value.trim());
+    const p = d.querySelector('[data-k=price]'), sug = liftSuggest(o);
+    if (!p.dataset.touched) p.value = sug != null ? sug : '';
+    d.querySelector('.xl-sug').innerHTML = sug != null ? 'المقترح: ' + money(sug) + (Number(p.value) !== sug ? ' — <a href="#" onclick="var p=this.closest(\'.xlift\').querySelector(\'[data-k=price]\');delete p.dataset.touched;recalc();return false">رجّع المقترح</a>' : '') : 'مفيش سعر مقترح للحمولة دي — اكتب السعر';
+    t += (parseInt(o.lifts, 10) || 1) * (Number(p.value) || 0);
+  });
+  return t;
+}
 function toggleMore(show){
   const b = $('moreBox'); b.hidden = show === undefined ? !b.hidden : !show;
   $('moreBtn').textContent = (b.hidden ? '+ ' : '− ') + 'خيارات إضافية';
@@ -677,6 +773,10 @@ function suggestion(){
 function useSuggestion(){ delete $('fUnit').dataset.touched; recalc(); }
 function recalc(){
   if (!S.cfg) return;
+  const nL = liftCards().length;
+  $('hLifts').hidden = !nL; $('hL1').textContent = nL ? 'المصعد L1' : 'المصعد';
+  $('addLiftBtn').textContent = '+ إضافة مصعد' + (nL < MAX_MORE_LIFTS ? ' (L' + (nL + 2) + ')' : '');
+  const lt = liftsTotal();
   const {lifts, stops, discount} = current();
   const st = S.cfg.settings, P = $('pricePanel');
   const sug = suggestion();
@@ -687,12 +787,15 @@ function recalc(){
   const unit = Number($('fUnit').value) || 0;
   if (!unit){ P.innerHTML = '<div class="na">اكتب سعر المصعد</div>'; return; }
   if (stops < st.minStops || stops > st.maxStops){ P.innerHTML = '<div class="na">عدد الوقفات من '+st.minStops+' لـ '+st.maxStops+'</div>'; return; }
-  const xt = itemsTotal(), sub = unit * lifts + xt;
+  const xt = itemsTotal(), sub = unit * lifts + lt + xt;
+  const more = readLifts();
   const net = sub - discount, vat = Math.round(net*st.vat*100)/100, total = net + vat;
   P.innerHTML =
     '<h3 style="margin-top:0">السعر</h3>'+
-    row('سعر المصعد', money(unit))+
-    row('عدد المصاعد', lifts)+
+    (more.length
+      ? row('L1: ' + lifts + ' × ' + money(unit), money(unit * lifts)) +
+        more.map(o => row(esc(o.label || 'L') + ': ' + (parseInt(o.lifts, 10) || 1) + ' × ' + money(Number(o.price) || 0), money((parseInt(o.lifts, 10) || 1) * (Number(o.price) || 0)))).join('')
+      : row('سعر المصعد', money(unit)) + row('عدد المصاعد', lifts))+
     (xt ? row('بنود إضافية', money(xt)) : '')+
     row('الإجمالي', money(sub))+
     row('الخصم', discount ? '- '+money(discount) : '0')+
@@ -723,6 +826,7 @@ async function saveOffer(e){
   const data = Object.fromEntries(new FormData($('fOffer')).entries());
   [...document.querySelectorAll('#xItems [data-k]')].forEach(el => { delete data[el.name]; });
   data.extraItems = readItems();
+  data.moreLifts = readLifts();
   $('oBtn').disabled = true;
   try{
     const r = await call('saveOffer', data);
@@ -937,6 +1041,7 @@ async function reprice(offerNo){
     $('fUnit').value = o.unitPrice; $('fUnit').dataset.touched = 1;
     S.editing = o.offerNo;
     clearItems(); (o.extraItems || []).forEach(it => addItem(it));
+    clearLifts(); (o.moreLifts || []).forEach(l => addLift(Object.assign({}, l, {landingDoors: l.landing}), true));
     toggleMore(!!(o.installDays || o.warrantyYears || o.maintYears || (o.extraItems || []).length)); checkInstall();
     $('editNote').hidden = false;
     $('editNote').innerHTML = 'بتعدّل على العرض رقم <b>'+esc(o.offerNo)+'</b> (آخر مراجعة '+esc(o.revision)+') — لما تحفظ هيتسجّل مراجعة جديدة بنفس الرقم. <a href="#" onclick="cancelEdit();return false">إلغاء</a>';
@@ -944,7 +1049,7 @@ async function reprice(offerNo){
     window.scrollTo(0,0);
   }catch(err){ alert(err.message); }
 }
-function cancelEdit(){ $('fOffer').reset(); msg('fNotesMsg',''); toggleMore(false); clearItems(); msg('fInstallMsg',''); ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; }
+function cancelEdit(){ $('fOffer').reset(); msg('fNotesMsg',''); toggleMore(false); clearItems(); clearLifts(); msg('fInstallMsg',''); ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; }
 
 /* ---------- المتابعة ---------- */
 $('dChips').addEventListener('click', e => {

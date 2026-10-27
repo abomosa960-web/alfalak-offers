@@ -2,468 +2,258 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<title>عروض أسعار مصاعد الفلك</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>بوابة مصاعد الفلك</title>
+<meta name="theme-color" content="#0b132b">
+<link rel="icon" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --gold:#9a7b3c; --gold-d:#7d6330; --ink:#1f1f1f; --muted:#6b6b6b; --line:#e4e0d8;
-    --bg:#f6f4ef; --card:#ffffff; --ok:#1e7d4f; --err:#b3261e;
+    --navy-950:#0b132b; --navy-900:#1c2541; --navy-800:#2a3558; --navy-700:#3a4773;
+    --gold-300:#f3e5ab; --gold-400:#e5c158; --gold-500:#d4af37; --gold-600:#b79227;
+    --text:#f1f5f9; --muted:#aab3c5; --err:#ff8a80; --ok:#7ee2a8;
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:'Tajawal',Tahoma,sans-serif;background:var(--bg);color:var(--ink);font-size:15px}
-  header{background:#1f1f1f;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  header .brand{font-weight:700;font-size:17px;letter-spacing:.3px}
-  header .brand span{color:var(--gold)}
-  header .who{margin-inline-start:auto;font-size:13px;color:#ddd;display:flex;gap:10px;align-items:center}
-  header button{background:transparent;border:1px solid #555;color:#eee;border-radius:8px;padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
-  nav{display:flex;gap:6px;padding:10px 16px 0;flex-wrap:wrap;max-width:1100px;margin:0 auto}
-  nav button{background:#fff;border:1px solid var(--line);border-radius:10px 10px 0 0;padding:9px 16px;font:inherit;cursor:pointer;color:var(--muted)}
-  nav button.on{color:var(--ink);border-bottom-color:#fff;font-weight:700}
-  main{max-width:1100px;margin:0 auto;padding:0 16px 40px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:0 12px 12px 12px;padding:18px}
-  .login{max-width:380px;margin:60px auto;border-radius:14px}
-  h2{margin:0 0 14px;font-size:19px}
-  h3{margin:18px 0 10px;font-size:15px;color:var(--gold-d)}
-  label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
-  input,select,textarea{width:100%;font:inherit;padding:9px 10px;border:1px solid #d6d1c6;border-radius:8px;background:#fff;color:var(--ink)}
-  input:focus,select:focus,textarea:focus{outline:2px solid #d9c391;border-color:var(--gold)}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
-  .grid .wide{grid-column:span 2}
-  .field{margin-bottom:12px}
-  .btn{background:var(--gold);color:#fff;border:0;border-radius:9px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer}
-  .btn:hover{background:var(--gold-d)}
-  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:500}
-  .btn:disabled{opacity:.55;cursor:default}
-  .msg{padding:10px 12px;border-radius:8px;margin:10px 0;font-size:14px}
-  .msg.err{background:#fbe9e7;color:var(--err)}
-  .msg.ok{background:#e6f4ec;color:var(--ok)}
-  .msg.warn{background:#fff6e0;color:#7a5a00}
-  .files{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
-  .files a{display:inline-flex;align-items:center;gap:6px;text-decoration:none}
-  .layout{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start}
-  .price{background:#faf7f0;border:1px solid #eadfc6;border-radius:12px;padding:14px;position:sticky;top:12px}
-  .price .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #e3d8bf;font-size:14px}
-  .price .row:last-of-type{border:0}
-  .price .total{font-size:20px;font-weight:700;color:var(--gold-d)}
-  .price .na{color:var(--err);font-size:14px;padding:8px 0}
-  table{width:100%;border-collapse:collapse;font-size:14px}
-  th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
-  th{background:#f3efe6;font-weight:700}
-  .tablewrap{overflow-x:auto}
-  /* شريط التمرير يمين/شمال فوق الجدول بدل تحته */
-  .tablewrap.topbar{transform:rotateX(180deg)}
-  .tablewrap.topbar > table{transform:rotateX(180deg)}
-  .num{font-variant-numeric:tabular-nums}
-  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-  .chips button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 14px;font:inherit;cursor:pointer}
-  .chips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-  .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:14px}
-  .stat{background:#faf7f0;border:1px solid #eadfc6;border-radius:10px;padding:10px 12px}
-  .stat b{display:block;font-size:22px}
-  .stat span{font-size:12px;color:var(--muted)}
-  .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:10px;background:#eee}
-  .tag.on{background:#e6f4ec;color:var(--ok)} .tag.off{background:#fbe9e7;color:var(--err)}
-  .small{font-size:12px;color:var(--muted)}
-  .actions button{font-size:12px;padding:4px 8px;margin-inline-start:4px}
-  .pwbox{font-family:monospace;font-size:18px;background:#fff8e1;padding:8px 12px;border-radius:8px;display:inline-block;direction:ltr}
-  table.edit input,table.edit select{padding:6px;min-width:70px}
-  table.edit td{padding:4px}
-  tr.hist > td{background:#faf7f0;padding:8px}
-  tr.hist table{font-size:13px}
   [hidden]{display:none!important}
-  @media (max-width:760px){.layout{grid-template-columns:1fr}.price{position:static}.grid .wide{grid-column:span 1}}
+  html,body{margin:0}
+  body{
+    font-family:'Cairo',Tahoma,sans-serif;background:var(--navy-950);color:var(--text);min-height:100vh;
+    background-image:radial-gradient(circle at 50% 0%,rgba(212,175,55,.09) 0%,transparent 60%),radial-gradient(circle at 85% 85%,rgba(28,37,65,.6) 0%,transparent 50%);
+    display:flex;flex-direction:column;
+  }
+  a{color:var(--gold-400)}
+  .glass{background:rgba(28,37,65,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(212,175,55,.25);box-shadow:0 10px 30px -10px rgba(0,0,0,.5);border-radius:18px}
+  .gold-text{background:linear-gradient(135deg,#fff3c4 0%,#d4af37 50%,#9e7b1c 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .logo-tile{background:#fff;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 8px 24px -8px rgba(212,175,55,.35)}
+  .logo-tile img{display:block;height:100%;width:auto}
+
+  /* ===== الدخول ===== */
+  #vLogin{flex:1;display:flex;align-items:center;justify-content:center;padding:32px 16px}
+  .login{width:100%;max-width:400px;padding:28px 24px;text-align:center}
+  .login .logo-tile{height:150px;padding:12px 16px;margin-bottom:16px}
+  .login h1{margin:0;font-size:26px;font-weight:900}
+  .login .sub{margin:4px 0 22px;color:var(--muted);font-size:13px;font-family:'Tajawal',sans-serif}
+  .field{text-align:right;margin-bottom:14px}
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px;font-family:'Tajawal',sans-serif}
+  input{width:100%;font:inherit;font-size:15px;padding:11px 12px;border-radius:12px;border:1px solid var(--navy-800);background:var(--navy-950);color:var(--text);outline:none;transition:border-color .2s}
+  input:focus{border-color:var(--gold-400)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-weight:700;font-size:15px;padding:11px 16px;border-radius:12px;border:0;cursor:pointer;background:var(--gold-500);color:var(--navy-950);text-decoration:none;transition:background .2s}
+  .btn:hover{background:var(--gold-400)}
+  .btn:disabled{opacity:.6;cursor:wait}
+  .btn.ghost{background:transparent;color:var(--gold-300);border:1px solid rgba(212,175,55,.35)}
+  .btn.ghost:hover{background:var(--navy-800)}
+  .links{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:13px;font-family:'Tajawal',sans-serif}
+  .msg{font-size:13px;margin:4px 0 10px;text-align:right;font-family:'Tajawal',sans-serif}
+  .msg.err{color:var(--err)} .msg.ok{color:var(--ok)}
+  .small{font-size:12px;color:var(--muted);font-family:'Tajawal',sans-serif;text-align:right}
+
+  /* ===== البوابة ===== */
+  header{border-bottom:1px solid var(--navy-800);background:rgba(11,19,43,.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:14px 16px}
+  .hwrap{max-width:1040px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  header .logo-tile{height:64px;padding:6px 8px;border-radius:12px}
+  header h1{margin:0;font-size:22px;font-weight:900;line-height:1.3}
+  header .tag{margin:0;font-size:12px;color:var(--muted);font-family:'Tajawal',sans-serif}
+  .who{margin-inline-start:auto;display:flex;align-items:center;gap:10px;font-size:13px;color:#dfe5f0}
+  .who .role{color:var(--gold-400);font-weight:700}
+  .who .btn{padding:7px 12px;font-size:13px}
+  main{max-width:1040px;width:100%;margin:0 auto;padding:24px 16px 32px;flex:1}
+  .search{padding:12px;margin-bottom:22px}
+  .search .box{position:relative}
+  .search svg{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--gold-400)}
+  .search input{padding-right:42px;font-family:'Tajawal',sans-serif}
+  .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+  @media (max-width:860px){.grid{grid-template-columns:1fr}}
+  .tool{padding:22px;display:flex;flex-direction:column;justify-content:space-between;transition:transform .3s,border-color .3s,box-shadow .3s}
+  .tool:hover{transform:translateY(-4px);border-color:rgba(212,175,55,.7);box-shadow:0 16px 32px -10px rgba(212,175,55,.22)}
+  .tool .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .ico{width:50px;height:50px;border-radius:14px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);color:var(--gold-400);display:flex;align-items:center;justify-content:center}
+  .ico svg{width:24px;height:24px}
+  .num{font-size:12px;font-weight:900;color:var(--gold-400);background:var(--navy-950);padding:3px 12px;border-radius:9px;border:1px solid rgba(212,175,55,.2)}
+  .tool h2{margin:0 0 2px;font-size:18px;font-weight:700;color:#fff}
+  .tool .kind{margin:0 0 10px;font-size:12px;color:var(--gold-400);font-weight:600}
+  .tool .desc{margin:0 0 18px;font-size:13px;color:#cfd6e3;line-height:1.7;font-family:'Tajawal',sans-serif}
+  .tool .act{padding-top:14px;border-top:1px solid var(--navy-800)}
+  .tool .act .btn{width:100%;font-size:14px}
+  .tool.main{border-color:rgba(212,175,55,.55)}
+  .empty{padding:40px 16px;text-align:center;color:var(--muted)}
+  footer{border-top:1px solid var(--navy-800);background:rgba(11,19,43,.9);padding:16px}
+  .fwrap{max-width:1040px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);font-family:'Tajawal',sans-serif}
+  .fwrap .btn{font-size:13px;padding:8px 14px}
+  #loading{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:'Tajawal',sans-serif}
+  #toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,100px);opacity:0;transition:all .35s;background:var(--navy-900);border:1px solid rgba(212,175,55,.5);color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;z-index:50;font-family:'Tajawal',sans-serif}
+  #toast.show{transform:translate(-50%,0);opacity:1}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="brand"><span>AL FALAK</span> · عروض الأسعار</div>
-  <div class="who" id="who" hidden>
-    <span id="whoName"></span>
-    <button onclick="toggleSettings()" title="الإعدادات">⚙ الإعدادات</button>
-    <button onclick="logout()">خروج</button>
-  </div>
-</header>
+<div id="loading">جاري التحقق…</div>
 
-<!-- الإعدادات المتقدمة -->
-<div class="card" id="setBox" hidden style="max-width:560px;margin:12px auto">
-  <h3 style="margin-top:0">⚙ الإعدادات</h3>
-  <b>حسابي</b>
-  <div class="field" style="margin-top:6px"><label>اسمك (اللي بيظهر في السيستم)</label><input id="setName" maxlength="40"></div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <button class="btn" onclick="saveMyName()">حفظ الاسم</button>
-    <button class="btn ghost" onclick="showPwChange(false)">تغيير كلمة المرور / اسم المستخدم / الإيميل</button>
-    <button class="btn ghost" onclick="resetMyPw()">ابعت لي كلمة مرور جديدة على الإيميل</button>
-  </div>
-  <div id="setNameMsg"></div>
-  <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
-  <b>مكان حفظ ملفات العروض</b>
-  <p class="small" id="setDirName"></p>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <button class="btn" onclick="pickSaveDir()">اختيار / تغيير الفولدر</button>
-    <button class="btn ghost" onclick="clearSaveDir()">رجّعها للتنزيلات العادية</button>
-  </div>
-  <label style="display:block;margin-top:10px"><input type="checkbox" id="setPerClient" onchange="savePerClient()"> اعمل فولدر باسم العميل جوه الفولدر ده (زي فولدرات العملاء)</label>
-  <p class="small" id="setNote"></p>
-  <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
-  <b>تواصل مع المطور</b>
-  <p class="small">استفسار أو اقتراح أو مشكلة في البرنامج — بتوصل لمدير المبيعات على الإيميل وبتتسجل عشان تتنفذ.</p>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:start">
-    <select id="fbKind" style="max-width:130px"><option>استفسار</option><option>اقتراح</option><option>مشكلة</option></select>
-  </div>
-  <textarea id="fbText" rows="3" maxlength="2000" placeholder="اكتب رسالتك هنا…" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;width:100%;box-sizing:border-box;margin-top:8px"></textarea>
-  <button class="btn" id="fbBtn" style="margin-top:6px" onclick="sendFeedback()">إرسال</button>
-  <div id="fbMsg"></div>
-  <button class="btn ghost" style="margin-top:12px" onclick="toggleSettings()">قفل</button>
-</div>
-
-<!-- الدخول -->
-<section id="vLogin">
-  <div class="card login">
-    <h2>تسجيل الدخول</h2>
-    <form onsubmit="doLogin(event)">
-      <div class="field"><label>اسم المستخدم أو الإيميل</label><input id="lUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" dir="ltr" required></div>
-      <div class="field"><label>كلمة المرور</label><input id="lPass" type="password" autocomplete="current-password" dir="ltr" required></div>
-      <div id="lMsg"></div>
+<!-- ===== شاشة الدخول ===== -->
+<section id="vLogin" hidden>
+  <div class="glass login">
+    <div class="logo-tile"><img src="logo.png" alt="AL FALAK — ULTRA SERVICES"></div>
+    <h1 class="gold-text">بوابة مصاعد الفلك</h1>
+    <p class="sub">ادخل باسم المستخدم وكلمة المرور بتوعك</p>
+    <form id="fLogin" onsubmit="doLogin(event)">
+      <div class="field"><label for="lUser">اسم المستخدم أو الإيميل</label><input id="lUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" dir="ltr" required></div>
+      <div class="field"><label for="lPass">كلمة المرور</label><input id="lPass" type="password" autocomplete="current-password" dir="ltr" required></div>
+      <div id="lMsg" class="msg"></div>
       <button class="btn" id="lBtn" style="width:100%">دخول</button>
     </form>
-    <p style="text-align:center;margin:14px 0 0;display:flex;justify-content:center;gap:18px;flex-wrap:wrap">
+    <div class="links">
       <a href="#" onclick="toggleForgot('password');return false">نسيت كلمة المرور؟</a>
       <a href="#" onclick="toggleForgot('username');return false">نسيت اسم المستخدم؟</a>
-    </p>
-    <form id="fForgot" hidden onsubmit="doForgot(event)" style="margin-top:10px">
+    </div>
+    <form id="fForgot" hidden onsubmit="doForgot(event)" style="margin-top:14px">
       <p class="small" id="fgNote"></p>
-      <div class="field"><label>الإيميل</label><input id="fgEmail" type="email" autocapitalize="none" dir="ltr" required></div>
-      <div id="fgMsg"></div>
+      <div class="field"><label for="fgEmail">الإيميل</label><input id="fgEmail" type="email" autocapitalize="none" dir="ltr" required></div>
+      <div id="fgMsg" class="msg"></div>
       <button class="btn ghost" id="fgBtn" style="width:100%">ابعت كلمة مرور جديدة</button>
     </form>
   </div>
 </section>
 
-<!-- تغيير بيانات الدخول -->
-<section id="vPw" hidden>
-  <div class="card login">
-    <h2>تغيير بيانات الدخول</h2>
-    <p class="small" id="pNote"></p>
-    <form onsubmit="doPwChange(event)">
-      <div class="field"><label>كلمة المرور الحالية</label><input id="pOld" type="password" dir="ltr" required></div>
-      <div class="field"><label>اسم المستخدم (تقدر تغيّره)</label><input id="pUser" dir="ltr" autocapitalize="none" placeholder="سيبه زي ما هو لو مش عايز تغيّره"></div>
-      <div class="field"><label>إيميلك (لاستعادة الحساب لو نسيت كلمة المرور)</label><input id="pEmail" type="email" dir="ltr" autocapitalize="none"></div>
-      <div class="field"><label>كلمة المرور الجديدة (6 على الأقل)</label><input id="pNew" type="password" dir="ltr" required minlength="6"></div>
-      <div class="field"><label>أعد كتابة كلمة المرور الجديدة</label><input id="pNew2" type="password" dir="ltr" required></div>
-      <div id="pMsg"></div>
-      <button class="btn" id="pBtn" style="width:100%">حفظ</button>
-      <button type="button" class="btn ghost" id="pCancel" style="width:100%;margin-top:8px" onclick="showApp()">رجوع</button>
-    </form>
-  </div>
-</section>
+<!-- ===== البوابة ===== -->
+<div id="vPortal" hidden style="display:flex;flex-direction:column;flex:1">
+  <header>
+    <div class="hwrap">
+      <div class="logo-tile"><img src="logo.png" alt="AL FALAK"></div>
+      <div>
+        <h1 class="gold-text">بوابة مصاعد الفلك</h1>
+        <p class="tag">منظومة الوصول السريع للتطبيقات والخدمات</p>
+      </div>
+      <div class="who">
+        <span>أهلاً <b id="whoName"></b> <span class="role" id="whoRole"></span></span>
+        <button class="btn ghost" onclick="logout()">خروج</button>
+      </div>
+    </div>
+  </header>
 
-<!-- التطبيق -->
-<section id="vApp" hidden>
-  <nav id="tabs">
-    <button data-t="tNew" class="on">عرض جديد</button>
-    <button data-t="tList" id="tabList">عروضي</button>
-    <button data-t="tDash" class="adm">المتابعة</button>
-    <button data-t="tUsers" class="adm">المستخدمين</button>
-    <button data-t="tPrices" class="adm">الأسعار والإعدادات</button>
-  </nav>
   <main>
-    <!-- عرض جديد -->
-    <div id="syncBar" class="msg warn" hidden style="margin-bottom:10px"></div>
-    <div class="card tab" id="tNew">
-      <div class="layout">
-        <form id="fOffer" novalidate onsubmit="saveOffer(event)" oninput="recalc()">
-          <div id="editNote" class="msg warn" hidden></div>
-          <h3 style="margin-top:0">بيانات العميل</h3>
-          <div class="grid">
-            <div class="field wide"><label>اسم العميل *</label><input name="client" id="fClient" required oninput="autoEn()"></div>
-            <div class="field"><label>جوال العميل *</label><input name="phone" id="fPhone" dir="ltr" inputmode="tel" required placeholder="05xxxxxxxx" onchange="checkPhone()" onblur="checkPhone()"></div>
-            <div class="field"><label>المدينة *</label><input name="city" value="الرياض" required></div>
-            <div class="field"><label>الحي</label><input name="district" id="fDist" oninput="autoEn()"></div>
-          </div>
-          <div class="grid" id="enBox" hidden>
-            <div class="field wide"><label>اسم العميل بالإنجليزي (للعرض الإنجليزي)</label><input name="clientEn" id="fClientEn" dir="ltr" oninput="enTouched(this)"></div>
-            <div class="field"><label>الحي بالإنجليزي</label><input name="districtEn" id="fDistEn" dir="ltr" oninput="enTouched(this)"></div>
-            <div class="small" style="grid-column:1/-1">بيتكتب لوحده بالنطق — راجعه وصلّحه لو فيه غلطة، والتصليح بيتحفظ للمرة الجاية.</div>
-          </div>
-          <div id="phMsg"></div>
-          <h3 id="hL1">المصعد</h3>
-          <div class="grid">
-            <div class="field"><label>نوع العرض</label><select name="type" id="fType" onchange="fillLoads()"></select></div>
-            <div class="field"><label>الحمولة</label>
-              <select id="fLoadSel" onchange="onLoadSel()"></select>
-              <input id="fLoadTxt" hidden placeholder="مثلاً 1150 كجم / 15 أشخاص" oninput="onLoadChange()">
-              <input type="hidden" name="load" id="fLoad"><input type="hidden" name="persons" id="fPersons">
-            </div>
-            <div class="field"><label>عدد المصاعد</label><input name="lifts" type="number" min="1" value="1" required></div>
-            <div class="field"><label>عدد الوقفات</label><input name="stops" id="fStops" type="number" min="2" value="3" required oninput="syncDoors()"></div>
-            <div class="field"><label>الأبواب الخارجية</label><input name="landingDoors" id="fLanding" type="number" min="2" value="3" oninput="this.dataset.touched=1"></div>
-            <div class="field"><label>مداخل الكابينة</label><select name="carDoors"><option value="1">مدخل واحد</option><option value="2">مدخلين</option></select></div>
-            <div class="field"><label>السرعة</label><select name="speed"><option value="1">1 متر/ث</option><option value="1.5">1.5 متر/ث</option><option value="2">2 متر/ث</option></select></div>
-          </div>
-          <h3>المقاسات</h3>
-          <div class="grid">
-            <div class="field"><label>عرض البئر (مم)</label><input name="shaftW" id="fShaftW" type="number" inputmode="numeric" value="1800" oninput="autoDoorType()"></div>
-            <div class="field"><label>عمق البئر (مم)</label><input name="shaftD" type="number" inputmode="numeric" value="1800"></div>
-            <div class="field"><label>الأوفر هيد (مم)</label><input name="overhead" type="number" value="4100"></div>
-            <div class="field"><label>عمق الحفرة (مم)</label><input name="pit" type="number" value="1200"></div>
-            <div class="field wide"><label>مقاس الكابينة</label><input name="cabin" id="fCabin" placeholder="سيبها فاضية = أكبر كابينة ممكنة"></div>
-          </div>
-          <h3>الأبواب</h3>
-          <div class="grid">
-            <div class="field"><label>عرض الباب</label><select name="doorW"><option value="800">800 مم</option><option value="700">700 مم</option><option value="650">650 مم</option></select></div>
-            <div class="field"><label>نوع الباب</label><select name="doorType" id="fDoorType" onchange="this.dataset.touched=1"><option>جانبي</option><option>سنتر</option><option>نص أوتوماتيك</option></select><div class="small" id="fDoorHint"></div></div>
-            <div class="field"><label>تلبيس الأبواب</label><select name="doorFinish"><option>ستانلس ستيل فضي</option><option>ستانلس ستيل فضي هيرلاين</option><option>ستانلس ستيل فضي مراية</option><option>ستانلس ستيل نحاسي</option><option>ستانلس ستيل أسود</option></select></div>
-            <div class="field"><label>موديل الأبواب</label><select name="doorBrand" id="fBrand" onchange="this.dataset.touched=1;autoDoorH()"><option>سيلكوم</option></select></div>
-            <div class="field" style="max-width:120px"><label>ارتفاع الباب</label><select name="doorH" id="fDoorH" onchange="this.dataset.touched=1" style="font-size:13px;padding:6px"><option value="2000">2000 مم</option><option value="2100">2100 مم</option></select></div>
-          </div>
-          <h3 id="hLifts" hidden>مصاعد تانية في نفس العرض <span class="small">(بتتعبّى لوحدها من المصعد اللي فوقها — غيّر اللي محتاجه بس)</span></h3>
-          <div id="xLifts"></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-            <button type="button" class="btn ghost" id="addLiftBtn" onclick="addLift()">+ إضافة مصعد (L2)</button>
-            <button type="button" class="btn ghost" id="moreBtn" onclick="toggleMore()">+ خيارات إضافية</button>
-          </div>
-          <div id="moreBox" hidden>
-            <p class="small">سيبها فاضية عشان يفضل المكتوب في العرض زي ما هو.</p>
-            <div class="grid">
-              <div class="field"><label>مدة التوريد والتركيب (يوم)</label><input name="installDays" id="fInstall" type="number" min="30" inputmode="numeric" oninput="checkInstall()"><div id="fInstallMsg"></div></div>
-              <div class="field"><label>مدة الضمان (سنة)</label><input name="warrantyYears" id="fWarranty" type="number" min="1" inputmode="numeric"></div>
-              <div class="field"><label>الصيانة المجانية (سنة)</label><input name="maintYears" id="fMaint" type="number" min="1" inputmode="numeric"></div>
-            </div>
-            <h4 style="margin:14px 0 6px">بنود تسعير إضافية <span class="small">(زي فك مصعد قديم — بتتضاف تحت المصعد في جدول العرض المالي)</span></h4>
-            <div id="xItems"></div>
-            <button type="button" class="btn ghost" onclick="addItem()">+ إضافة بند</button>
-          </div>
-          <h3>السعر</h3>
-          <div class="grid">
-            <div class="field"><label>سعر المصعد قبل الضريبة (ريال) *</label><input name="unitPrice" id="fUnit" type="number" min="0" step="500" required oninput="this.dataset.touched=1"><div class="small" id="fSuggest"></div></div>
-            <div class="field"><label>الخصم على العرض (ريال)</label><input name="discount" id="fDisc" type="number" min="0" step="500" value="" placeholder="من غير خصم"></div>
-            <div class="field wide"><label>ملاحظات <span class="small">(بتتكتب في آخر العرض)</span></label><textarea name="notes" id="fNotes" rows="2" oninput="checkNotes()" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;width:100%;box-sizing:border-box"></textarea><div id="fNotesMsg"></div></div>
-          </div>
-          <div id="oMsg"></div>
-          <div id="oFiles"></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn" id="oBtn">حفظ العرض</button>
-            <button type="button" class="btn ghost" onclick="if(confirm('تفضّي كل الخانات وتبدأ عرض جديد؟')){cancelEdit();msg('oMsg','');$('oFiles').innerHTML='';msg('phMsg','');phoneBlocked=false;}">عميل جديد (فضّي الخانات)</button>
-          </div>
-        </form>
-        <aside class="price" id="pricePanel"></aside>
+    <div class="glass search">
+      <div class="box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" oninput="filterCards()" placeholder="ابحث عن أداة (عروض أسعار، تقارير صيانة، حالة المصعد)…">
       </div>
     </div>
 
-    <!-- العروض -->
-    <div class="card tab" id="tList" hidden>
-      <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:12px">
-        <div class="adm" style="min-width:200px"><label>المندوب</label><select id="listRep" onchange="loadList()"><option value="">كل المندوبين</option></select></div>
-        <div class="adm" style="display:flex;gap:6px"><button class="btn ghost" title="المندوب اللي قبله" onclick="repNav(-1)">→ اللي قبله</button><button class="btn ghost" title="المندوب اللي بعده" onclick="repNav(1)">اللي بعده ←</button></div>
-        <span class="small" id="listCount"></span>
-        <button class="btn ghost" onclick="loadList()">تحديث</button>
-      </div>
-      <div class="tablewrap topbar"><table id="listTbl"></table></div>
-    </div>
+    <div class="grid" id="grid">
+      <article class="glass tool main" data-search="عروض أسعار مصاعد الفلك عروض اسعار المبيعات المتابعة تسعير offers quotation">
+        <div>
+          <div class="top">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M12 11v7M14.5 12.5h-3.2a1.4 1.4 0 0 0 0 2.8h1.4a1.4 1.4 0 0 1 0 2.8H9.5"/></svg></div>
+            <span class="num">#1</span>
+          </div>
+          <h2>عروض أسعار مصاعد الفلك</h2>
+          <p class="kind">عروض أسعار | المبيعات والمتابعة</p>
+          <p class="desc">تسعير المصاعد وإنشاء عروض الأسعار (PDF و Word) ومتابعة عروض كل مندوب.</p>
+        </div>
+        <div class="act"><a class="btn" href="offers/">فتح عروض الأسعار</a></div>
+      </article>
 
-    <!-- المتابعة -->
-    <div class="card tab adm" id="tDash" hidden>
-      <div class="chips" id="dChips">
-        <button data-p="week" class="on">الأسبوع ده</button>
-        <button data-p="lastWeek">الأسبوع اللي فات</button>
-        <button data-p="month">الشهر ده</button>
-        <button data-p="lastMonth">الشهر اللي فات</button>
-        <button data-p="all">الكل</button>
-        <button data-p="custom">فترة محددة</button>
-      </div>
-      <div id="dCustom" hidden style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:12px">
-        <div><label>من</label><input type="date" id="dFrom"></div>
-        <div><label>إلى</label><input type="date" id="dTo"></div>
-        <button class="btn ghost" onclick="loadDash('custom')">عرض</button>
-      </div>
-      <p class="small" id="dLabel"></p>
-      <div class="stats" id="dStats"></div>
-      <div class="tablewrap topbar"><table id="dTbl"></table></div>
-    </div>
+      <article class="glass tool" data-search="تقارير مصاعد الصيانة برنامج إعداد وترتيب تقارير الصيانة الشهرية elevator report">
+        <div>
+          <div class="top">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12A9 9 0 1 1 12 3v9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg></div>
+            <span class="num">#2</span>
+          </div>
+          <h2>تقارير مصاعد الصيانة</h2>
+          <p class="kind">برنامج إعداد وترتيب تقارير مصاعد الصيانة</p>
+          <p class="desc">إعداد وترتيب وتنظيم تقارير الصيانة الدورية والفحص الفني.</p>
+        </div>
+        <div class="act"><a class="btn" href="app.html?n=report">فتح التقارير</a></div>
+      </article>
 
-    <!-- المستخدمين -->
-    <div class="card tab adm" id="tUsers" hidden>
-      <div id="uMsg"></div>
-      <div class="tablewrap"><table id="uTbl"></table></div>
-      <p class="small">لما مندوب جديد يتوظف: غيّر اسم واحد من "احتياطي" لاسمه، وغيّر اسم المستخدم، وفعّله، واعمل له كلمة مرور جديدة.</p>
+      <article class="glass tool" data-search="البحث عن حالة المصعد محرك البحث السريع لمصاعد الصيانة elevator search">
+        <div>
+          <div class="top">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></div>
+            <span class="num">#3</span>
+          </div>
+          <h2>البحث عن حالة المصعد</h2>
+          <p class="kind">محرك البحث السريع لمصاعد الصيانة</p>
+          <p class="desc">استعلام فوري ومباشر عن حالة المصاعد وأعمال الصيانة.</p>
+        </div>
+        <div class="act"><a class="btn" href="app.html?n=search">فتح البحث</a></div>
+      </article>
     </div>
-    <!-- الأسعار والإعدادات -->
-    <div class="card tab adm" id="tPrices" hidden>
-      <h3 style="margin-top:0">الأسعار</h3>
-      <p class="small">السعر = سعر المصعد على 3 وقفات قبل الضريبة، وبيزيد أو يقل بقيمة "كل وقفة". ده سعر مقترح، والمندوب يقدر يعدّل عليه. خانة الأشخاص لو فاضية بتتحسب لوحدها (75 كجم للشخص).</p>
-      <div class="tablewrap"><table id="prTbl" class="edit"></table></div>
-      <datalist id="typeList"></datalist>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-        <button class="btn ghost" onclick="addPriceRow()">+ إضافة سطر</button>
-        <button class="btn" id="prSave" onclick="savePrices()">حفظ الأسعار</button>
-      </div>
-      <div id="prMsg"></div>
-      <h3>الإعدادات</h3>
-      <div class="grid" id="stGrid"></div>
-      <button class="btn" id="stSave" onclick="saveSettings()">حفظ الإعدادات</button>
-      <div id="stMsg"></div>
-    </div>
+    <div class="glass empty" id="noResults" hidden>لا توجد نتائج مطابقة للبحث</div>
   </main>
-</section>
+
+  <footer>
+    <div class="fwrap">
+      <span>شركة مصاعد الفلك © جميع الحقوق محفوظة</span>
+      <button class="btn ghost" onclick="copyPortal()">نسخ رابط البوابة</button>
+    </div>
+  </footer>
+</div>
+
+<div id="toast"></div>
 
 <script>
-const S = {token:null, user:null, cfg:null, period:'week'};
-const store = {
-  get(){ try{ return sessionStorage.getItem('alfalak_t') || localStorage.getItem('alfalak_t'); }catch(e){ return null; } },
-  set(t){ try{ localStorage.setItem('alfalak_t', t); }catch(e){} try{ sessionStorage.setItem('alfalak_t', t); }catch(e){} },
-  clear(){ try{ localStorage.removeItem('alfalak_t'); sessionStorage.removeItem('alfalak_t'); }catch(e){} }
-};
-const $ = id => document.getElementById(id);
-const money = n => Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2});
-const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const msg = (el, text, kind) => { $(el).innerHTML = text ? '<div class="msg '+(kind||'err')+'">'+text+'</div>' : ''; };
-
-/* ===== تحويل الأسماء العربي للإنجليزي بالنطق (مش ترجمة) — نفس الكود في Code.gs و Index.html ===== */
-const TR_WORDS = {
-  // أحياء ومدن
-  'الرياض': 'Riyadh', 'جدة': 'Jeddah', 'جده': 'Jeddah', 'الدمام': 'Dammam', 'الخبر': 'Khobar', 'مكة': 'Makkah', 'مكه': 'Makkah',
-  'المدينة': 'Madinah', 'المدينه': 'Madinah', 'بريدة': 'Buraidah', 'بريده': 'Buraidah', 'القصيم': 'Qassim', 'ابها': 'Abha', 'أبها': 'Abha',
-  'تبوك': 'Tabuk', 'حائل': 'Hail', 'الطائف': 'Taif', 'الخرج': 'Al-Kharj', 'جازان': 'Jazan', 'نجران': 'Najran', 'الجبيل': 'Jubail',
-  'الاحساء': 'Al-Ahsa', 'الأحساء': 'Al-Ahsa', 'الدرعية': 'Diriyah', 'نجد': 'Najd',
-  'العليا': 'Al-Olaya', 'الملز': 'Al-Malaz', 'السليمانية': 'Al-Sulaimaniyah', 'الياسمين': 'Al-Yasmin', 'النرجس': 'Al-Narjis',
-  'الملقا': 'Al-Malqa', 'القادسية': 'Al-Qadisiyah', 'الربوة': 'Al-Rabwah', 'الندوة': 'Al-Nadwa', 'عرقة': 'Irqah', 'حطين': 'Hittin',
-  'الصحافة': 'Al-Sahafa', 'العقيق': 'Al-Aqiq', 'الغدير': 'Al-Ghadir', 'النخيل': 'Al-Nakheel', 'الرحمانية': 'Al-Rahmaniyah',
-  'المروج': 'Al-Muruj', 'المرسلات': 'Al-Mursalat', 'الورود': 'Al-Wurud', 'الوادي': 'Al-Wadi', 'النفل': 'Al-Nafal',
-  'التعاون': 'Al-Taawun', 'الازدهار': 'Al-Izdihar', 'المصيف': 'Al-Masif', 'الفلاح': 'Al-Falah', 'النسيم': 'Al-Naseem',
-  'الروضة': 'Al-Rawdah', 'الريان': 'Al-Rayyan', 'الحمراء': 'Al-Hamra', 'قرطبة': 'Qurtubah', 'اشبيلية': 'Ishbiliyah',
-  'إشبيلية': 'Ishbiliyah', 'غرناطة': 'Ghirnatah', 'اليرموك': 'Al-Yarmouk', 'المونسية': 'Al-Munsiyah', 'الرمال': 'Al-Rimal',
-  'النظيم': 'Al-Nadhim', 'السلي': 'Al-Sulay', 'الشفا': 'Al-Shifa', 'العزيزية': 'Al-Aziziyah', 'عكاظ': 'Okaz', 'بدر': 'Badr',
-  'المنصورة': 'Al-Mansourah', 'الشميسي': 'Al-Shumaisi', 'البديعة': 'Al-Badiah', 'عتيقة': 'Utaiqah', 'نمار': 'Namar',
-  'العريجاء': 'Al-Uraija', 'السويدي': 'Al-Suwaidi', 'الحزم': 'Al-Hazm', 'طويق': 'Tuwaiq', 'المهدية': 'Al-Mahdiyah', 'لبن': 'Laban',
-  'الخليج': 'Al-Khaleej', 'النهضة': 'Al-Nahdah', 'الروابي': 'Al-Rawabi', 'السعادة': 'Al-Saadah', 'الجنادرية': 'Al-Janadriyah',
-  'القيروان': 'Al-Qairawan', 'العارض': 'Al-Arid', 'الخير': 'Al-Khair', 'بنبان': 'Banban', 'الواحة': 'Al-Waha', 'الفيحاء': 'Al-Fayha',
-  'الجزيرة': 'Al-Jazirah', 'السلام': 'Al-Salam', 'المعذر': 'Al-Mathar', 'الرائد': 'Al-Raed', 'الخزامى': 'Al-Khuzama',
-  'المحمدية': 'Al-Muhammadiyah', 'الدار': 'Al-Dar', 'البيضاء': 'Al-Baida', 'ظهرة': 'Dhahrat', 'الملك': 'King',
-  'المعيزيلة': 'Al-Muaizilah', 'الرفيعة': 'Al-Rafiah', 'المغرزات': 'Al-Mughrizat', 'الوزارات': 'Al-Wizarat', 'المربع': 'Al-Murabba',
-  'الفوطة': 'Al-Futah', 'منفوحة': 'Manfuhah', 'الديرة': 'Al-Dirah', 'العود': 'Al-Oud', 'الدفاع': 'Al-Difa', 'الرحاب': 'Al-Rehab',
-  // أسماء
-  'محمد': 'Mohammed', 'أحمد': 'Ahmed', 'احمد': 'Ahmed', 'محمود': 'Mahmoud', 'مصطفى': 'Mostafa', 'خالد': 'Khaled', 'فهد': 'Fahad',
-  'سعود': 'Saud', 'سعد': 'Saad', 'سلطان': 'Sultan', 'فيصل': 'Faisal', 'ناصر': 'Nasser', 'صالح': 'Saleh', 'علي': 'Ali', 'عمر': 'Omar',
-  'عثمان': 'Othman', 'إبراهيم': 'Ibrahim', 'ابراهيم': 'Ibrahim', 'يوسف': 'Youssef', 'حسن': 'Hassan', 'حسين': 'Hussein',
-  'سامي': 'Sami', 'ماجد': 'Majed', 'نايف': 'Naif', 'نواف': 'Nawaf', 'بندر': 'Bandar', 'تركي': 'Turki', 'مشعل': 'Mishal',
-  'منصور': 'Mansour', 'ياسر': 'Yasser', 'وليد': 'Waleed', 'طارق': 'Tariq', 'هاني': 'Hany', 'إيهاب': 'Ehab', 'ايهاب': 'Ehab',
-  'عادل': 'Adel', 'صادق': 'Sadeq', 'مالك': 'Malik', 'مازن': 'Mazen', 'سلمان': 'Salman', 'زياد': 'Ziad', 'حمد': 'Hamad',
-  'راشد': 'Rashed', 'سالم': 'Salem', 'ماهر': 'Maher', 'رمضان': 'Ramadan', 'فوزي': 'Fawzy', 'عبدالله': 'Abdullah',
-  'عبدالرحمن': 'Abdulrahman', 'عبدالعزيز': 'Abdulaziz', 'عبدالكريم': 'Abdulkarim', 'عبدالمجيد': 'Abdulmajeed',
-  'عبدالمحسن': 'Abdulmohsen', 'عبدالإله': 'Abdulelah', 'عبدالاله': 'Abdulelah', 'عبدالرحيم': 'Abdulrahim', 'عبدالملك': 'Abdulmalik',
-  'متعب': 'Miteb', 'مشاري': 'Mishari', 'نادر': 'Nader', 'هشام': 'Hisham', 'وائل': 'Wael', 'أسامة': 'Osama', 'اسامة': 'Osama',
-  'أنس': 'Anas', 'انس': 'Anas', 'بدر': 'Badr', 'جمال': 'Jamal', 'حمزة': 'Hamza', 'رائد': 'Raed', 'ريان': 'Rayan', 'سامر': 'Samer',
-  'شريف': 'Sherif', 'عماد': 'Emad', 'فارس': 'Fares', 'كريم': 'Karim', 'ماجدة': 'Majda', 'نورة': 'Noura', 'سارة': 'Sarah',
-  'فاطمة': 'Fatimah', 'مريم': 'Maryam', 'حجي': 'Hajji', 'زهران': 'Zahran', 'العتيبي': 'Al-Otaibi', 'القحطاني': 'Al-Qahtani',
-  'الدوسري': 'Al-Dosari', 'الشمري': 'Al-Shammari', 'الغامدي': 'Al-Ghamdi', 'الزهراني': 'Al-Zahrani', 'المطيري': 'Al-Mutairi',
-  'الحربي': 'Al-Harbi', 'العنزي': 'Al-Anazi', 'السبيعي': 'Al-Subaie', 'الشهري': 'Al-Shehri', 'العمري': 'Al-Omari',
-  'الفيفي': 'Al-Faifi', 'السهلي': 'Al-Sahli', 'الرشيدي': 'Al-Rashidi', 'التميمي': 'Al-Tamimi', 'المالكي': 'Al-Malki',
-  'سعيد': 'Saeed', 'يحيى': 'Yahya', 'عيسى': 'Eisa', 'موسى': 'Musa', 'مرتضى': 'Murtada', 'الديار': 'Al-Diyar', 'الذهبية': 'Al-Dhahabiya',
-  'الراجحي': 'Al-Rajhi', 'جرير': 'Jarir', 'سما': 'Sama', 'ابعاد': 'Abaad', 'أبعاد': 'Abaad', 'طيبة': 'Taibah',
-  'أبو': 'Abu', 'ابو': 'Abu', 'أم': 'Umm', 'ام': 'Umm', 'بن': 'Bin', 'ابن': 'Bin', 'آل': 'Al',
-  'مهندس': 'Eng.', 'المهندس': 'Eng.', 'م': 'Eng.', 'م.': 'Eng.', 'دكتور': 'Dr.', 'الدكتور': 'Dr.', 'د': 'Dr.', 'د.': 'Dr.',
-  'الشيخ': 'Sheikh', 'شيخ': 'Sheikh', 'السيد': '', 'السادة': '', 'الاستاذ': 'Mr.', 'الأستاذ': 'Mr.', 'استاذ': 'Mr.', 'أستاذ': 'Mr.',
-  'حي': '', 'مشروع': '', 'عمارة': 'Building', 'عماره': 'Building', 'فيلا': 'Villa', 'برج': 'Tower', 'مجمع': 'Complex',
-  'شركة': 'Company', 'شركه': 'Company', 'مؤسسة': 'Est.', 'مؤسسه': 'Est.', 'مكتب': 'Office',
-};
-const TR_LET = { 'ا': 'a', 'أ': 'a', 'إ': 'i', 'آ': 'aa', 'ب': 'b', 'ت': 't', 'ث': 'th', 'ج': 'j', 'ح': 'h', 'خ': 'kh', 'د': 'd',
-  'ذ': 'dh', 'ر': 'r', 'ز': 'z', 'س': 's', 'ش': 'sh', 'ص': 's', 'ض': 'd', 'ط': 't', 'ظ': 'z', 'ع': 'a', 'غ': 'gh', 'ف': 'f',
-  'ق': 'q', 'ك': 'k', 'ل': 'l', 'م': 'm', 'ن': 'n', 'ه': 'h', 'و': 'w', 'ي': 'y', 'ى': 'a', 'ة': 'ah', 'ء': '', 'ئ': 'e', 'ؤ': 'o' };
-const TR_SUFFIX = ['Company', 'Est.', 'Office', 'Building', 'Villa', 'Tower', 'Complex'];
-const TR_DIGITS = '٠١٢٣٤٥٦٧٨٩';
-
-function trCap_(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
-
-/** كلمة واحدة من غير قاموس: حرف بحرف، مع حروف علة تقريبية */
-function trWord_(w) {
-  const ch = w.replace(/[ً-ْـ]/g, '').split('');
-  let out = '';
-  for (let i = 0; i < ch.length; i++) {
-    const c = ch[i], prev = ch[i - 1], next = ch[i + 1];
-    const vowelLetter = c === 'ا' || c === 'و' || c === 'ي' || c === 'ى' || c === 'أ' || c === 'إ' || c === 'آ';
-    let t;
-    if (c === 'و') t = (i === 0 || (prev && 'اوي'.indexOf(prev) >= 0)) ? 'w' : 'o';
-    else if (c === 'ي') t = (i === 0 || (prev && 'اوي'.indexOf(prev) >= 0) || (next && 'اوي'.indexOf(next) >= 0 && i > 0)) ? 'y' : 'i';
-    else if (c === 'ع' && i === 0) t = 'A';
-    else if (c === 'ع') t = (prev && 'اوي'.indexOf(prev) >= 0) ? '' : 'a';
-    else t = TR_LET[c] != null ? TR_LET[c] : c;
-    out += t;
-    // أول حرفين ساكنين ورا بعض في أول الكلمة: نحط بينهم a (قحطان ← Qahtan)
-    if (i === 0 && !vowelLetter && next && 'اويىأإآة'.indexOf(next) < 0 && ch.length > 2) out += 'a';
-  }
-  return trCap_(out.replace(/aa+/g, 'aa').replace(/([^a])\1\1+/g, '$1$1'));
-}
-
-/** النص كله: القاموس الأول (والتصليحات اللي المندوبين عملوها قبل كده)، وبعدين حرف بحرف */
-function translitAr(text, learned) {
-  let s = String(text || '').trim().replace(/\s+/g, ' ');
-  if (!s) return '';
-  s = s.replace(/[٠-٩]/g, d => String(TR_DIGITS.indexOf(d)));
-  if (learned && learned[s]) return learned[s];
-  if (!/[؀-ۿ]/.test(s)) return s;
-  // عبد + الاسم = اسم واحد (عبد الله ← Abdullah)
-  s = s.replace(/عبد\s+ال/g, 'عبدال');
-  let words = s.split(' ');
-  let company = '', out = [];
-  words.forEach(w => {
-    if (learned && learned[w]) { out.push(learned[w]); return; }
-    if (Object.prototype.hasOwnProperty.call(TR_WORDS, w)) {
-      const t = TR_WORDS[w];
-      if (TR_SUFFIX.indexOf(t) >= 0) company = t; else if (t) out.push(t);
-      return;
-    }
-    if (!/[؀-ۿ]/.test(w)) { out.push(w); return; }
-    if (/^عبدال/.test(w)) { out.push('Abdul' + trWord_(w.slice(5)).toLowerCase()); return; }
-    if (/^(ال|بال|وال)/.test(w) && w.length > 3) {
-      const rest = w.replace(/^(ب|و)?ال/, '');
-      out.push('Al-' + trWord_(rest));
-      return;
-    }
-    out.push(trWord_(w));
-  });
-  let r = out.join(' ').replace(/\s+/g, ' ').trim();
-  if (company) r = (r + ' ' + company).trim();
-  return r;
-}
-/* ===== نهاية التحويل ===== */
-
-/* ===== زيادات السعر المقترح (نفس الكود في Code.gs و Index.html) ===== */
-function priceExtras(x, carDoors, pit, overhead) {
-  const items = [];
-  if (Number(carDoors) === 2 && x.carDoor2) items.push(['مدخل تاني بالكابينة', x.carDoor2]);
-  const lowPit = Number(pit) > 0 && Number(pit) < x.minPit;
-  const lowOH = Number(overhead) > 0 && Number(overhead) < x.minOverhead;
-  if (lowPit && lowOH) items.push(['حفرة وهيدروم صغيرين', x.both]);
-  else if (lowPit) items.push(['حفرة أقل من ' + x.minPit + ' مم', x.lowPit]);
-  else if (lowOH) items.push(['هيدروم أقل من ' + x.minOverhead + ' مم', x.lowOverhead]);
-  return { add: items.reduce((a, i) => a + Number(i[1] || 0), 0), items: items };
-}
-/** ارتفاع الباب حسب الموديل: سيلكوم وسيلكوم صيني 2000، SJ و GKE 2100 */
-function doorHeightFor(brand, isGke) {
-  if (isGke) return 2100;
-  return /SJ|GKE/i.test(String(brand || '')) && !/SCG/i.test(String(brand || '')) ? 2100 : 2000;
-}
-/* ===== نهاية الزيادات ===== */
-
 const API = 'https://script.google.com/macros/s/AKfycbzd84J7w9XnBwh1N6LazHpsEYieBlOtewDC2i3hhY46V6Xf0qoKnD6GcAiUi06q-Qfb6Q/exec';
+const PORTAL = 'https://abomosa960-web.github.io/alfalak-offers/';
+const KEY = 'alfalak_t', OKKEY = 'alfalak_ok';
+const $ = id => document.getElementById(id);
+const S = {token:null, user:null};
+
+/* نفس مفتاح الدخول بتاع نظام العروض — الدخول مرة واحدة بيفتح كل البوابة */
+const store = {
+  get(){ try{ return sessionStorage.getItem(KEY) || localStorage.getItem(KEY); }catch(e){ return null; } },
+  set(t){ try{ localStorage.setItem(KEY, t); }catch(e){} try{ sessionStorage.setItem(KEY, t); }catch(e){} },
+  clear(){ try{ localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); sessionStorage.removeItem(OKKEY); }catch(e){} }
+};
+function markOk(){ try{ sessionStorage.setItem(OKKEY, JSON.stringify({t:S.token, at:Date.now()})); }catch(e){} }
+
 async function call(action, p){
   let r;
   try{
     const res = await fetch(API, {method:'POST', body: JSON.stringify({action, token:S.token, p:p||{}})});
     r = await res.json();
-  }catch(e){ throw new Error('مشكلة في الاتصال — اتأكد من النت وجرّب تاني'); }
+  }catch(e){ const er = new Error('مشكلة في الاتصال — اتأكد من النت وجرّب تاني'); er.net = true; throw er; }
   if (r && r.ok) return r.data;
-  if (r && r.auth) { logout(true); }
-  if (r && r.mustChange) { showPwChange(true); }
-  throw new Error(r && r.error ? r.error : 'حصل خطأ، جرّب تاني');
+  const er = new Error(r && r.error ? r.error : 'حصل خطأ، جرّب تاني');
+  er.auth = !!(r && r.auth); er.mustChange = !!(r && r.mustChange);
+  throw er;
+}
+function msg(id, text, kind){ const el = $(id); el.textContent = text || ''; el.className = 'msg ' + (kind || 'err'); }
+function show(id){
+  $('loading').hidden = id !== 'loading';
+  $('vLogin').hidden = id !== 'vLogin';
+  $('vPortal').hidden = id !== 'vPortal';
 }
 
-function show(id){ ['vLogin','vPw','vApp'].forEach(v => $(v).hidden = (v !== id)); }
+/* رابط الرجوع بعد الدخول (لما حد يفتح التقارير أو البحث من غير ما يكون داخل) */
+function nextUrl(){
+  const n = new URLSearchParams(location.search).get('next');
+  return (n && n.indexOf('https://abomosa960-web.github.io/') === 0) ? n : '';
+}
+/* أول دخول (كلمة مرور مؤقتة): صفحة العروض هي اللي بتغيّرها */
+function goChangePassword(){ location.href = 'offers/'; }
 
-/* ---------- الدخول ---------- */
+function enter(user){
+  S.user = user; markOk();
+  const n = nextUrl();
+  if (n) { location.replace(n); return; }
+  $('whoName').textContent = user.name || user.username || '';
+  $('whoRole').textContent = user.role === 'مدير' ? '— مدير' : '';
+  show('vPortal');
+}
+
+async function doLogin(e){
+  e.preventDefault(); msg('lMsg',''); $('lBtn').disabled = true;
+  try{
+    const r = await call('login', {username:$('lUser').value, password:$('lPass').value});
+    S.token = r.token; store.set(r.token); $('lPass').value = '';
+    if (r.user && r.user.mustChange) return goChangePassword();
+    enter(r.user);
+  }catch(err){ msg('lMsg', err.message); }
+  $('lBtn').disabled = false;
+}
+
 function toggleForgot(kind){
   const f = $('fForgot');
   f.hidden = (f.dataset.kind === kind) ? !f.hidden : false;
@@ -481,766 +271,48 @@ async function doForgot(e){
     await call('forgotPassword', {email:$('fgEmail').value, kind});
     msg('fgMsg', kind === 'username'
       ? 'تم — بصّ على الإيميل (ولو مش لاقيه شوف الـ Spam).'
-      : 'تم — بصّ على الإيميل (ولو مش لاقيه شوف الـ Spam). ادخل بكلمة المرور اللي وصلتك.','ok');
+      : 'تم — بصّ على الإيميل (ولو مش لاقيه شوف الـ Spam). ادخل بكلمة المرور اللي وصلتك.', 'ok');
     $('lUser').value = $('fgEmail').value; $('lPass').value = ''; $('lPass').focus();
   }catch(err){ msg('fgMsg', err.message); }
   $('fgBtn').disabled = false;
 }
-async function doLogin(e){
-  e.preventDefault(); msg('lMsg',''); $('lBtn').disabled = true;
-  try{
-    const r = await call('login', {username:$('lUser').value, password:$('lPass').value});
-    S.token = r.token; S.user = r.user; store.set(r.token); $('lPass').value='';
-    if (r.user.mustChange) showPwChange(true); else await start();
-  }catch(err){ msg('lMsg', err.message); }
-  $('lBtn').disabled = false;
-}
 
-function logout(silent){
-  if (S.token && !silent) call('logout').catch(()=>{});
+async function logout(){
+  if (S.token){ try{ await Promise.race([call('logout'), new Promise(r => setTimeout(r, 1500))]); }catch(e){} }
   S.token = null; S.user = null; store.clear();
-  $('who').hidden = true; show('vLogin');
+  history.replaceState(null, '', location.pathname);
+  show('vLogin');
 }
 
-function showPwChange(forced){
-  msg('pMsg',''); $('pOld').value=''; $('pNew').value=''; $('pNew2').value='';
-  $('pUser').value = S.user ? S.user.username : '';
-  $('pEmail').value = S.user ? (S.user.email || '') : '';
-  $('pNote').textContent = forced ? 'أول دخول: لازم تختار كلمة مرور خاصة بيك (وممكن تغيّر اسم المستخدم كمان).' : '';
-  $('pCancel').hidden = !!forced;
-  show('vPw');
-}
-
-async function doPwChange(e){
-  e.preventDefault(); msg('pMsg','');
-  if ($('pNew').value !== $('pNew2').value) return msg('pMsg','كلمتين المرور مش زي بعض');
-  $('pBtn').disabled = true;
-  try{
-    S.user = await call('changeCredentials', {oldPassword:$('pOld').value, newUsername:$('pUser').value, email:$('pEmail').value, newPassword:$('pNew').value});
-    await start();
-  }catch(err){ msg('pMsg', err.message); }
-  $('pBtn').disabled = false;
-}
-
-/* ---------- بداية التطبيق ---------- */
-function applyDefaults(){
-  const d = S.cfg && S.cfg.settings && S.cfg.settings.discount;
-  // الخصم مش بيتحط لوحده — لو المندوب ما كتبش خصم العرض بيطلع من غير سطر خصم
-  // الأسهم في خانة السعر والخصم بتزوّد/تنقّص بالخطوة (500) — والكتابة باليد حرة
-  const st = Number(S.cfg && S.cfg.settings && S.cfg.settings.step) || 500;
-  $('fUnit').step = st; $('fDisc').step = st;
-  if (d != null) $('fDisc').placeholder = 'من غير خصم' + (Number(d) ? ' (المقترح ' + Number(d).toLocaleString('en') + ')' : '');
-}
-async function start(){
-  S.cfg = await call('config'); applyDefaults();
-  S.user = S.cfg.user;
-  $('whoName').textContent = S.user.name + (S.user.role==='مدير' ? ' — مدير' : '');
-  $('who').hidden = false;
-  const admin = S.user.role === 'مدير';
-  document.querySelectorAll('.adm').forEach(el => el.hidden = !admin);
-  $('tabList').textContent = admin ? 'كل العروض' : 'عروضي';
-  fillTypes(); recalc();
-  showApp(); openTab('tNew');
-  if (admin) loadUsersIntoFilter();
-  if (canPickDir) setTimeout(() => syncPending(false), 800);
-}
-// لما ترجع للصفحة (من تاب تاني) نشوف لو فيه عروض جديدة اتعملت من الموبايل
-window.addEventListener('focus', () => { if (S.user && canPickDir) syncPending(false); });
-function showApp(){ show('vApp'); }
-
-document.getElementById('tabs').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return; openTab(b.dataset.t);
-});
-function openTab(t){
-  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t===t));
-  document.querySelectorAll('.tab').forEach(x => x.hidden = (x.id !== t) || (x.classList.contains('adm') && S.user.role!=='مدير'));
-  if (t==='tList') loadList();
-  if (t==='tDash') loadDash(S.period);
-  if (t==='tUsers') loadUsers();
-  if (t==='tPrices') loadPrices();
-}
-
-/* ---------- عرض جديد ---------- */
-function fillTypes(){
-  const types = [...new Set(S.cfg.products.map(p => p.type))];
-  $('fType').innerHTML = types.map(t => '<option>'+esc(t)+'</option>').join('');
-  fillLoads();
-}
-function autoEn(){
-  const L = (S.cfg && S.cfg.learned) || {};
-  if (!$('fClientEn').dataset.touched) $('fClientEn').value = translitAr($('fClient').value, L);
-  if (!$('fDistEn').dataset.touched) $('fDistEn').value = translitAr($('fDist').value, L);
-}
-function enTouched(el){ if (el.value.trim()) el.dataset.touched = 1; else { delete el.dataset.touched; autoEn(); } }
-function fillLoads(){
-  const t = $('fType').value;
-  $('enBox').hidden = !/GKE/i.test(t);
-  autoDoorType();
-  const loads = S.cfg.products.filter(p => p.type === t).sort((x,y) => x.load - y.load);
-  $('fLoadSel').innerHTML = loads.map(p => '<option value="'+p.load+'">'+loadLabel(p.load, p.persons)+'</option>').join('') +
-    '<option value="other">حمولة تانية — اكتبها بإيدك</option>';
-  const def = /GKE/i.test(t) ? 630 : 450;  // الافتراضي: GKE 630، والمحلي 450
-  $('fLoadSel').value = loads.some(p => p.load === def) ? String(def) : (loads[0] ? String(loads[0].load) : 'other');
-  refreshLiftLoads();
-  onLoadSel();
-}
-const loadLabel = (load, persons) => load+' كجم / '+(persons || Math.floor(load/75))+' أشخاص';
-function onLoadSel(){
-  const other = $('fLoadSel').value === 'other';
-  $('fLoadTxt').hidden = !other;
-  if (other){
-    const p = S.cfg.products.find(x => x.type === $('fType').value && x.load === 630);
-    if (!$('fLoadTxt').value) $('fLoadTxt').value = loadLabel(630, p && p.persons);
-    $('fLoadTxt').focus(); $('fLoadTxt').select();
-  }
-  onLoadChange();
-}
-/** الحمولة والأشخاص: من القايمة، أو من اللي اتكتب (أول رقم = الحمولة، تاني رقم = الأشخاص) */
-function onLoadChange(){
-  let load, persons;
-  if ($('fLoadSel').value === 'other'){
-    const n = ($('fLoadTxt').value.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).match(/\d+/g) || []).map(Number);
-    load = n[0] || 0; persons = n[1] || (load ? Math.floor(load/75) : '');
-  } else {
-    load = Number($('fLoadSel').value);
-    const p = S.cfg.products.find(x => x.type === $('fType').value && x.load === load);
-    persons = p && p.persons ? p.persons : Math.floor(load/75);
-  }
-  $('fLoad').value = load || ''; $('fPersons').value = persons || '';
-  recalc();
-}
-/** البئر 1600 أو أكتر = باب سنتر تلقائي. أقل من كده المندوب يختار. */
-/** الافتراضي: باب 800 جانبي، تلبيس ستانلس فضي، موديل سيلكوم (أو SJ). في GKE: باب سنتر وموديل GKE (أو SJ). */
-function autoDoorType(){
-  const gke = /GKE/i.test($('fType').value), dt = $('fDoorType'), br = $('fBrand');
-  if (!dt.dataset.touched) dt.value = gke ? 'سنتر' : 'جانبي';
-  // GKE: موديل GKE بس — المحلي: سيلكوم، سيلكوم صيني، SJ
-  const list = gke ? ['GKE'] : ['سيلكوم','سيلكوم صيني','SJ'];
-  const cur = br.value;
-  br.innerHTML = list.map(x => '<option>'+x+'</option>').join('');
-  if (br.dataset.touched && list.indexOf(cur) >= 0) br.value = cur; else { br.value = list[0]; delete br.dataset.touched; }
-  autoDoorH();
-  $('fDoorHint').textContent = '';
-  // الافتراضي المكتوب في القوالب
-  $('fInstall').placeholder = gke ? '180 (زي القالب)' : '60 (زي القالب)';
-  $('fWarranty').placeholder = gke ? '2 (زي القالب)' : '10 (زي القالب)';
-  $('fMaint').placeholder = '1 (زي القالب)';
-  checkInstall(); checkNotes();
-}
-/** الملاحظات: GKE بالإنجليزي بس — المحلي بالعربي بس */
-function checkNotes(){
-  const v = $('fNotes').value, gke = /GKE/i.test($('fType').value);
-  $('fNotes').dir = gke ? 'ltr' : 'rtl';
-  $('fNotes').placeholder = gke ? 'English only — e.g. The price does not include scaffolding.' : 'بالعربي بس — مثلاً: السعر لا يشمل السقالات.';
-  let bad = '';
-  if (v.trim() && gke && /[\u0600-\u06FF]/.test(v)) bad = '⚠️ عرض GKE إنجليزي — اكتب الملاحظات بالإنجليزي بس';
-  if (v.trim() && !gke && /[A-Za-z]/.test(v)) bad = '⚠️ العرض ده عربي — اكتب الملاحظات بالعربي بس (من غير حروف إنجليزي)';
-  msg('fNotesMsg', bad, 'err');
-  return !bad;
-}
-/** مدة التركيب: أقل حاجة شهر، وفي GKE أقل من 180 يوم = تحذير (مسموح) */
-function checkInstall(){
-  const v = Number($('fInstall').value) || 0, gke = /GKE/i.test($('fType').value);
-  if (!$('fInstall').value) return msg('fInstallMsg','');
-  if (v < 30) return msg('fInstallMsg','أقل مدة تركيب 30 يوم');
-  if (gke && v < 180) return msg('fInstallMsg','⚠️ تأكد من مدة التركيب حيث أن المصعد المختار مستورد — تأكد إن تسليم المصعد هيكون في الوقت المحدد.','warn');
-  msg('fInstallMsg','');
-}
-/* ---------- بنود التسعير الإضافية ---------- */
-const maxItems = () => 6;
-function addItem(it){
-  it = it || {};
-  const box = $('xItems'), n = box.children.length + 2 + liftCards().length;
-  if (box.children.length + liftCards().length >= maxItems()) return alert('أقصى عدد سطور زيادة في جدول العرض المالي ' + maxItems() + ' (مصاعد تانية + بنود) — عشان ترتيب صفحات العرض ما يبوظش');
-  const d = document.createElement('div');
-  d.className = 'grid xitem';
-  d.style.cssText = 'border:1px dashed var(--line);border-radius:10px;padding:8px;margin-bottom:8px';
-  d.innerHTML =
-    '<div class="field" style="max-width:80px"><label>رقم البند</label><input data-k="no" value="'+esc(it.no || n)+'"></div>'+
-    '<div class="field"><label>النوع</label><input data-k="type" placeholder="مثلاً: فك المصعد القديم" value="'+esc(it.type || '')+'"></div>'+
-    '<div class="field wide"><label>المواصفات</label><input data-k="spec" placeholder="مثلاً: فك المصعد" value="'+esc(it.spec || '')+'"></div>'+
-    '<div class="field" style="max-width:90px"><label>الكمية</label><input data-k="qty" type="number" min="1" value="'+esc(it.qty || 1)+'"></div>'+
-    '<div class="field"><label>سعر الوحدة (قبل الضريبة)</label><input data-k="price" type="number" min="0" value="'+esc(it.price == null ? '' : it.price)+'"></div>'+
-    '<div class="field" style="max-width:70px;align-self:end"><button type="button" class="btn ghost" title="حذف البند" onclick="this.closest(\'.xitem\').remove();recalc()">×</button></div>';
-  box.appendChild(d);
-  recalc();
-}
-function readItems(){
-  return [...document.querySelectorAll('#xItems .xitem')].map(d => {
-    const o = {}; d.querySelectorAll('[data-k]').forEach(el => o[el.dataset.k] = el.value.trim()); return o;
-  }).filter(o => o.type || o.spec || o.price);
-}
-function itemsTotal(){ return readItems().reduce((a, o) => a + (Number(o.qty) || 1) * (Number(o.price) || 0), 0); }
-function clearItems(){ $('xItems').innerHTML = ''; }
-
-/* ---------- مصاعد تانية في نفس العرض (L2، L3…) ---------- */
-const MAX_MORE_LIFTS = 4;
-const liftCards = () => [...document.querySelectorAll('#xLifts .xlift')];
-/** الحمولة المقترحة للمصعد الجديد: 450 → 630، و630 → 1000 (محلي) أو 1050 (GKE)، وغير كده الحمولة اللي بعدها */
-function nextLoad(load){
-  const gke = /GKE/i.test($('fType').value);
-  if (load === 450) return 630;
-  if (load === 630) return gke ? 1050 : 1000;
-  const loads = S.cfg.products.filter(p => p.type === $('fType').value).map(p => p.load).sort((a,b) => a - b);
-  return loads.find(l => l > load) || load;
-}
-function mainLift(){
-  const f = $('fOffer').elements;
-  return {label:'L1', lifts:f['lifts'].value, load:Number(f['load'].value) || 630, stops:f['stops'].value, landingDoors:f['landingDoors'].value,
-    carDoors:f['carDoors'].value, speed:f['speed'].value, shaftW:f['shaftW'].value, shaftD:f['shaftD'].value,
-    overhead:f['overhead'].value, pit:f['pit'].value, cabin:'', doorW:f['doorW'].value, doorType:f['doorType'].value};
-}
-function liftLoadOptions(cur){
-  const loads = S.cfg.products.filter(p => p.type === $('fType').value).map(p => p.load).sort((a,b) => a - b);
-  if (cur && loads.indexOf(Number(cur)) < 0) loads.push(Number(cur));
-  return loads.sort((a,b) => a - b).map(l => '<option value="'+l+'"'+(Number(cur) === l ? ' selected' : '')+'>'+l+' كجم</option>').join('');
-}
-/** مصعد جديد = نسخة من اللي فوقه (نفس الوقفات والبئر والحفرة والهيدروم والسرعة والأبواب) والحمولة بس اللي بتكبر */
-function addLift(o, saved){
-  const box = $('xLifts');
-  if (box.children.length >= MAX_MORE_LIFTS) return alert('أقصى عدد مصاعد في العرض ' + (MAX_MORE_LIFTS + 1) + ' (L1 لـ L' + (MAX_MORE_LIFTS + 1) + ')');
-  if (!saved && box.children.length + readItems().length >= maxItems()) return alert('أقصى عدد سطور زيادة في جدول العرض المالي ' + maxItems() + ' (مصاعد تانية + بنود)');
-  if (!o){
-    const ls = readLifts(), prev = ls.length ? ls[ls.length - 1] : mainLift();
-    o = Object.assign({}, prev, {lifts: 1, load: nextLoad(Number(prev.load)), cabin: '', price: '', label: ''});
-  }
-  const used = new Set(['L1'].concat(readLifts().map(l => String(l.label).toUpperCase())));
-  let n = 2; while (used.has('L' + n)) n++;
-  const label = saved && o.label ? o.label : 'L' + n;
-  const sel = (k, opts) => '<select data-k="'+k+'">' + opts.map(v => '<option value="'+esc(v[0])+'"'+(String(o[k]) === String(v[0]) ? ' selected' : '')+'>'+esc(v[1])+'</option>').join('') + '</select>';
-  const num = (k, lbl, extra) => '<div class="field"><label>'+lbl+'</label><input data-k="'+k+'" type="number" inputmode="numeric" value="'+esc(o[k] == null ? '' : o[k])+'"'+(extra || '')+'></div>';
-  const d = document.createElement('div');
-  d.className = 'xlift';
-  d.style.cssText = 'border:1px dashed var(--gold);border-radius:10px;padding:10px;margin-bottom:10px';
-  d.innerHTML =
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b class="xl-title">المصعد '+esc(label)+'</b>'+
-    '<button type="button" class="btn ghost" title="شيل المصعد ده" onclick="this.closest(\'.xlift\').remove();recalc()">×</button></div>'+
-    '<div class="grid">'+
-      '<div class="field" style="max-width:90px"><label>الاسم</label><input data-k="label" value="'+esc(label)+'" oninput="this.closest(\'.xlift\').querySelector(\'.xl-title\').textContent=\'المصعد \'+this.value"></div>'+
-      num('lifts', 'عدد المصاعد', ' min="1"')+
-      '<div class="field"><label>الحمولة</label><select data-k="load">'+liftLoadOptions(o.load)+'</select></div>'+
-      num('stops', 'عدد الوقفات', ' min="2" oninput="liftStops(this)"')+
-      num('landingDoors', 'الأبواب الخارجية', ' min="2" oninput="this.dataset.touched=1"')+
-      '<div class="field"><label>مداخل الكابينة</label>'+sel('carDoors', [['1','مدخل واحد'],['2','مدخلين']])+'</div>'+
-      '<div class="field"><label>السرعة</label>'+sel('speed', [['1','1 متر/ث'],['1.5','1.5 متر/ث'],['2','2 متر/ث']])+'</div>'+
-      num('shaftW', 'عرض البئر (مم)')+num('shaftD', 'عمق البئر (مم)')+
-      num('overhead', 'الأوفر هيد (مم)')+num('pit', 'عمق الحفرة (مم)')+
-      '<div class="field wide"><label>مقاس الكابينة</label><input data-k="cabin" placeholder="سيبها فاضية = أكبر كابينة ممكنة" value="'+esc(o.cabin || '')+'"></div>'+
-      '<div class="field"><label>عرض الباب</label>'+sel('doorW', [['800','800 مم'],['700','700 مم'],['650','650 مم']])+'</div>'+
-      '<div class="field"><label>نوع الباب</label>'+sel('doorType', [['جانبي','جانبي'],['سنتر','سنتر'],['نص أوتوماتيك','نص أوتوماتيك']])+'</div>'+
-      '<div class="field"><label>سعر المصعد قبل الضريبة</label><input data-k="price" type="number" min="0" step="'+((S.cfg && Number(S.cfg.settings.step)) || 500)+'" value="'+esc(o.price || '')+'" oninput="this.dataset.touched=1"'+(saved ? ' data-touched="1"' : '')+'><div class="small xl-sug"></div></div>'+
-    '</div>';
-  box.appendChild(d);
-  if (saved) d.querySelector('[data-k=landingDoors]').dataset.touched = 1;
-  recalc();
-  if (!saved && d.scrollIntoView) d.scrollIntoView({behavior:'smooth', block:'center'});
-}
-function liftStops(el){
-  const l = el.closest('.xlift').querySelector('[data-k=landingDoors]');
-  if (!l.dataset.touched) l.value = el.value;
-}
-function readLifts(){
-  return liftCards().map(d => { const o = {}; d.querySelectorAll('[data-k]').forEach(el => o[el.dataset.k] = el.value.trim()); return o; });
-}
-function clearLifts(){ $('xLifts').innerHTML = ''; }
-function refreshLiftLoads(){ liftCards().forEach(d => { const s = d.querySelector('[data-k=load]'); s.innerHTML = liftLoadOptions(s.value); }); }
-function liftSuggest(o){
-  const prod = S.cfg.products.find(p => p.type === $('fType').value && p.load === Number(o.load));
-  if (!prod || prod.base == null || !Number(o.stops)) return null;
-  const x = S.cfg.settings.extras;
-  return prod.base + (Number(o.stops) - 3) * prod.perStop + (x ? priceExtras(x, o.carDoors, o.pit, o.overhead).add : 0);
-}
-/** سعر المصاعد التانية: المقترح لو المندوب ما كتبش سعر بنفسه */
-function liftsTotal(){
-  let t = 0;
-  liftCards().forEach(d => {
-    const o = {}; d.querySelectorAll('[data-k]').forEach(el => o[el.dataset.k] = el.value.trim());
-    const p = d.querySelector('[data-k=price]'), sug = liftSuggest(o);
-    if (!p.dataset.touched) p.value = sug != null ? sug : '';
-    d.querySelector('.xl-sug').innerHTML = sug != null ? 'المقترح: ' + money(sug) + (Number(p.value) !== sug ? ' — <a href="#" onclick="var p=this.closest(\'.xlift\').querySelector(\'[data-k=price]\');delete p.dataset.touched;recalc();return false">رجّع المقترح</a>' : '') : 'مفيش سعر مقترح للحمولة دي — اكتب السعر';
-    t += (parseInt(o.lifts, 10) || 1) * (Number(p.value) || 0);
+function filterCards(){
+  const q = $('q').value.toLowerCase().trim();
+  let n = 0;
+  document.querySelectorAll('.tool').forEach(c => {
+    const hit = !q || c.dataset.search.toLowerCase().includes(q);
+    c.hidden = !hit; if (hit) n++;
   });
-  return t;
+  $('noResults').hidden = n > 0;
 }
-function toggleMore(show){
-  const b = $('moreBox'); b.hidden = show === undefined ? !b.hidden : !show;
-  $('moreBtn').textContent = (b.hidden ? '+ ' : '− ') + 'خيارات إضافية';
-}
-/** ارتفاع الباب لوحده حسب الموديل (GKE دايماً 2100) — والمندوب يقدر يغيّره في المحلي */
-function autoDoorH(){
-  const gke = /GKE/i.test($('fType').value), h = $('fDoorH');
-  h.disabled = gke;
-  if (gke) h.value = '2100';
-  else if (!h.dataset.touched) h.value = String(doorHeightFor($('fBrand').value, false));
-}
-function syncDoors(){ if (!$('fLanding').dataset.touched) $('fLanding').value = $('fStops').value; }
-
-function current(){
-  const f = $('fOffer').elements;
-  const load = Number(f['load'].value) || 0;
-  const prod = S.cfg.products.find(p => p.type === f['type'].value && p.load === load);
-  const lifts = parseInt(f['lifts'].value,10) || 0;
-  const stops = parseInt(f['stops'].value,10) || 0;
-  const discount = Number(f['discount'].value) || 0;
-  return {prod, load, lifts, stops, discount, carDoors: f['carDoors'].value, pit: f['pit'].value, overhead: f['overhead'].value};
-}
-function sugExtras(){
-  const c = current(), x = S.cfg.settings.extras;
-  return x ? priceExtras(x, c.carDoors, c.pit, c.overhead) : {add: 0, items: []};
-}
-function suggestion(){
-  const {prod, stops} = current();
-  return prod && prod.base != null && stops ? prod.base + (stops-3)*prod.perStop + sugExtras().add : null;
-}
-function useSuggestion(){ delete $('fUnit').dataset.touched; recalc(); }
-function recalc(){
-  if (!S.cfg) return;
-  const nL = liftCards().length;
-  $('hLifts').hidden = !nL; $('hL1').textContent = nL ? 'المصعد L1' : 'المصعد';
-  $('addLiftBtn').textContent = '+ إضافة مصعد' + (nL < MAX_MORE_LIFTS ? ' (L' + (nL + 2) + ')' : '');
-  const lt = liftsTotal();
-  const {lifts, stops, discount} = current();
-  const st = S.cfg.settings, P = $('pricePanel');
-  const sug = suggestion();
-  if (!$('fUnit').dataset.touched) $('fUnit').value = sug != null ? sug : '';
-  $('fSuggest').innerHTML = sug != null
-    ? 'السعر المقترح: '+money(sug)+(sugExtras().items.length ? ' <span class="small">(شامل '+sugExtras().items.map(i => i[0]+' +'+money(i[1])).join('، ')+')</span>' : '')+(Number($('fUnit').value)!==sug ? ' — <a href="#" onclick="useSuggestion();return false">رجّع المقترح</a>' : '')
-    : 'مفيش سعر مقترح للحمولة دي — اكتب السعر';
-  const unit = Number($('fUnit').value) || 0;
-  if (!unit){ P.innerHTML = '<div class="na">اكتب سعر المصعد</div>'; return; }
-  if (stops < st.minStops || stops > st.maxStops){ P.innerHTML = '<div class="na">عدد الوقفات من '+st.minStops+' لـ '+st.maxStops+'</div>'; return; }
-  const xt = itemsTotal(), sub = unit * lifts + lt + xt;
-  const more = readLifts();
-  const net = sub - discount, vat = Math.round(net*st.vat*100)/100, total = net + vat;
-  P.innerHTML =
-    '<h3 style="margin-top:0">السعر</h3>'+
-    (more.length
-      ? row('L1: ' + lifts + ' × ' + money(unit), money(unit * lifts)) +
-        more.map(o => row(esc(o.label || 'L') + ': ' + (parseInt(o.lifts, 10) || 1) + ' × ' + money(Number(o.price) || 0), money((parseInt(o.lifts, 10) || 1) * (Number(o.price) || 0)))).join('')
-      : row('سعر المصعد', money(unit)) + row('عدد المصاعد', lifts))+
-    (xt ? row('بنود إضافية', money(xt)) : '')+
-    row('الإجمالي', money(sub))+
-    row('الخصم', discount ? '- '+money(discount) : '0')+
-    row('بعد الخصم', money(net))+
-    row('الضريبة '+Math.round(st.vat*100)+'%', money(vat))+
-    '<div class="row"><span>الإجمالي شامل الضريبة</span></div><div class="total num">'+money(total)+' ريال</div>'+
-    (discount >= sub ? '<div class="na">الخصم أكبر من قيمة العرض</div>' : '');
-}
-const row = (a,b) => '<div class="row"><span>'+a+'</span><span class="num">'+b+'</span></div>';
-
-let phoneBlocked = false, phoneSeq = 0;
-async function checkPhone(){
-  const v = $('fPhone').value.trim(), seq = ++phoneSeq;
-  const digits = v.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/\D/g,'');
-  if (digits.length < 9){ phoneBlocked = false; msg('phMsg',''); $('oBtn').disabled = false; return; }
-  try{
-    const r = await call('checkPhone', {phone:v});
-    if (seq !== phoneSeq) return;
-    phoneBlocked = !!r.blocked;
-    $('oBtn').disabled = phoneBlocked;
-    msg('phMsg', r.found ? esc(r.message) : '', r.blocked ? 'err' : 'warn');
-  }catch(err){}
+function toast(t){ const el = $('toast'); el.textContent = t; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2600); }
+async function copyPortal(){
+  try{ await navigator.clipboard.writeText(PORTAL); }
+  catch(e){ const x = document.createElement('textarea'); x.value = PORTAL; document.body.appendChild(x); x.select(); document.execCommand('copy'); x.remove(); }
+  toast('تم نسخ رابط البوابة');
 }
 
-async function saveOffer(e){
-  e.preventDefault(); msg('oMsg','');
-  if (!checkNotes()) { msg('oMsg', $('fNotesMsg').textContent); $('fNotes').focus(); return; }
-  const data = Object.fromEntries(new FormData($('fOffer')).entries());
-  [...document.querySelectorAll('#xItems [data-k]')].forEach(el => { delete data[el.name]; });
-  data.extraItems = readItems();
-  data.moreLifts = readLifts();
-  $('oBtn').disabled = true;
-  try{
-    const r = await call('saveOffer', data);
-    msg('oMsg', 'تم حفظ العرض رقم <b>'+r.offerNo+'</b>'+(r.revision > 1 ? ' (تعديل رقم '+r.revision+' لنفس العميل)' : '')+' — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');
-    if (data.clientEn && S.cfg.learned){ S.cfg.learned[String(data.client).trim().replace(/\s+/g,' ')] = data.clientEn; if (data.district && data.districtEn) S.cfg.learned[String(data.district).trim().replace(/\s+/g,' ')] = data.districtEn; }
-    // البيانات بتفضل زي ما هي بعد الحفظ — عشان تعمل نوع تاني لنفس العميل أو تعدّل وتحفظ تاني
-    S.editing = null; $('editNote').hidden = true;
-    getFiles(r.offerNo, r.revision, 'oFiles');
-  }catch(err){ msg('oMsg', err.message); }
-  $('oBtn').disabled = false;
-}
-
-/* ---------- ملفات العرض ---------- */
-function b64Url(b64, type){
-  const bin = atob(b64), arr = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-  return URL.createObjectURL(new Blob([arr], {type}));
-}
-async function getFiles(offerNo, revision, box){
-  const el = $(box);
-  el.innerHTML = '<div class="msg warn">جاري تجهيز ملف الـ Word...</div>';
-  try{
-    const f = await call('makeDocs', {offerNo, revision});
-    const bin = atob(f.docx), arr = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-    S.files = S.files || {};
-    S.files[box] = { blob: new Blob([arr], {type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}), name: f.name + '.docx', client: f.client || '', offerNo: String(offerNo) };
-    let h = '<div class="files"><button type="button" class="btn" onclick="downloadDoc(\''+box+'\')">تحميل Word</button>';
-    if (f.pdf) h += '<a class="btn" href="'+b64Url(f.pdf,'application/pdf')+'" download="'+esc(f.name)+'.pdf">تحميل PDF</a>';
-    h += '</div><p class="small">افتح ملف الـ Word واعمل منه Save as PDF (لازم خط DIN Next يكون متركّب على الجهاز).</p><div>';
-    el.innerHTML = h + '</div><p class="small">'+esc(f.name)+'</p>';
-  }catch(err){
-    el.innerHTML = '<div class="msg err">'+esc(err.message)+' — <a href="#" onclick="getFiles('+JSON.stringify(offerNo)+','+JSON.stringify(revision)+',\''+box+'\');return false">حاول تاني</a></div>';
-  }
-}
-
-/* ---------- الحفظ في فولدر على الجهاز (Chrome / Edge على الكمبيوتر) ---------- */
-const canPickDir = typeof window.showDirectoryPicker === 'function';
-const kv = {
-  db(){ return new Promise((res, rej) => { const r = indexedDB.open('alfalak-offers', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
-  async get(k){ try{ const d = await this.db(); return await new Promise(res => { const q = d.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => res(null); }); }catch(e){ return null; } },
-  async set(k, v){ try{ const d = await this.db(); await new Promise(res => { const t = d.transaction('kv','readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = res; t.onerror = res; }); }catch(e){} },
-  async del(k){ try{ const d = await this.db(); await new Promise(res => { const t = d.transaction('kv','readwrite'); t.objectStore('kv').delete(k); t.oncomplete = res; t.onerror = res; }); }catch(e){} },
-};
-function perClient(){ try{ return localStorage.getItem('perClient') !== '0'; }catch(e){ return true; } }
-function savePerClient(){ try{ localStorage.setItem('perClient', $('setPerClient').checked ? '1' : '0'); }catch(e){} }
-async function showSaveDir(){
-  const d = canPickDir ? await kv.get('saveDir') : null;
-  $('setDirName').textContent = d ? 'الحفظ دلوقتي في فولدر: ' + d.name : 'الحفظ دلوقتي في التنزيلات (Downloads) العادية.';
-  $('setPerClient').checked = perClient();
-  $('setNote').textContent = canPickDir ? 'أول مرة تحفظ بعد ما تفتح الصفحة، المتصفح هيسألك تسمح بالحفظ في الفولدر — اضغط "Allow / سماح".'
-    : 'المتصفح ده (زي الموبايل) مش بيدعم اختيار فولدر — الملفات هتنزل في التنزيلات. اختيار الفولدر بيشتغل من Chrome أو Edge على الكمبيوتر.';
-}
-function toggleSettings(){
-  const b = $('setBox'); b.hidden = !b.hidden;
-  if (!b.hidden){ showSaveDir(); $('setName').value = S.user ? S.user.name : ''; msg('setNameMsg',''); msg('fbMsg',''); b.scrollIntoView && b.scrollIntoView({block:'start'}); }
-}
-async function saveMyName(){
-  msg('setNameMsg','');
-  try{
-    S.user = await call('updateMyName', {name: $('setName').value});
-    $('whoName').textContent = S.user.name + (S.user.role==='مدير' ? ' — مدير' : '');
-    msg('setNameMsg','تم حفظ الاسم','ok');
-  }catch(err){ msg('setNameMsg', err.message); }
-}
-/** إعادة ضبط كلمة المرور: كلمة مرور مؤقتة بتتبعت على إيميلك، وأول ما تدخل بيها بتختار واحدة جديدة */
-async function resetMyPw(){
-  msg('setNameMsg','');
-  if (!S.user.email) return msg('setNameMsg','مفيش إيميل متسجّل على حسابك — اضغط "تغيير كلمة المرور / اسم المستخدم / الإيميل" وضيف إيميلك الأول.');
-  if (!confirm('هيتبعت على ' + S.user.email + ' كلمة مرور مؤقتة جديدة، والقديمة هتبطل. تكمّل؟')) return;
-  try{ await call('forgotPassword', {email: S.user.email, kind: 'password'}); msg('setNameMsg','اتبعتت كلمة مرور جديدة على إيميلك (شوف الـ Spam كمان).','ok'); }
-  catch(err){ msg('setNameMsg', err.message); }
-}
-async function sendFeedback(){
-  msg('fbMsg',''); const t = $('fbText').value.trim();
-  if (t.length < 3) return msg('fbMsg','اكتب رسالتك');
-  $('fbBtn').disabled = true;
-  try{ await call('feedback', {kind: $('fbKind').value, text: t}); $('fbText').value = ''; msg('fbMsg','اتبعتت — شكراً!','ok'); }
-  catch(err){ msg('fbMsg', err.message); }
-  $('fbBtn').disabled = false;
-}
-async function pickSaveDir(){
-  if (!canPickDir) return showSaveDir();
-  try{ const d = await window.showDirectoryPicker({ id: 'alfalak-offers', mode: 'readwrite' }); await kv.set('saveDir', d); }catch(e){}
-  showSaveDir(); syncPending(true);
-}
-async function clearSaveDir(){ await kv.del('saveDir'); showSaveDir(); }
-/** يكتب الملف في الفولدر (وجوه فولدر العميل) من غير ما يمسح ملف قديم بنفس الاسم */
-async function writeToDir(d, blob, fileName, client){
-  let dir = d, where = d.name;
-  if (perClient() && client){ dir = await d.getDirectoryHandle(client, {create:true}); where += ' / ' + client; }
-  let name = fileName;
-  const base = name.replace(/\.docx$/i, '');
-  for (let i = 2; i < 100; i++){
-    try{ await dir.getFileHandle(name); name = base + ' (' + i + ').docx'; }catch(e){ break; }
-  }
-  const fh = await dir.getFileHandle(name, {create:true});
-  const w = await fh.createWritable(); await w.write(blob); await w.close();
-  return where + ' / ' + name;
-}
-async function savedSet(){ const a = await kv.get('savedOffers'); return new Set(Array.isArray(a) ? a.map(String) : []); }
-async function markSaved(no){ const s = await savedSet(); s.add(String(no)); await kv.set('savedOffers', [...s]); }
-
-/* ---------- العروض اللي اتعملت من الموبايل (أو جهاز تاني) بتتحفظ هنا لوحدها ---------- */
-const SYNC_DAYS = 30;
-async function pendingOffers(){
-  const d = canPickDir ? await kv.get('saveDir') : null;
-  if (!d || !S.user) return {d: null, rows: []};
-  const rows = await call('listOffers', {userId: S.user.id});
-  const saved = await savedSet(), since = Date.now() - SYNC_DAYS * 86400000;
-  const mine = rows.filter(r => r.userId === S.user.id && !saved.has(String(r.offerNo)) &&
-    (new Date(String(r.date).replace(' ', 'T')).getTime() || Date.now()) >= since);
-  return {d, rows: mine};
-}
-let syncing = false;
-async function syncPending(fromClick){
-  const bar = $('syncBar');
-  if (syncing) return;
-  syncing = true;
-  try{
-    const {d, rows} = await pendingOffers();
-    if (!d || !rows.length){ bar.hidden = true; return; }
-    let ok = (await d.queryPermission({mode:'readwrite'})) === 'granted';
-    if (!ok && fromClick) ok = (await d.requestPermission({mode:'readwrite'})) === 'granted';
-    if (!ok){
-      bar.hidden = false;
-      bar.className = 'msg warn';
-      bar.innerHTML = 'عندك <b>'+rows.length+'</b> عرض اتعملوا من جهاز تاني ولسه ما اتحفظوش على الجهاز ده. '+
-        '<button type="button" class="btn" style="padding:4px 12px" onclick="syncPending(true)">احفظهم في فولدر '+esc(d.name)+'</button>'+
-        ' <a href="#" onclick="skipPending();return false" class="small">مش دلوقتي</a>';
-      return;
-    }
-    bar.hidden = false; bar.className = 'msg warn';
-    let n = 0;
-    for (const r of rows.slice().reverse()){
-      bar.textContent = 'بيحفظ العروض على الجهاز ده... (' + (++n) + ' من ' + rows.length + ')';
-      const f = await call('makeDocs', {offerNo: r.offerNo, revision: r.revision});
-      const bin = atob(f.docx), arr = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-      await writeToDir(d, new Blob([arr]), f.name + '.docx', f.client || '');
-      await markSaved(r.offerNo);
-    }
-    bar.className = 'msg ok';
-    bar.textContent = 'اتحفظ ' + rows.length + ' عرض في فولدر ' + d.name + ' ✔';
-    setTimeout(() => { bar.hidden = true; }, 6000);
-  }catch(e){
-    bar.hidden = false; bar.className = 'msg err';
-    bar.innerHTML = 'ما قدرتش أحفظ العروض على الجهاز: ' + esc(e.message || e) + ' — <a href="#" onclick="syncPending(true);return false">حاول تاني</a>';
-  }finally{ syncing = false; }
-}
-async function skipPending(){
-  const {rows} = await pendingOffers();
-  for (const r of rows) await markSaved(r.offerNo);
-  $('syncBar').hidden = true;
-}
-
-async function downloadDoc(box){
-  const f = S.files && S.files[box]; if (!f) return;
-  if (canPickDir){
-    try{
-      let d = await kv.get('saveDir');
-      if (!d && !sessionStorage.getItem('skipDir')){
-        // أول مرة: نسأله يختار فولدر الحفظ (ولو قفل الاختيار ننزّل عادي)
-        try{ d = await window.showDirectoryPicker({ id: 'alfalak-offers', mode: 'readwrite' }); await kv.set('saveDir', d); }
-        catch(e){ try{ sessionStorage.setItem('skipDir','1'); }catch(_){} d = null; }
-      }
-      if (d){
-        let ok = (await d.queryPermission({mode:'readwrite'})) === 'granted';
-        if (!ok) ok = (await d.requestPermission({mode:'readwrite'})) === 'granted';
-        if (ok){
-          if (f.offerNo && (await savedSet()).has(f.offerNo)){
-            const el0 = $(box).querySelector('.saved') || $(box).appendChild(Object.assign(document.createElement('div'), {className:'msg ok saved'}));
-            el0.innerHTML = 'العرض ده متحفظ بالفعل في فولدر ' + esc(d.name) + (f.client && perClient() ? ' / ' + esc(f.client) : '') +
-              ' — <a href="#" onclick="forceDownload(\''+box+'\');return false">نزّله في التنزيلات</a>';
-            return;
-          }
-          const where = await writeToDir(d, f.blob, f.name, f.client);
-          if (f.offerNo) await markSaved(f.offerNo);
-          const el = $(box).querySelector('.saved') || $(box).appendChild(Object.assign(document.createElement('div'), {className:'msg ok saved'}));
-          el.textContent = 'اتحفظ في: ' + where;
-          return;
-        }
-      }
-    }catch(e){ /* لو حصلت مشكلة نرجع للتنزيل العادي */ }
-  }
-  forceDownload(box);
-}
-function forceDownload(box){
-  const f = S.files && S.files[box]; if (!f) return;
-  const a = document.createElement('a'); a.href = URL.createObjectURL(f.blob); a.download = f.name;
-  document.body.appendChild(a); a.click(); a.remove();
-}
-
-/* ---------- قائمة العروض ---------- */
-/** المدير: يتنقل بين المندوبين واحد ورا التاني */
-function repNav(d){
-  const s = $('listRep'), n = s.options.length; if (!n) return;
-  s.selectedIndex = (s.selectedIndex + d + n) % n; loadList();
-}
-/** حذف عرض (للمدير بس) — all = بكل تعديلاته */
-async function delOffer(no, all, client){
-  if (!confirm('تحذف العرض رقم ' + no + (client ? ' (' + client + ')' : '') + (all ? ' بكل تعديلاته' : '') + '؟\nهيختفي من القوايم والمتابعة.')) return;
-  try{ const r = await call('deleteOffer', {offerNo: no, all: !!all}); alert('اتحذف: ' + r.deleted.join('، ')); loadList(); }
-  catch(err){ alert(err.message); }
-}
-async function loadList(){
-  const admin = S.user.role === 'مدير';
-  $('listTbl').innerHTML = '<tr><td>جاري التحميل...</td></tr>';
-  try{
-    const rows = await call('listOffers', {userId: admin ? $('listRep').value : ''});
-    if (!rows.length){ $('listTbl').innerHTML = '<tr><td>مفيش عروض لسه</td></tr>'; $('listCount').textContent = ''; return; }
-    // تجميع المراجعات تحت رقم العرض (الأحدث فوق)
-    const groups = {}, order = [];
-    rows.forEach(r => { const k = r.userId+'|'+(r.origNo || r.offerNo); if (!groups[k]){ groups[k] = []; order.push(k); } groups[k].push(r); });
-    S.groups = groups;
-    $('listCount').textContent = order.length + ' عرض' + (admin && $('listRep').value ? ' — ' + $('listRep').selectedOptions[0].textContent : (admin ? ' — كل المندوبين' : ''));
-    $('listTbl').innerHTML = '<tr><th></th><th>الملفات</th><th>آخر تعديل</th><th>رقم العرض</th>'+(admin?'<th>المندوب</th>':'')+'<th>العميل</th><th>الجوال</th><th>المدينة</th><th>النوع</th><th>المصاعد</th><th>الوقفات</th><th>سعر المصعد</th><th>الخصم</th><th>الإجمالي شامل الضريبة</th><th>المراجعات</th></tr>'+
-      order.map(k => { const g = groups[k], r = g[0];
-        return '<tr><td style="white-space:nowrap"><button class="btn ghost" style="padding:4px 10px;font-size:13px;white-space:nowrap" onclick="reprice('+JSON.stringify(r.offerNo)+')">إعادة تسعير</button>'+
-          (admin ? ' <button class="btn ghost" style="padding:4px 10px;font-size:13px;color:var(--err)" onclick="delOffer('+esc(JSON.stringify(r.offerNo))+','+(g.length>1)+','+esc(JSON.stringify(r.client))+')">حذف</button>' : '')+'</td>'+
-          '<td><span id="lf'+r.offerNo+'"><a href="#" onclick="getFiles('+JSON.stringify(r.offerNo)+','+(r.revision||1)+',\'lf'+r.offerNo+'\');return false">Word</a></span></td>'+
-          '<td>'+esc(r.date)+'</td><td>'+esc(r.offerNo)+'</td>'+(admin?'<td>'+esc(r.repName)+'</td>':'')+'<td>'+esc(r.client)+'</td><td dir="ltr">'+esc(r.phone)+'</td><td>'+esc(r.city)+'</td><td>'+esc(r.type)+'</td><td>'+r.lifts+'</td><td>'+esc(r.stops)+'</td><td class="num">'+money(r.unit)+'</td><td class="num">'+money(r.discount)+'</td><td class="num">'+money(r.total)+'</td>'+
-          '<td>'+(g.length > 1 ? '<a href="#" onclick="toggleHist(this,\''+k+'\');return false">'+g.length+' — عرض التاريخ</a>' : '1')+'</td></tr>'; }).join('');
-  }catch(err){ $('listTbl').innerHTML = '<tr><td>'+esc(err.message)+'</td></tr>'; }
-}
-function toggleHist(a, k){
-  const tr = a.closest('tr');
-  if (tr.nextElementSibling && tr.nextElementSibling.classList.contains('hist')){ tr.nextElementSibling.remove(); return; }
-  const g = S.groups[k].slice().reverse();
-  const cols = tr.children.length;
-  const h = document.createElement('tr'); h.className = 'hist';
-  const admin = S.user.role === 'مدير';
-  h.innerHTML = '<td colspan="'+cols+'"><table><tr>'+(admin?'<th></th>':'')+'<th>التعديل</th><th>رقم العرض</th><th>التاريخ</th><th>الوقفات</th><th>المصاعد</th><th>السعر المقترح</th><th>سعر المصعد</th><th>الخصم</th><th>الإجمالي شامل الضريبة</th></tr>'+
-    g.map((r,i) => '<tr>'+(admin?'<td><a href="#" style="color:var(--err)" onclick="delOffer('+esc(JSON.stringify(r.offerNo))+',false);return false">حذف</a></td>':'')+'<td>'+(r.revision||i+1)+'</td><td>'+esc(r.offerNo)+' <span id="hf'+r.offerNo+'"><a href="#" onclick="getFiles('+JSON.stringify(r.offerNo)+','+(r.revision||1)+',\'hf'+r.offerNo+'\');return false">Word</a></span></td><td>'+esc(r.date)+'</td><td>'+esc(r.stops)+'</td><td>'+r.lifts+'</td><td class="num">'+(r.suggested===''?'—':money(r.suggested))+'</td><td class="num">'+money(r.unit)+'</td><td class="num">'+money(r.discount)+'</td><td class="num">'+money(r.total)+'</td></tr>').join('')+'</table></td>';
-  tr.after(h);
-}
-
-/* ---------- إعادة تسعير: نرجّع العرض للصفحة الرئيسية ---------- */
-async function reprice(offerNo){
-  try{
-    const o = await call('getOffer', {offerNo});
-    openTab('tNew');
-    const f = $('fOffer').elements;
-    $('fType').value = o.type; fillLoads();
-    const opt = [...$('fLoadSel').options].find(x => x.value === String(o.load));
-    if (opt){ $('fLoadSel').value = String(o.load); $('fLoadTxt').value = ''; }
-    else { $('fLoadSel').value = 'other'; $('fLoadTxt').value = o.load + ' كجم / ' + o.persons + ' أشخاص'; }
-    onLoadSel();
-    ['client','phone','city','district','clientEn','districtEn','lifts','stops','landingDoors','carDoors','speed','shaftW','shaftD','overhead','pit','cabin','doorW','doorType','doorFinish','doorBrand','doorH','discount','notes','installDays','warrantyYears','maintYears']
-      .forEach(k => { if (f[k] != null && o[k] !== '' && o[k] != null) f[k].value = o[k]; });
-    $('fLanding').dataset.touched = 1; $('fDoorType').dataset.touched = 1; $('fBrand').dataset.touched = 1; if (o.doorH) $('fDoorH').dataset.touched = 1; autoDoorH();
-    ['fClientEn','fDistEn'].forEach(id => { if ($(id).value) $(id).dataset.touched = 1; else delete $(id).dataset.touched; }); autoEn();
-    $('fUnit').value = o.unitPrice; $('fUnit').dataset.touched = 1;
-    S.editing = o.offerNo;
-    clearItems(); (o.extraItems || []).forEach(it => addItem(it));
-    clearLifts(); (o.moreLifts || []).forEach(l => addLift(Object.assign({}, l, {landingDoors: l.landing}), true));
-    toggleMore(!!(o.installDays || o.warrantyYears || o.maintYears || (o.extraItems || []).length)); checkInstall();
-    $('editNote').hidden = false;
-    $('editNote').innerHTML = 'بتعدّل على العرض رقم <b>'+esc(o.offerNo)+'</b> (آخر مراجعة '+esc(o.revision)+') — لما تحفظ هيتسجّل مراجعة جديدة بنفس الرقم. <a href="#" onclick="cancelEdit();return false">إلغاء</a>';
-    msg('oMsg',''); $('oFiles').innerHTML = ''; checkPhone(); recalc();
-    window.scrollTo(0,0);
-  }catch(err){ alert(err.message); }
-}
-function cancelEdit(){ $('fOffer').reset(); msg('fNotesMsg',''); toggleMore(false); clearItems(); clearLifts(); msg('fInstallMsg',''); ['fLanding','fUnit','fDoorType','fBrand','fDoorH','fClientEn','fDistEn'].forEach(id => delete $(id).dataset.touched); $('fLoadTxt').value=''; fillLoads(); autoDoorType(); S.editing = null; $('editNote').hidden = true; }
-
-/* ---------- المتابعة ---------- */
-$('dChips').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return;
-  document.querySelectorAll('#dChips button').forEach(x => x.classList.toggle('on', x===b));
-  $('dCustom').hidden = b.dataset.p !== 'custom';
-  if (b.dataset.p !== 'custom') loadDash(b.dataset.p);
-});
-async function loadDash(period){
-  S.period = period;
-  $('dTbl').innerHTML = '<tr><td>جاري التحميل...</td></tr>';
-  try{
-    const d = await call('dashboard', {period, from:$('dFrom').value, to:$('dTo').value});
-    $('dLabel').textContent = d.label + ': من ' + d.from + ' إلى ' + d.to;
-    const tot = d.reps.reduce((a,r) => ({o:a.o+r.offers, l:a.l+r.lifts, t:a.t+r.total}), {o:0,l:0,t:0});
-    $('dStats').innerHTML = stat(tot.o,'عرض سعر') + stat(tot.l,'مصعد') + stat(money(tot.t),'ريال شامل الضريبة');
-    const types = [...new Set(d.reps.flatMap(r => Object.keys(r.types)))];
-    $('dTbl').innerHTML = '<tr><th>المندوب</th><th>عدد العروض</th><th>مرات التعديل</th><th>عدد المصاعد</th>'+types.map(t=>'<th>'+esc(t)+'</th>').join('')+'<th>الإجمالي قبل الضريبة</th><th>الإجمالي شامل الضريبة</th></tr>'+
-      d.reps.map(r => '<tr><td>'+esc(r.name)+'</td><td>'+r.offers+'</td><td>'+(r.revisions||0)+'</td><td>'+r.lifts+'</td>'+types.map(t=>'<td>'+(r.types[t]||0)+'</td>').join('')+'<td class="num">'+money(r.net)+'</td><td class="num">'+money(r.total)+'</td></tr>').join('');
-  }catch(err){ $('dTbl').innerHTML = '<tr><td>'+esc(err.message)+'</td></tr>'; }
-}
-const stat = (v,l) => '<div class="stat"><b class="num">'+v+'</b><span>'+l+'</span></div>';
-
-/* ---------- المستخدمين ---------- */
-async function loadUsersIntoFilter(){
-  try{
-    const us = await call('listUsers');
-    const cur = $('listRep').value;
-    $('listRep').innerHTML = '<option value="">كل المندوبين</option>' + us.filter(u => u.status === 'نشط').map(u => '<option value="'+u.id+'">'+esc(u.name)+'</option>').join('');
-    if ([...$('listRep').options].some(o => o.value === cur)) $('listRep').value = cur;
-  }catch(e){}
-}
-async function loadUsers(){
-  $('uTbl').innerHTML = '<tr><td>جاري التحميل...</td></tr>';
-  try{
-    const us = await call('listUsers'); S.users = us;
-    $('uTbl').innerHTML = '<tr><th>الاسم</th><th>اسم المستخدم</th><th>الإيميل</th><th>الصلاحية</th><th>الحالة</th><th>آخر دخول</th><th></th></tr>'+
-      us.map(u => '<tr><td>'+esc(u.name)+'</td><td dir="ltr">'+esc(u.username)+'</td><td dir="ltr" class="small">'+(esc(u.email)||'—')+'</td><td>'+esc(u.role)+'</td>'+
-        '<td><span class="tag '+(u.status==='نشط'?'on':'off')+'">'+esc(u.status)+'</span>'+(u.mustChange?' <span class="small">(لسه ما غيّرش الباسورد)</span>':'')+'</td>'+
-        '<td class="small">'+esc(u.lastLogin)+'</td><td class="actions">'+
-        '<button class="btn ghost" onclick="editUser(\''+u.id+'\')">تعديل</button>'+
-        '<button class="btn ghost" onclick="resetPw(\''+u.id+'\')">كلمة مرور جديدة</button>'+
-        (u.id===S.user.id ? '' : '<button class="btn ghost" onclick="toggleUser(\''+u.id+'\',\''+(u.status==='نشط'?'موقوف':'نشط')+'\')">'+(u.status==='نشط'?'إيقاف':'تفعيل')+'</button>')+
-        '</td></tr>').join('');
-  }catch(err){ $('uTbl').innerHTML = '<tr><td>'+esc(err.message)+'</td></tr>'; }
-}
-async function editUser(id){
-  const cur = (S.users||[]).find(x => x.id === id) || {};
-  const name = cur.name || '', username = cur.username || '';
-  const n = prompt('الاسم:', name); if (n === null) return;
-  const u = prompt('اسم المستخدم (إنجليزي):', username); if (u === null) return;
-  const em = prompt('الإيميل (لاستعادة كلمة المرور):', cur.email || ''); if (em === null) return;
-  try{ await call('updateUser', {id, name:n, username:u, email:em}); msg('uMsg','تم التعديل','ok'); loadUsers(); loadUsersIntoFilter(); }
-  catch(err){ msg('uMsg', err.message); }
-}
-async function resetPw(id){
-  if (!confirm('هيتعمل كلمة مرور مؤقتة جديدة، والقديمة هتبطل. تكمل؟')) return;
-  try{
-    const r = await call('resetPassword', {id});
-    msg('uMsg', 'بيانات دخول '+esc(r.name)+':<br>اسم المستخدم: <span class="pwbox">'+esc(r.username)+'</span><br>كلمة المرور المؤقتة: <span class="pwbox">'+esc(r.password)+'</span><br><span class="small">ابعتهاله — هيُطلب منه يغيّرها أول ما يدخل.</span>', 'ok');
-    loadUsers();
-  }catch(err){ msg('uMsg', err.message); }
-}
-async function toggleUser(id, status){
-  try{ await call('updateUser', {id, status}); loadUsers(); }catch(err){ msg('uMsg', err.message); }
-}
-
-/* ---------- الأسعار والإعدادات ---------- */
-const PR_COLS = [['type','النوع','text'],['load','الحمولة','number'],['persons','الأشخاص','number'],['base','السعر 3 وقفات','number'],['perStop','كل وقفة','number'],['series','الترقيم','series'],['note','ملاحظات','text']];
-function renderPrices(rows){
-  const types = [...new Set(rows.map(r => r.type).filter(Boolean))];
-  $('typeList').innerHTML = types.map(t => '<option value="'+esc(t)+'">').join('');
-  $('prTbl').innerHTML = '<tr>'+PR_COLS.map(c=>'<th>'+c[1]+'</th>').join('')+'<th></th></tr>'+
-    rows.map((r,i) => '<tr data-max="'+esc(r.maxDiscount)+'">'+PR_COLS.map(c => '<td>'+cell(c, r[c[0]])+'</td>').join('')+
-      '<td><button class="btn ghost" onclick="this.closest(\'tr\').remove()">حذف</button></td></tr>').join('');
-}
-function cell(c, v){
-  v = v == null ? '' : v;
-  if (c[2] === 'series') return '<select data-k="series"><option'+(v==='GKE'?' selected':'')+'>GKE</option><option'+(v!=='GKE'?' selected':'')+'>محلي</option></select>';
-  return '<input data-k="'+c[0]+'" type="'+c[2]+'" value="'+esc(v)+'"'+(c[0]==='type'?' list="typeList"':'')+'>';
-}
-function addPriceRow(){
-  const tr = document.createElement('tr');
-  tr.innerHTML = PR_COLS.map(c => '<td>'+cell(c, '')+'</td>').join('')+'<td><button class="btn ghost" onclick="this.closest(\'tr\').remove()">حذف</button></td>';
-  $('prTbl').appendChild(tr);
-  tr.querySelector('input').focus();
-}
-function readPriceRows(){
-  return [...$('prTbl').querySelectorAll('tr')].slice(1).map(tr => {
-    const o = {maxDiscount: tr.dataset.max || ''};
-    tr.querySelectorAll('[data-k]').forEach(el => o[el.dataset.k] = el.value);
-    return o;
-  });
-}
-function renderSettings(list){
-  $('stGrid').innerHTML = list.map(x => '<div class="field"><label>'+esc(x.key)+'</label><input type="number" data-key="'+esc(x.key)+'" value="'+esc(x.value)+'"></div>').join('');
-}
-async function loadPrices(){
-  msg('prMsg',''); msg('stMsg','');
-  $('prTbl').innerHTML = '<tr><td>جاري التحميل...</td></tr>';
-  try{ const d = await call('getAdminData'); renderPrices(d.prices); renderSettings(d.settings); }
-  catch(err){ msg('prMsg', err.message); }
-}
-async function savePrices(){
-  $('prSave').disabled = true; msg('prMsg','');
-  try{
-    const d = await call('savePrices', {rows: readPriceRows()});
-    renderPrices(d.prices); msg('prMsg','تم حفظ الأسعار','ok');
-    S.cfg = await call('config'); fillTypes();
-  }catch(err){ msg('prMsg', err.message); }
-  $('prSave').disabled = false;
-}
-async function saveSettings(){
-  $('stSave').disabled = true; msg('stMsg','');
-  const values = {};
-  $('stGrid').querySelectorAll('[data-key]').forEach(el => values[el.dataset.key] = el.value);
-  try{
-    const d = await call('saveSettings', {values}); renderSettings(d.settings); msg('stMsg','تم حفظ الإعدادات','ok');
-    S.cfg = await call('config'); recalc();
-  }catch(err){ msg('stMsg', err.message); }
-  $('stSave').disabled = false;
-}
-
-/* ---------- تشغيل ---------- */
+/* تشغيل: لو فيه دخول محفوظ نتأكد منه من السيرفر */
 (async function(){
   S.token = store.get();
   if (!S.token) return show('vLogin');
-  try{ await start(); }catch(e){ if (!S.token) show('vLogin'); else if (!$('vPw').hidden) {} else { logout(true); } }
+  try{
+    const cfg = await call('config');
+    enter(cfg.user);
+  }catch(err){
+    if (err.mustChange) return goChangePassword();
+    if (err.auth) { store.clear(); S.token = null; }
+    show('vLogin');
+    if (err.net) msg('lMsg', err.message);
+  }
 })();
 </script>
 </body>

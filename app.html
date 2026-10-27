@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>بوابة مصاعد الفلك</title>
+<link rel="icon" href="logo.png">
+<style>
+  body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#0b132b;color:#cfd6e3;font-family:Tahoma,sans-serif}
+  img{height:90px;background:#fff;border-radius:12px;padding:8px}
+  a{color:#e5c158}
+</style>
+</head>
+<body>
+<img src="logo.png" alt="AL FALAK">
+<div id="m">جاري فتح البرنامج…</div>
+<script>
+/* بوابة مصاعد الفلك: البرامج (التقارير والبحث) مش موجودة على GitHub —
+   بتيجي من سيرفر البوابة بعد التأكد من الحساب، وتتفتح في الصفحة دي */
+(async function(){
+  const API = 'https://script.google.com/macros/s/AKfycbzd84J7w9XnBwh1N6LazHpsEYieBlOtewDC2i3hhY46V6Xf0qoKnD6GcAiUi06q-Qfb6Q/exec';
+  const KEY = 'alfalak_t';
+  const name = new URLSearchParams(location.search).get('n') || '';
+  const toLogin = () => location.replace('./?next=' + encodeURIComponent(location.href));
+  const fail = t => { document.getElementById('m').innerHTML = t + '<br><br><a href="./">الرجوع للبوابة</a>'; };
+  let token = null;
+  try{ token = sessionStorage.getItem(KEY) || localStorage.getItem(KEY); }catch(e){}
+  if (!token) return toLogin();
+  let r;
+  try{
+    const res = await fetch(API, {method:'POST', body: JSON.stringify({action:'app', token, p:{name}})});
+    r = await res.json();
+  }catch(e){ return fail('مشكلة في الاتصال — اتأكد من النت وجرّب تاني'); }
+  if (r && r.ok){ document.open(); document.write(r.data); document.close(); return; }
+  if (r && r.auth){ try{ localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); }catch(e){} return toLogin(); }
+  if (r && r.mustChange) return location.replace('offers/');
+  fail((r && r.error) || 'حصل خطأ، جرّب تاني');
+})();
+</script>
+</body>
+</html>

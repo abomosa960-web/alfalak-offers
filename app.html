@@ -23,6 +23,20 @@
   const name = new URLSearchParams(location.search).get('n') || '';
   const toLogin = () => location.replace('./?next=' + encodeURIComponent(location.href));
   const fail = t => { document.getElementById('m').innerHTML = t + '<br><br><a href="./">الرجوع للبوابة</a>'; };
+  /* التقارير بتتفتح جوه إطار (iframe) بدل document.write — على الموبايل (خصوصاً iPhone)
+     الصفحة اللي بتتكتب بـ document.write ما كانتش بتستقبل ملف الإكسل بعد اختياره */
+  const FRAME = { report: true };
+  function showInFrame(html){
+    const t = (html.match(/<title>([^<]*)<\/title>/i) || [])[1];
+    if (t) document.title = t;
+    document.body.innerHTML = '';
+    document.body.style.cssText = 'margin:0;display:block;min-height:0;background:#fff';
+    const f = document.createElement('iframe');
+    f.setAttribute('allow', 'web-share; clipboard-write; fullscreen');
+    f.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:#fff';
+    f.srcdoc = html;
+    document.body.appendChild(f);
+  }
   let token = null;
   try{ token = sessionStorage.getItem(KEY) || localStorage.getItem(KEY); }catch(e){}
   if (!token) return toLogin();
@@ -31,7 +45,10 @@
     const res = await fetch(API, {method:'POST', body: JSON.stringify({action:'app', token, p:{name}})});
     r = await res.json();
   }catch(e){ return fail('مشكلة في الاتصال — اتأكد من النت وجرّب تاني'); }
-  if (r && r.ok){ document.open(); document.write(r.data); document.close(); return; }
+  if (r && r.ok){
+    if (FRAME[name]) return showInFrame(r.data);
+    document.open(); document.write(r.data); document.close(); return;
+  }
   if (r && r.auth){ try{ localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); }catch(e){} return toLogin(); }
   if (r && r.mustChange) return location.replace('offers/');
   fail((r && r.error) || 'حصل خطأ، جرّب تاني');

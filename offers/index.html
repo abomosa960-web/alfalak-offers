@@ -178,8 +178,8 @@
           </div>
           <h3>الأبواب</h3>
           <div class="grid">
-            <div class="field"><label>عرض الباب</label><select name="doorW"><option value="800">800 مم</option><option value="700">700 مم</option><option value="650">650 مم</option></select></div>
-            <div class="field"><label>نوع الباب</label><select name="doorType" id="fDoorType" onchange="this.dataset.touched=1"><option>جانبي</option><option>سنتر</option><option>نص أوتوماتيك</option></select><div class="small" id="fDoorHint"></div></div>
+            <div class="field"><label>عرض الباب</label><select name="doorW" id="fDoorW" onchange="this.dataset.touched=1"><option value="800">800 مم</option><option value="700">700 مم</option><option value="650">650 مم</option></select></div>
+            <div class="field"><label>نوع الباب</label><select name="doorType" id="fDoorType" onchange="this.dataset.touched=1"><option value="">— المندوب يختار —</option><option>جانبي</option><option>سنتر</option><option>نص أوتوماتيك</option></select><div class="small" id="fDoorHint"></div></div>
             <div class="field"><label>تلبيس الأبواب</label><select name="doorFinish"><option>ستانلس ستيل فضي</option><option>ستانلس ستيل فضي هيرلاين</option><option>ستانلس ستيل فضي مراية</option><option>ستانلس ستيل نحاسي</option><option>ستانلس ستيل أسود</option></select></div>
             <div class="field"><label>موديل الأبواب</label><select name="doorBrand" id="fBrand" onchange="this.dataset.touched=1;autoDoorH()"><option>سيلكوم</option></select></div>
             <div class="field" style="max-width:120px"><label>ارتفاع الباب</label><select name="doorH" id="fDoorH" onchange="this.dataset.touched=1" style="font-size:13px;padding:6px"><option value="2000">2000 مم</option><option value="2100">2100 مم</option></select></div>
@@ -573,18 +573,18 @@ function onLoadChange(){
   $('fLoad').value = load || ''; $('fPersons').value = persons || '';
   recalc();
 }
-/** البئر 1600 أو أكتر = باب سنتر تلقائي. أقل من كده المندوب يختار. */
-/** الافتراضي: باب 800 جانبي، تلبيس ستانلس فضي، موديل سيلكوم (أو SJ). في GKE: باب سنتر وموديل GKE (أو SJ). */
+/** نوع الباب: الافتراضي فاضي دايماً (المندوب يختار). العرض الافتراضي 800. */
 function autoDoorType(){
-  const gke = /GKE/i.test($('fType').value), dt = $('fDoorType'), br = $('fBrand');
-  if (!dt.dataset.touched) dt.value = gke ? 'سنتر' : 'جانبي';
+  const gke = /GKE/i.test($('fType').value), dt = $('fDoorType'), dw = $('fDoorW'), br = $('fBrand');
+  if (!dt.dataset.touched) dt.value = '';
+  if (!dw.dataset.touched) dw.value = '800';
   // GKE: موديل GKE بس — المحلي: سيلكوم، سيلكوم صيني، SJ
   const list = gke ? ['GKE'] : ['سيلكوم','سيلكوم صيني','SJ'];
   const cur = br.value;
   br.innerHTML = list.map(x => '<option>'+x+'</option>').join('');
   if (br.dataset.touched && list.indexOf(cur) >= 0) br.value = cur; else { br.value = list[0]; delete br.dataset.touched; }
   autoDoorH();
-  $('fDoorHint').textContent = '';
+  $('fDoorHint').textContent = dt.dataset.touched ? '' : 'المندوب يختار';
   // الافتراضي المكتوب في القوالب
   $('fInstall').placeholder = gke ? '180 (زي القالب)' : '60 (زي القالب)';
   $('fWarranty').placeholder = gke ? '2 (زي القالب)' : '10 (زي القالب)';
@@ -691,7 +691,7 @@ function addLift(o, saved){
       num('overhead', 'الأوفر هيد (مم)')+num('pit', 'عمق الحفرة (مم)')+
       '<div class="field wide"><label>مقاس الكابينة</label><input data-k="cabin" placeholder="سيبها فاضية = أكبر كابينة ممكنة" value="'+esc(o.cabin || '')+'"></div>'+
       '<div class="field"><label>عرض الباب</label>'+sel('doorW', [['800','800 مم'],['700','700 مم'],['650','650 مم']])+'</div>'+
-      '<div class="field"><label>نوع الباب</label>'+sel('doorType', [['جانبي','جانبي'],['سنتر','سنتر'],['نص أوتوماتيك','نص أوتوماتيك']])+'</div>'+
+      '<div class="field"><label>نوع الباب</label>'+sel('doorType', [['','— المندوب يختار —'],['جانبي','جانبي'],['سنتر','سنتر'],['نص أوتوماتيك','نص أوتوماتيك']])+'</div>'+
       '<div class="field"><label>سعر المصعد قبل الضريبة</label><input data-k="price" type="number" min="0" step="'+((S.cfg && Number(S.cfg.settings.step)) || 500)+'" value="'+esc(o.price || '')+'" oninput="this.dataset.touched=1"'+(saved ? ' data-touched="1"' : '')+'><div class="small xl-sug"></div></div>'+
     '</div>';
   box.appendChild(d);

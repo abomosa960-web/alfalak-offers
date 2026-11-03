@@ -107,7 +107,7 @@
       <p class="small" id="fgNote"></p>
       <div class="field"><label>الإيميل</label><input id="fgEmail" type="email" autocapitalize="none" dir="ltr" required></div>
       <div id="fgMsg"></div>
-      <button class="btn ghost" id="fgBtn" style="width:100%">ابعت كلمة مرور جديدة</button>
+      <button class="btn ghost" id="fgBtn" style="width:100%">أرسل كلمة مرور جديدة</button>
     </form>
   </div>
 </section>
@@ -119,8 +119,8 @@
     <p class="small" id="pNote"></p>
     <form onsubmit="doPwChange(event)">
       <div class="field"><label>كلمة المرور الحالية</label><input id="pOld" type="password" dir="ltr" required></div>
-      <div class="field"><label>اسم المستخدم (تقدر تغيّره)</label><input id="pUser" dir="ltr" autocapitalize="none" placeholder="سيبه زي ما هو لو مش عايز تغيّره"></div>
-      <div class="field"><label>إيميلك (لاستعادة الحساب لو نسيت كلمة المرور)</label><input id="pEmail" type="email" dir="ltr" autocapitalize="none"></div>
+      <div class="field"><label>اسم المستخدم (يمكنك تغييره)</label><input id="pUser" dir="ltr" autocapitalize="none" placeholder="اتركه كما هو إن لم ترد تغييره"></div>
+      <div class="field"><label>إيميلك (لاستعادة الحساب إذا نسيت كلمة المرور)</label><input id="pEmail" type="email" dir="ltr" autocapitalize="none"></div>
       <div class="field"><label>كلمة المرور الجديدة (6 على الأقل)</label><input id="pNew" type="password" dir="ltr" required minlength="6"></div>
       <div class="field"><label>أعد كتابة كلمة المرور الجديدة</label><input id="pNew2" type="password" dir="ltr" required></div>
       <div id="pMsg"></div>
@@ -156,7 +156,7 @@
           <div class="grid" id="enBox" hidden>
             <div class="field wide"><label>اسم العميل بالإنجليزي (للعرض الإنجليزي)</label><input name="clientEn" id="fClientEn" dir="ltr" oninput="enTouched(this)"></div>
             <div class="field"><label>الحي بالإنجليزي</label><input name="districtEn" id="fDistEn" dir="ltr" oninput="enTouched(this)"></div>
-            <div class="small" style="grid-column:1/-1">بيتكتب لوحده بالنطق — راجعه وصلّحه لو فيه غلطة، والتصليح بيتحفظ للمرة الجاية.</div>
+            <div class="small" style="grid-column:1/-1">يُكتب تلقائيًا بالنطق — راجعه وصحّحه إن وُجد خطأ، وسيُحفظ التصحيح للمرة القادمة.</div>
           </div>
           <div id="phMsg"></div>
           <h3 id="hL1">المصعد</h3>
@@ -179,30 +179,30 @@
             <div class="field"><label>عمق البئر (مم)</label><input name="shaftD" type="text" inputmode="decimal" inputmode="numeric" value="1800"></div>
             <div class="field"><label>الأوفر هيد (مم)</label><input name="overhead" type="text" inputmode="decimal" value="4100"></div>
             <div class="field"><label>عمق الحفرة (مم)</label><input name="pit" type="text" inputmode="decimal" value="1200"></div>
-            <div class="field wide"><label>مقاس الكابينة</label><input name="cabin" id="fCabin" placeholder="سيبها فاضية = أكبر كابينة ممكنة"></div>
+            <div class="field wide"><label>مقاس الكابينة</label><input name="cabin" id="fCabin" placeholder="اتركها فارغة = أكبر كابينة ممكنة"></div>
           </div>
           <h3>الأبواب</h3>
           <div class="grid">
             <div class="field"><label>عرض الباب</label><select name="doorW" id="fDoorW" onchange="this.dataset.touched=1"><option value="800">800 مم</option><option value="700">700 مم</option><option value="650">650 مم</option></select></div>
-            <div class="field"><label>نوع الباب</label><select name="doorType" id="fDoorType" onchange="this.dataset.touched=1"><option value="">— المندوب يختار —</option><option>جانبي</option><option>سنتر</option><option>نص أوتوماتيك</option></select><div class="small" id="fDoorHint"></div></div>
+            <div class="field"><label>نوع الباب</label><select name="doorType" id="fDoorType" onchange="this.dataset.touched=1"><option value="">— يختار المندوب —</option><option>جانبي</option><option>سنتر</option><option>نص أوتوماتيك</option></select><div class="small" id="fDoorHint"></div></div>
             <div class="field"><label>تلبيس الأبواب</label><select name="doorFinish"><option>ستانلس ستيل فضي</option><option>ستانلس ستيل فضي هيرلاين</option><option>ستانلس ستيل فضي مراية</option><option>ستانلس ستيل نحاسي</option><option>ستانلس ستيل أسود</option></select></div>
             <div class="field"><label>موديل الأبواب</label><select name="doorBrand" id="fBrand" onchange="this.dataset.touched=1;autoDoorH()"><option>سيلكوم</option></select></div>
             <div class="field" style="max-width:120px"><label>ارتفاع الباب</label><select name="doorH" id="fDoorH" onchange="this.dataset.touched=1" style="font-size:13px;padding:6px"><option value="2000">2000 مم</option><option value="2100">2100 مم</option></select></div>
           </div>
-          <h3 id="hLifts" hidden>مصاعد تانية في نفس العرض <span class="small">(بتتعبّى لوحدها من المصعد اللي فوقها — غيّر اللي محتاجه بس)</span></h3>
+          <h3 id="hLifts" hidden>مصاعد أخرى في نفس العرض <span class="small">(تُملأ تلقائيًا من المصعد الذي فوقها — غيّر الذي محتاجه بس)</span></h3>
           <div id="xLifts"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
             <button type="button" class="btn ghost" id="addLiftBtn" onclick="addLift()">+ إضافة مصعد (L2)</button>
             <button type="button" class="btn ghost" id="moreBtn" onclick="toggleMore()">+ خيارات إضافية</button>
           </div>
           <div id="moreBox" hidden>
-            <p class="small">سيبها فاضية عشان يفضل المكتوب في العرض زي ما هو.</p>
+            <p class="small">اتركها فارغة ليبقى المكتوب في العرض كما هو.</p>
             <div class="grid">
               <div class="field"><label>مدة التوريد والتركيب (يوم)</label><input name="installDays" id="fInstall" type="text" inputmode="decimal" min="30" inputmode="numeric" oninput="checkInstall()"><div id="fInstallMsg"></div></div>
               <div class="field"><label>مدة الضمان (سنة)</label><input name="warrantyYears" id="fWarranty" type="text" inputmode="decimal" min="1" inputmode="numeric"></div>
               <div class="field"><label>الصيانة المجانية (سنة)</label><input name="maintYears" id="fMaint" type="text" inputmode="decimal" min="1" inputmode="numeric"></div>
             </div>
-            <h4 style="margin:14px 0 6px">بنود تسعير إضافية <span class="small">(زي فك مصعد قديم — بتتضاف تحت المصعد في جدول العرض المالي)</span></h4>
+            <h4 style="margin:14px 0 6px">بنود تسعير إضافية <span class="small">(مثل فك مصعد قديم — تُضاف تحت المصعد في جدول العرض المالي)</span></h4>
             <div id="xItems"></div>
             <button type="button" class="btn ghost" onclick="addItem()">+ إضافة بند</button>
           </div>
@@ -210,13 +210,13 @@
           <div class="grid">
             <div class="field"><label>سعر المصعد قبل الضريبة (ريال) *</label><input name="unitPrice" id="fUnit" type="text" inputmode="decimal" min="0" step="500" required oninput="this.dataset.touched=1"><div class="small" id="fSuggest"></div></div>
             <div class="field"><label>الخصم على العرض (ريال)</label><input name="discount" id="fDisc" type="text" inputmode="decimal" min="0" step="500" value="" placeholder="من غير خصم"></div>
-            <div class="field wide"><label>ملاحظات <span class="small">(بتتكتب في آخر العرض)</span></label><textarea name="notes" id="fNotes" rows="2" oninput="checkNotes()" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;width:100%;box-sizing:border-box"></textarea><div id="fNotesMsg"></div></div>
+            <div class="field wide"><label>ملاحظات <span class="small">(تُكتب في آخر العرض)</span></label><textarea name="notes" id="fNotes" rows="2" oninput="checkNotes()" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;width:100%;box-sizing:border-box"></textarea><div id="fNotesMsg"></div></div>
           </div>
           <div id="oMsg"></div>
           <div id="oFiles"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn" id="oBtn">حفظ العرض وتحميل الورد</button>
-            <button type="button" class="btn ghost" onclick="if(confirm('تفضّي كل الخانات وتبدأ عرض جديد؟')){cancelEdit();msg('oMsg','');$('oFiles').innerHTML='';msg('phMsg','');phoneBlocked=false;}">عميل جديد (فضّي الخانات)</button>
+            <button type="button" class="btn ghost" onclick="if(confirm('هل تريد تفريغ كل الخانات وبدء عرض جديد؟')){cancelEdit();msg('oMsg','');$('oFiles').innerHTML='';msg('phMsg','');phoneBlocked=false;}">عميل جديد (فضّي الخانات)</button>
           </div>
         </form>
         <aside class="price" id="pricePanel"></aside>
@@ -227,7 +227,7 @@
     <div class="card tab" id="tList" hidden>
       <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:12px">
         <div class="adm" style="min-width:200px"><label>المندوب</label><select id="listRep" onchange="loadList()"><option value="">كل المندوبين</option></select></div>
-        <div class="adm" style="display:flex;gap:6px"><button class="btn ghost" title="المندوب اللي قبله" onclick="repNav(-1)">→ اللي قبله</button><button class="btn ghost" title="المندوب اللي بعده" onclick="repNav(1)">اللي بعده ←</button></div>
+        <div class="adm" style="display:flex;gap:6px"><button class="btn ghost" title="المندوب السابق" onclick="repNav(-1)">→ السابق</button><button class="btn ghost" title="المندوب التالي" onclick="repNav(1)">التالي ←</button></div>
         <span class="small" id="listCount"></span>
         <button class="btn ghost" onclick="loadList()">تحديث</button>
       </div>
@@ -237,10 +237,10 @@
     <!-- المتابعة -->
     <div class="card tab adm" id="tDash" hidden>
       <div class="chips" id="dChips">
-        <button data-p="week" class="on">الأسبوع ده</button>
-        <button data-p="lastWeek">الأسبوع اللي فات</button>
-        <button data-p="month">الشهر ده</button>
-        <button data-p="lastMonth">الشهر اللي فات</button>
+        <button data-p="week" class="on">هذا الأسبوع</button>
+        <button data-p="lastWeek">الأسبوع الماضي</button>
+        <button data-p="month">هذا الشهر</button>
+        <button data-p="lastMonth">الشهر الماضي</button>
         <button data-p="all">الكل</button>
         <button data-p="custom">فترة محددة</button>
       </div>
@@ -263,7 +263,7 @@
     <!-- الأسعار والإعدادات -->
     <div class="card tab adm" id="tPrices" hidden>
       <h3 style="margin-top:0">الأسعار</h3>
-      <p class="small">السعر = سعر المصعد على 3 وقفات قبل الضريبة، وبيزيد أو يقل بقيمة "كل وقفة". ده سعر مقترح، والمندوب يقدر يعدّل عليه. خانة الأشخاص لو فاضية بتتحسب لوحدها (75 كجم للشخص).</p>
+      <p class="small">السعر = سعر المصعد على 3 وقفات قبل الضريبة، وتزيد أو تقل بقيمة "كل وقفة". هذا سعر مقترح، ويمكن للمندوب تعديله. خانة الأشخاص إذا فاضية تُحسب تلقائيًا (75 كجم للشخص).</p>
       <div class="tablewrap"><table id="prTbl" class="edit"></table></div>
       <datalist id="typeList"></datalist>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
@@ -299,7 +299,7 @@ const money = n => Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2}
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const msg = (el, text, kind) => { $(el).innerHTML = text ? '<div class="msg '+(kind||'err')+'">'+text+'</div>' : ''; };
 
-/* ===== تحويل الأسماء العربي للإنجليزي بالنطق (مش ترجمة) — نفس الكود في Code.gs و Index.html ===== */
+/* ===== تحويل الأسماء العربي للإنجليزي بالنطق (غير ترجمة) — نفس الكود في Code.gs و Index.html ===== */
 const TR_WORDS = {
   // أحياء ومدن
   'الرياض': 'Riyadh', 'جدة': 'Jeddah', 'جده': 'Jeddah', 'الدمام': 'Dammam', 'الخبر': 'Khobar', 'مكة': 'Makkah', 'مكه': 'Makkah',
@@ -375,7 +375,7 @@ function trWord_(w) {
   return trCap_(out.replace(/aa+/g, 'aa').replace(/([^a])\1\1+/g, '$1$1'));
 }
 
-/** النص كله: القاموس الأول (والتصليحات اللي المندوبين عملوها قبل كده)، وبعدين حرف بحرف */
+/** النص كله: القاموس الأول (والتصليحات الذي المندوبين عملوها من قبل)، وبعدين حرف بحرف */
 function translitAr(text, learned) {
   let s = String(text || '').trim().replace(/\s+/g, ' ');
   if (!s) return '';
@@ -411,7 +411,7 @@ function translitAr(text, learned) {
 /* ===== زيادات السعر المقترح (نفس الكود في Code.gs و Index.html) ===== */
 function priceExtras(x, carDoors, pit, overhead) {
   const items = [];
-  if (Number(carDoors) === 2 && x.carDoor2) items.push(['مدخل تاني بالكابينة', x.carDoor2]);
+  if (Number(carDoors) === 2 && x.carDoor2) items.push(['مدخل آخر بالكابينة', x.carDoor2]);
   const lowPit = Number(pit) > 0 && Number(pit) < x.minPit;
   const lowOH = Number(overhead) > 0 && Number(overhead) < x.minOverhead;
   if (lowPit && lowOH) items.push(['حفرة وهيدروم صغيرين', x.both]);
@@ -432,11 +432,11 @@ async function call(action, p){
   try{
     const res = await fetch(API, {method:'POST', body: JSON.stringify({action, token:S.token, p:p||{}})});
     r = await res.json();
-  }catch(e){ throw new Error('مشكلة في الاتصال — اتأكد من النت وجرّب تاني'); }
+  }catch(e){ throw new Error('مشكلة في الاتصال — تأكّد من النت وحاول مرة أخرى'); }
   if (r && r.ok) return r.data;
   if (r && r.auth) { logout(true); }
   if (r && r.mustChange) { showPwChange(true); }
-  throw new Error(r && r.error ? r.error : 'حصل خطأ، جرّب تاني');
+  throw new Error(r && r.error ? r.error : 'حدث خطأ، حاول مرة أخرى');
 }
 
 function show(id){ ['vLogin','vPw','vApp'].forEach(v => $(v).hidden = (v !== id)); }
@@ -447,9 +447,9 @@ function toggleForgot(kind){
   f.hidden = (f.dataset.kind === kind) ? !f.hidden : false;
   f.dataset.kind = kind; msg('fgMsg','');
   $('fgNote').textContent = kind === 'username'
-    ? 'اكتب الإيميل المتسجّل على حسابك، وهيوصلك عليه اسم المستخدم (كلمة المرور مش هتتغير). وتقدر تدخل بالإيميل نفسه بدل اسم المستخدم.'
-    : 'اكتب الإيميل المتسجّل على حسابك، وهيوصلك عليه كلمة مرور جديدة.';
-  $('fgBtn').textContent = kind === 'username' ? 'ابعت اسم المستخدم' : 'ابعت كلمة مرور جديدة';
+    ? 'اكتب البريد الإلكتروني المسجّل في حسابك، وسيصلك عليه اسم المستخدم (كلمة المرور لن تتغير). ويمكنك الدخول بالبريد الإلكتروني نفسه بدل اسم المستخدم.'
+    : 'اكتب البريد الإلكتروني المسجّل في حسابك، وسيصلك عليه كلمة مرور جديدة.';
+  $('fgBtn').textContent = kind === 'username' ? 'أرسل اسم المستخدم' : 'أرسل كلمة مرور جديدة';
   if (!f.hidden){ const v = $('lUser').value.trim(); if (v.indexOf('@') > 0) $('fgEmail').value = v; $('fgEmail').focus(); }
 }
 async function doForgot(e){
@@ -458,8 +458,8 @@ async function doForgot(e){
     const kind = $('fForgot').dataset.kind;
     await call('forgotPassword', {email:$('fgEmail').value, kind});
     msg('fgMsg', kind === 'username'
-      ? 'تم — بصّ على الإيميل (ولو مش لاقيه شوف الـ Spam).'
-      : 'تم — بصّ على الإيميل (ولو مش لاقيه شوف الـ Spam). ادخل بكلمة المرور اللي وصلتك.','ok');
+      ? 'تم — راجع البريد الإلكتروني (وإن لم تجده فتحقّق من الرسائل غير المرغوب فيها).'
+      : 'تم — راجع البريد الإلكتروني (وإن لم تجده فتحقّق من الرسائل غير المرغوب فيها). ادخل بكلمة المرور التي وصلتك.','ok');
     $('lUser').value = $('fgEmail').value; $('lPass').value = ''; $('lPass').focus();
   }catch(err){ msg('fgMsg', err.message); }
   $('fgBtn').disabled = false;
@@ -485,14 +485,14 @@ function showPwChange(forced){
   msg('pMsg',''); $('pOld').value=''; $('pNew').value=''; $('pNew2').value='';
   $('pUser').value = S.user ? S.user.username : '';
   $('pEmail').value = S.user ? (S.user.email || '') : '';
-  $('pNote').textContent = forced ? 'أول دخول: لازم تختار كلمة مرور خاصة بيك (وممكن تغيّر اسم المستخدم كمان).' : '';
+  $('pNote').textContent = forced ? 'أول دخول: يجب أن تختار كلمة مرور خاصة بيك (ويمكنك تغيير اسم المستخدم أيضًا).' : '';
   $('pCancel').hidden = !!forced;
   show('vPw');
 }
 
 async function doPwChange(e){
   e.preventDefault(); msg('pMsg','');
-  if ($('pNew').value !== $('pNew2').value) return msg('pMsg','كلمتين المرور مش زي بعض');
+  if ($('pNew').value !== $('pNew2').value) return msg('pMsg','كلمتا المرور غير متطابقتين');
   $('pBtn').disabled = true;
   try{
     S.user = await call('changeCredentials', {oldPassword:$('pOld').value, newUsername:$('pUser').value, email:$('pEmail').value, newPassword:$('pNew').value});
@@ -504,7 +504,7 @@ async function doPwChange(e){
 /* ---------- بداية التطبيق ---------- */
 function applyDefaults(){
   const d = S.cfg && S.cfg.settings && S.cfg.settings.discount;
-  // الخصم مش بيتحط لوحده — لو المندوب ما كتبش خصم العرض بيطلع من غير سطر خصم
+  // الخصم غير بيتحط لوحده — إذا المندوب ما كتبش خصم العرض بيطلع من غير سطر خصم
   // الأسهم في خانة السعر والخصم بتزوّد/تنقّص بالخطوة (500) — والكتابة باليد حرة
   const st = Number(S.cfg && S.cfg.settings && S.cfg.settings.step) || 500;
   $('fUnit').step = st; $('fDisc').step = st;
@@ -521,7 +521,7 @@ async function start(){
   if (admin) loadUsersIntoFilter();
   if (canPickDir) setTimeout(() => syncPending(false), 800);
 }
-// لما ترجع للصفحة (من تاب تاني) نشوف لو فيه عروض جديدة اتعملت من الموبايل
+// لما ترجع للصفحة (من تاب آخر) نشوف إن وُجد عروض جديدة أُنشئت من الموبايل
 window.addEventListener('focus', () => { if (S.user && canPickDir) syncPending(false); });
 function showApp(){ show('vApp'); }
 
@@ -561,9 +561,9 @@ function renderRecent(){
   box.hidden = false;
   box.innerHTML = list.length
     ? list.map(x => '<button type="button" class="recent-item" data-no="'+esc(x.offerNo)+'"><b>'+esc(x.client)+'</b> <span class="small">'+esc(x.city||'')+(x.phone ? ' · ' + esc(x.phone) : '')+'</span></button>').join('')
-    : '<div class="small" style="padding:8px 10px">مفيش عملاء مطابقين</div>';
+    : '<div class="small" style="padding:8px 10px">لا يوجد عملاء مطابقون</div>';
 }
-/** لو المدينة المحفوظة في عرض قديم مش في القائمة، نضيفها عشان ما تضيعش */
+/** إذا المدينة المحفوظة في عرض قديم غير في القائمة، نضيفها لكي ما تضيعش */
 function setCityOpt(v){ const s = $('fCity'); if (v && ![...s.options].some(x => x.value === v)) s.add(new Option(v, v)); }
 /** يعبّي بيانات العميل بس (الاسم والجوال والمدينة والحي والأسماء الإنجليزي) — المصاعد والأسعار بتفضل زي ما هي */
 function fillClient(o){
@@ -601,7 +601,7 @@ function fillLoads(){
   autoDoorType();
   const loads = S.cfg.products.filter(p => p.type === t).sort((x,y) => x.load - y.load);
   $('fLoadSel').innerHTML = loads.map(p => '<option value="'+p.load+'">'+loadLabel(p.load, p.persons)+'</option>').join('') +
-    '<option value="other">حمولة تانية — اكتبها بإيدك</option>';
+    '<option value="other">حمولة أخرى — اكتبها يدويًا</option>';
   const def = /GKE/i.test(t) ? 630 : 450;  // الافتراضي: GKE 630، والمحلي 450
   $('fLoadSel').value = loads.some(p => p.load === def) ? String(def) : (loads[0] ? String(loads[0].load) : 'other');
   refreshLiftLoads();
@@ -618,7 +618,7 @@ function onLoadSel(){
   }
   onLoadChange();
 }
-/** الحمولة والأشخاص: من القايمة، أو من اللي اتكتب (أول رقم = الحمولة، تاني رقم = الأشخاص) */
+/** الحمولة والأشخاص: من القايمة، أو من الذي اتكتب (أول رقم = الحمولة، آخر رقم = الأشخاص) */
 function onLoadChange(){
   let load, persons;
   if ($('fLoadSel').value === 'other'){
@@ -632,7 +632,7 @@ function onLoadChange(){
   $('fLoad').value = load || ''; $('fPersons').value = persons || '';
   recalc();
 }
-/** نوع الباب: الافتراضي فاضي دايماً (المندوب يختار). العرض الافتراضي 800. */
+/** نوع الباب: الافتراضي فاضي دايماً (يختار المندوب). العرض الافتراضي 800. */
 function autoDoorType(){
   const gke = /GKE/i.test($('fType').value), dt = $('fDoorType'), dw = $('fDoorW'), br = $('fBrand');
   if (!dt.dataset.touched) dt.value = '';
@@ -643,11 +643,11 @@ function autoDoorType(){
   br.innerHTML = list.map(x => '<option>'+x+'</option>').join('');
   if (br.dataset.touched && list.indexOf(cur) >= 0) br.value = cur; else { br.value = list[0]; delete br.dataset.touched; }
   autoDoorH();
-  $('fDoorHint').textContent = dt.dataset.touched ? '' : 'المندوب يختار';
+  $('fDoorHint').textContent = dt.dataset.touched ? '' : 'يختار المندوب';
   // الافتراضي المكتوب في القوالب
-  $('fInstall').placeholder = gke ? '180 (زي القالب)' : '60 (زي القالب)';
-  $('fWarranty').placeholder = gke ? '2 (زي القالب)' : '10 (زي القالب)';
-  $('fMaint').placeholder = '1 (زي القالب)';
+  $('fInstall').placeholder = gke ? '180 (كالقالب)' : '60 (كالقالب)';
+  $('fWarranty').placeholder = gke ? '2 (كالقالب)' : '10 (كالقالب)';
+  $('fMaint').placeholder = '1 (كالقالب)';
   checkInstall(); checkNotes();
 }
 /** الملاحظات: GKE بالإنجليزي بس — المحلي بالعربي بس */
@@ -657,7 +657,7 @@ function checkNotes(){
   $('fNotes').placeholder = gke ? 'English only — e.g. The price does not include scaffolding.' : 'بالعربي بس — مثلاً: السعر لا يشمل السقالات.';
   let bad = '';
   if (v.trim() && gke && /[\u0600-\u06FF]/.test(v)) bad = '⚠️ عرض GKE إنجليزي — اكتب الملاحظات بالإنجليزي بس';
-  if (v.trim() && !gke && /[A-Za-z]/.test(v)) bad = '⚠️ العرض ده عربي — اكتب الملاحظات بالعربي بس (من غير حروف إنجليزي)';
+  if (v.trim() && !gke && /[A-Za-z]/.test(v)) bad = '⚠️ هذا العرض عربي — اكتب الملاحظات بالعربي بس (من غير حروف إنجليزي)';
   msg('fNotesMsg', bad, 'err');
   return !bad;
 }
@@ -666,7 +666,7 @@ function checkInstall(){
   const v = Number($('fInstall').value) || 0, gke = /GKE/i.test($('fType').value);
   if (!$('fInstall').value) return msg('fInstallMsg','');
   if (v < 30) return msg('fInstallMsg','أقل مدة تركيب 30 يوم');
-  if (gke && v < 180) return msg('fInstallMsg','⚠️ تأكد من مدة التركيب حيث أن المصعد المختار مستورد — تأكد إن تسليم المصعد هيكون في الوقت المحدد.','warn');
+  if (gke && v < 180) return msg('fInstallMsg','⚠️ تأكد من مدة التركيب حيث أن المصعد المختار مستورد — تأكد من أن تسليم المصعد هيكون في الوقت المحدد.','warn');
   msg('fInstallMsg','');
 }
 /* ---------- بنود التسعير الإضافية ---------- */
@@ -674,7 +674,7 @@ const maxItems = () => 6;
 function addItem(it){
   it = it || {};
   const box = $('xItems'), n = box.children.length + 2 + liftCards().length;
-  if (box.children.length + liftCards().length >= maxItems()) return alert('أقصى عدد سطور زيادة في جدول العرض المالي ' + maxItems() + ' (مصاعد تانية + بنود) — عشان ترتيب صفحات العرض ما يبوظش');
+  if (box.children.length + liftCards().length >= maxItems()) return alert('أقصى عدد سطور زيادة في جدول العرض المالي ' + maxItems() + ' (مصاعد أخرى + بنود) — لكي لا يختل ترتيب صفحات العرض');
   const d = document.createElement('div');
   d.className = 'grid xitem';
   d.style.cssText = 'border:1px dashed var(--line);border-radius:10px;padding:8px;margin-bottom:8px';
@@ -696,10 +696,10 @@ function readItems(){
 function itemsTotal(){ return readItems().reduce((a, o) => a + (Number(o.qty) || 1) * (Number(o.price) || 0), 0); }
 function clearItems(){ $('xItems').innerHTML = ''; }
 
-/* ---------- مصاعد تانية في نفس العرض (L2، L3…) ---------- */
+/* ---------- مصاعد أخرى في نفس العرض (L2، L3…) ---------- */
 const MAX_MORE_LIFTS = 4;
 const liftCards = () => [...document.querySelectorAll('#xLifts .xlift')];
-/** الحمولة المقترحة للمصعد الجديد: 450 → 630، و630 → 1000 (محلي) أو 1050 (GKE)، وغير كده الحمولة اللي بعدها */
+/** الحمولة المقترحة للمصعد الجديد: 450 → 630، و630 → 1000 (محلي) أو 1050 (GKE)، وغير كده الحمولة التاليا */
 function nextLoad(load){
   const gke = /GKE/i.test($('fType').value);
   if (load === 450) return 630;
@@ -718,11 +718,11 @@ function liftLoadOptions(cur){
   if (cur && loads.indexOf(Number(cur)) < 0) loads.push(Number(cur));
   return loads.sort((a,b) => a - b).map(l => '<option value="'+l+'"'+(Number(cur) === l ? ' selected' : '')+'>'+l+' كجم</option>').join('');
 }
-/** مصعد جديد = نسخة من اللي فوقه (نفس الوقفات والبئر والحفرة والهيدروم والسرعة والأبواب) والحمولة بس اللي بتكبر */
+/** مصعد جديد = نسخة من الذي فوقه (نفس الوقفات والبئر والحفرة والهيدروم والسرعة والأبواب) والحمولة بس الذي بتكبر */
 function addLift(o, saved){
   const box = $('xLifts');
   if (box.children.length >= MAX_MORE_LIFTS) return alert('أقصى عدد مصاعد في العرض ' + (MAX_MORE_LIFTS + 1) + ' (L1 لـ L' + (MAX_MORE_LIFTS + 1) + ')');
-  if (!saved && box.children.length + readItems().length >= maxItems()) return alert('أقصى عدد سطور زيادة في جدول العرض المالي ' + maxItems() + ' (مصاعد تانية + بنود)');
+  if (!saved && box.children.length + readItems().length >= maxItems()) return alert('أقصى عدد سطور زيادة في جدول العرض المالي ' + maxItems() + ' (مصاعد أخرى + بنود)');
   if (!o){
     const ls = readLifts(), prev = ls.length ? ls[ls.length - 1] : mainLift();
     o = Object.assign({}, prev, {lifts: 1, load: nextLoad(Number(prev.load)), cabin: '', price: '', label: ''});
@@ -737,7 +737,7 @@ function addLift(o, saved){
   d.style.cssText = 'border:1px dashed var(--gold);border-radius:10px;padding:10px;margin-bottom:10px';
   d.innerHTML =
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b class="xl-title">المصعد '+esc(label)+'</b>'+
-    '<button type="button" class="btn ghost" title="شيل المصعد ده" onclick="this.closest(\'.xlift\').remove();recalc()">×</button></div>'+
+    '<button type="button" class="btn ghost" title="احذف هذا المصعد" onclick="this.closest(\'.xlift\').remove();recalc()">×</button></div>'+
     '<div class="grid">'+
       '<div class="field" style="max-width:90px"><label>الاسم</label><input data-k="label" value="'+esc(label)+'" oninput="this.closest(\'.xlift\').querySelector(\'.xl-title\').textContent=\'المصعد \'+this.value"></div>'+
       num('lifts', 'عدد المصاعد', ' min="1"')+
@@ -748,9 +748,9 @@ function addLift(o, saved){
       '<div class="field"><label>السرعة</label>'+sel('speed', [['1','1 متر/ث'],['1.5','1.5 متر/ث'],['2','2 متر/ث']])+'</div>'+
       num('shaftW', 'عرض البئر (مم)')+num('shaftD', 'عمق البئر (مم)')+
       num('overhead', 'الأوفر هيد (مم)')+num('pit', 'عمق الحفرة (مم)')+
-      '<div class="field wide"><label>مقاس الكابينة</label><input data-k="cabin" placeholder="سيبها فاضية = أكبر كابينة ممكنة" value="'+esc(o.cabin || '')+'"></div>'+
+      '<div class="field wide"><label>مقاس الكابينة</label><input data-k="cabin" placeholder="اتركها فارغة = أكبر كابينة ممكنة" value="'+esc(o.cabin || '')+'"></div>'+
       '<div class="field"><label>عرض الباب</label>'+sel('doorW', [['800','800 مم'],['700','700 مم'],['650','650 مم']])+'</div>'+
-      '<div class="field"><label>نوع الباب</label>'+sel('doorType', [['','— المندوب يختار —'],['جانبي','جانبي'],['سنتر','سنتر'],['نص أوتوماتيك','نص أوتوماتيك']])+'</div>'+
+      '<div class="field"><label>نوع الباب</label>'+sel('doorType', [['','— يختار المندوب —'],['جانبي','جانبي'],['سنتر','سنتر'],['نص أوتوماتيك','نص أوتوماتيك']])+'</div>'+
       '<div class="field"><label>سعر المصعد قبل الضريبة</label><input data-k="price" type="text" inputmode="decimal" min="0" step="'+((S.cfg && Number(S.cfg.settings.step)) || 500)+'" value="'+esc(o.price || '')+'" oninput="this.dataset.touched=1"'+(saved ? ' data-touched="1"' : '')+'><div class="small xl-sug"></div></div>'+
     '</div>';
   box.appendChild(d);
@@ -773,14 +773,14 @@ function liftSuggest(o){
   const x = S.cfg.settings.extras;
   return prod.base + (Number(o.stops) - 3) * prod.perStop + (x ? priceExtras(x, o.carDoors, o.pit, o.overhead).add : 0);
 }
-/** سعر المصاعد التانية: المقترح لو المندوب ما كتبش سعر بنفسه */
+/** سعر المصاعد الأخرى: المقترح إذا المندوب ما كتبش سعر بنفسه */
 function liftsTotal(){
   let t = 0;
   liftCards().forEach(d => {
     const o = {}; d.querySelectorAll('[data-k]').forEach(el => o[el.dataset.k] = el.value.trim());
     const p = d.querySelector('[data-k=price]'), sug = liftSuggest(o);
     if (!p.dataset.touched) p.value = sug != null ? sug : '';
-    d.querySelector('.xl-sug').innerHTML = sug != null ? 'المقترح: ' + money(sug) + (Number(p.value) !== sug ? ' — <a href="#" onclick="var p=this.closest(\'.xlift\').querySelector(\'[data-k=price]\');delete p.dataset.touched;recalc();return false">رجّع المقترح</a>' : '') : 'مفيش سعر مقترح للحمولة دي — اكتب السعر';
+    d.querySelector('.xl-sug').innerHTML = sug != null ? 'المقترح: ' + money(sug) + (Number(p.value) !== sug ? ' — <a href="#" onclick="var p=this.closest(\'.xlift\').querySelector(\'[data-k=price]\');delete p.dataset.touched;recalc();return false">أعِد المقترح</a>' : '') : 'لا يوجد سعر مقترح لهذه الحمولة — اكتب السعر';
     t += (parseInt(o.lifts, 10) || 1) * (Number(p.value) || 0);
   });
   return t;
@@ -789,7 +789,7 @@ function toggleMore(show){
   const b = $('moreBox'); b.hidden = show === undefined ? !b.hidden : !show;
   $('moreBtn').textContent = (b.hidden ? '+ ' : '− ') + 'خيارات إضافية';
 }
-/** ارتفاع الباب لوحده حسب الموديل (GKE دايماً 2100) — والمندوب يقدر يغيّره في المحلي */
+/** ارتفاع الباب لوحده حسب الموديل (GKE دايماً 2100) — ويمكن للمندوب يغيّره في المحلي */
 function autoDoorH(){
   const gke = /GKE/i.test($('fType').value), h = $('fDoorH');
   h.disabled = gke;
@@ -827,8 +827,8 @@ function recalc(){
   const sug = suggestion();
   if (!$('fUnit').dataset.touched) $('fUnit').value = sug != null ? sug : '';
   $('fSuggest').innerHTML = sug != null
-    ? 'السعر المقترح: '+money(sug)+(sugExtras().items.length ? ' <span class="small">(شامل '+sugExtras().items.map(i => i[0]+' +'+money(i[1])).join('، ')+')</span>' : '')+(Number($('fUnit').value)!==sug ? ' — <a href="#" onclick="useSuggestion();return false">رجّع المقترح</a>' : '')
-    : 'مفيش سعر مقترح للحمولة دي — اكتب السعر';
+    ? 'السعر المقترح: '+money(sug)+(sugExtras().items.length ? ' <span class="small">(شامل '+sugExtras().items.map(i => i[0]+' +'+money(i[1])).join('، ')+')</span>' : '')+(Number($('fUnit').value)!==sug ? ' — <a href="#" onclick="useSuggestion();return false">أعِد المقترح</a>' : '')
+    : 'لا يوجد سعر مقترح لهذه الحمولة — اكتب السعر';
   const unit = Number($('fUnit').value) || 0;
   if (!unit){ P.innerHTML = '<div class="na">اكتب سعر المصعد</div>'; return; }
   if (stops < st.minStops || stops > st.maxStops){ P.innerHTML = '<div class="na">عدد الوقفات من '+st.minStops+' لـ '+st.maxStops+'</div>'; return; }
@@ -877,7 +877,7 @@ async function saveOffer(e){
     const r = await call('saveOffer', data);
     msg('oMsg', 'تم حفظ العرض رقم <b>'+r.offerNo+'</b>'+(r.revision > 1 ? ' (تعديل رقم '+r.revision+' لنفس العميل)' : '')+' — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');
     if (data.clientEn && S.cfg.learned){ S.cfg.learned[String(data.client).trim().replace(/\s+/g,' ')] = data.clientEn; if (data.district && data.districtEn) S.cfg.learned[String(data.district).trim().replace(/\s+/g,' ')] = data.districtEn; }
-    // البيانات بتفضل زي ما هي بعد الحفظ — عشان تعمل نوع تاني لنفس العميل أو تعدّل وتحفظ تاني
+    // البيانات بتفضل زي ما هي بعد الحفظ — لكي تعمل نوع آخر لنفس العميل أو تعدّل وتحفظ آخر
     S.editing = null; $('editNote').hidden = true; loadRecentClients();
     makeAndSaveDoc({offerNo: r.offerNo, revision: r.revision});
   }catch(err){ msg('oMsg', err.message); }
@@ -885,7 +885,7 @@ async function saveOffer(e){
 }
 
 /* ---------- ملفات العرض ---------- */
-/** يفتح نافذة الملفات جوه الفولدر اللي المندوب حدده، عشان يختار المستند ويفتحه من هناك */
+/** يفتح نافذة الملفات جوه المجلد الذي المندوب حدده، ليختار المستند ويفتحه من هناك */
 async function openDocInFolder(){
   const info = S.docDir; if (!info || !info.dir) return;
   try{
@@ -894,10 +894,10 @@ async function openDocInFolder(){
   }catch(e){ /* المندوب قفل النافذة */ }
 }
 const DOCX_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-/** بعد الحفظ: يجهّز الورد ويحمّله على طول لو الجهاز متاح، ولو مش متاح يكتب إنه هيتحمّل لما يتاح */
+/** بعد الحفظ: يجهّز الورد ويحمّله على طول إذا الجهاز متاح، وإن لم متاح يكتب إنه سيُنزَّل لما يتاح */
 async function makeAndSaveDoc(r){
   const box = 'oFiles', el = $(box);
-  el.innerHTML = '<div class="msg warn">جاري تجهيز الورد...</div>';
+  el.innerHTML = '<div class="msg warn">جارٍ تجهيز الورد...</div>';
   try{
     const f = await call('makeDocs', {offerNo: r.offerNo, revision: r.revision});
     const bin = atob(f.docx), arr = new Uint8Array(bin.length);
@@ -914,19 +914,19 @@ async function makeAndSaveDoc(r){
         const where = await writeToDir(d, blob, name, f.client || '');
         await markSaved(r.offerNo);
         S.docDir = { dir: (perClient() && f.client) ? await d.getDirectoryHandle(f.client, {create:true}) : d };
-        status = 'اتحفظ الورد في: ' + where;
+        status = 'حُفظ الورد في: ' + where;
         el.innerHTML = '<div class="msg ok">' + esc(status) + ' — <button type="button" class="btn ghost" onclick="openDocInFolder()">افتح المستند</button></div>';
         return;
       } else {
-        status = 'الورد هيتحمّل على الجهاز لما يبقى متاح (لازم تختار فولدر الحفظ من ⚙ الإعدادات)';
+        status = 'الورد سيُنزَّل على الجهاز لما يبقى متاح (يجب أن تختار مجلد الحفظ من ⚙ الإعدادات)';
       }
     } else {
       forceDownload(box);
-      status = 'اتحمّل الورد على الجهاز';
+      status = 'نُزِّل الورد على الجهاز';
     }
     el.innerHTML = '<div class="msg ok">' + esc(status) + ' — <a href="' + link + '" target="_blank" rel="noopener">افتح المستند</a></div>';
   }catch(err){
-    el.innerHTML = '<div class="msg err">الورد ما اتجهزش: ' + esc(err.message) + ' — <a href="#" onclick="makeAndSaveDoc(' + esc(JSON.stringify(r)) + ');return false">حاول تاني</a></div>';
+    el.innerHTML = '<div class="msg err">الورد لم يُجهَّز: ' + esc(err.message) + ' — <a href="#" onclick="makeAndSaveDoc(' + esc(JSON.stringify(r)) + ');return false">حاول مرة أخرى</a></div>';
   }
 }
 function b64Url(b64, type){
@@ -936,7 +936,7 @@ function b64Url(b64, type){
 }
 async function getFiles(offerNo, revision, box){
   const el = $(box);
-  el.innerHTML = '<div class="msg warn">جاري تجهيز ملف الـ Word...</div>';
+  el.innerHTML = '<div class="msg warn">جارٍ تجهيز ملف الـ Word...</div>';
   try{
     const f = await call('makeDocs', {offerNo, revision});
     const bin = atob(f.docx), arr = new Uint8Array(bin.length);
@@ -945,14 +945,14 @@ async function getFiles(offerNo, revision, box){
     S.files[box] = { blob: new Blob([arr], {type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}), name: f.name + '.docx', client: f.client || '', offerNo: String(offerNo) };
     let h = '<div class="files"><button type="button" class="btn" onclick="downloadDoc(\''+box+'\')">تحميل Word</button>';
     if (f.pdf) h += '<a class="btn" href="'+b64Url(f.pdf,'application/pdf')+'" download="'+esc(f.name)+'.pdf">تحميل PDF</a>';
-    h += '</div><p class="small">افتح ملف الـ Word واعمل منه Save as PDF (لازم خط DIN Next يكون متركّب على الجهاز).</p><div>';
+    h += '</div><p class="small">افتح ملف الـ Word واعمل منه Save as PDF (يجب أن يكون خط DIN Next يكون مثبّت على الجهاز).</p><div>';
     el.innerHTML = h + '</div><p class="small">'+esc(f.name)+'</p>';
   }catch(err){
-    el.innerHTML = '<div class="msg err">'+esc(err.message)+' — <a href="#" onclick="getFiles('+JSON.stringify(offerNo)+','+JSON.stringify(revision)+',\''+box+'\');return false">حاول تاني</a></div>';
+    el.innerHTML = '<div class="msg err">'+esc(err.message)+' — <a href="#" onclick="getFiles('+JSON.stringify(offerNo)+','+JSON.stringify(revision)+',\''+box+'\');return false">حاول مرة أخرى</a></div>';
   }
 }
 
-/* ---------- الحفظ في فولدر على الجهاز (Chrome / Edge على الكمبيوتر) ---------- */
+/* ---------- الحفظ في مجلد على الجهاز (Chrome / Edge على الكمبيوتر) ---------- */
 const canPickDir = typeof window.showDirectoryPicker === 'function';
 const kv = {
   db(){ return new Promise((res, rej) => { const r = indexedDB.open('alfalak-offers', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
@@ -961,7 +961,7 @@ const kv = {
   async del(k){ try{ const d = await this.db(); await new Promise(res => { const t = d.transaction('kv','readwrite'); t.objectStore('kv').delete(k); t.oncomplete = res; t.onerror = res; }); }catch(e){} },
 };
 function perClient(){ try{ return localStorage.getItem('perClient') !== '0'; }catch(e){ return true; } }
-/** يكتب الملف في الفولدر (وجوه فولدر العميل) من غير ما يمسح ملف قديم بنفس الاسم */
+/** يكتب الملف في المجلد (وجوه مجلد العميل) من غير ما يمسح ملف قديم بنفس الاسم */
 async function writeToDir(d, blob, fileName, client){
   let dir = d, where = d.name;
   if (perClient() && client){ dir = await d.getDirectoryHandle(client, {create:true}); where += ' / ' + client; }
@@ -977,7 +977,7 @@ async function writeToDir(d, blob, fileName, client){
 async function savedSet(){ const a = await kv.get('savedOffers'); return new Set(Array.isArray(a) ? a.map(String) : []); }
 async function markSaved(no){ const s = await savedSet(); s.add(String(no)); await kv.set('savedOffers', [...s]); }
 
-/* ---------- العروض اللي اتعملت من الموبايل (أو جهاز تاني) بتتحفظ هنا لوحدها ---------- */
+/* ---------- العروض الذي أُنشئت من الموبايل (أو جهاز آخر) بتتحفظ هنا لوحدها ---------- */
 const SYNC_DAYS = 30;
 async function pendingOffers(){
   const d = canPickDir ? await kv.get('saveDir') : null;
@@ -1001,15 +1001,15 @@ async function syncPending(fromClick){
     if (!ok){
       bar.hidden = false;
       bar.className = 'msg warn';
-      bar.innerHTML = 'عندك <b>'+rows.length+'</b> عرض اتعملوا من جهاز تاني ولسه ما اتحفظوش على الجهاز ده. '+
-        '<button type="button" class="btn" style="padding:4px 12px" onclick="syncPending(true)">احفظهم في فولدر '+esc(d.name)+'</button>'+
-        ' <a href="#" onclick="skipPending();return false" class="small">مش دلوقتي</a>';
+      bar.innerHTML = 'لديك <b>'+rows.length+'</b> عرض أُنشئوا من جهاز آخر وبعد لم يُحفظوا على الجهاز هذا. '+
+        '<button type="button" class="btn" style="padding:4px 12px" onclick="syncPending(true)">احفظها في مجلد '+esc(d.name)+'</button>'+
+        ' <a href="#" onclick="skipPending();return false" class="small">ليس الآن</a>';
       return;
     }
     bar.hidden = false; bar.className = 'msg warn';
     let n = 0;
     for (const r of rows.slice().reverse()){
-      bar.textContent = 'بيحفظ العروض على الجهاز ده... (' + (++n) + ' من ' + rows.length + ')';
+      bar.textContent = 'تُحفظ العروض على هذا الجهاز... (' + (++n) + ' من ' + rows.length + ')';
       const f = await call('makeDocs', {offerNo: r.offerNo, revision: r.revision});
       const bin = atob(f.docx), arr = new Uint8Array(bin.length);
       for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
@@ -1017,11 +1017,11 @@ async function syncPending(fromClick){
       await markSaved(r.offerNo);
     }
     bar.className = 'msg ok';
-    bar.textContent = 'اتحفظ ' + rows.length + ' عرض في فولدر ' + d.name + ' ✔';
+    bar.textContent = 'حُفظ ' + rows.length + ' عرض في مجلد ' + d.name + ' ✔';
     setTimeout(() => { bar.hidden = true; }, 6000);
   }catch(e){
     bar.hidden = false; bar.className = 'msg err';
-    bar.innerHTML = 'ما قدرتش أحفظ العروض على الجهاز: ' + esc(e.message || e) + ' — <a href="#" onclick="syncPending(true);return false">حاول تاني</a>';
+    bar.innerHTML = 'تعذّر الحفظ العروض على الجهاز: ' + esc(e.message || e) + ' — <a href="#" onclick="syncPending(true);return false">حاول مرة أخرى</a>';
   }finally{ syncing = false; }
 }
 async function skipPending(){
@@ -1036,7 +1036,7 @@ async function downloadDoc(box){
     try{
       let d = await kv.get('saveDir');
       if (!d && !sessionStorage.getItem('skipDir')){
-        // أول مرة: نسأله يختار فولدر الحفظ (ولو قفل الاختيار ننزّل عادي)
+        // أول مرة: نسأله يختار مجلد الحفظ (وإذا قفل الاختيار ننزّل عادي)
         try{ d = await window.showDirectoryPicker({ id: 'alfalak-offers', mode: 'readwrite' }); await kv.set('saveDir', d); }
         catch(e){ try{ sessionStorage.setItem('skipDir','1'); }catch(_){} d = null; }
       }
@@ -1046,18 +1046,18 @@ async function downloadDoc(box){
         if (ok){
           if (f.offerNo && (await savedSet()).has(f.offerNo)){
             const el0 = $(box).querySelector('.saved') || $(box).appendChild(Object.assign(document.createElement('div'), {className:'msg ok saved'}));
-            el0.innerHTML = 'العرض ده متحفظ بالفعل في فولدر ' + esc(d.name) + (f.client && perClient() ? ' / ' + esc(f.client) : '') +
+            el0.innerHTML = 'هذا العرض متحفظ بالفعل في مجلد ' + esc(d.name) + (f.client && perClient() ? ' / ' + esc(f.client) : '') +
               ' — <a href="#" onclick="forceDownload(\''+box+'\');return false">نزّله في التنزيلات</a>';
             return;
           }
           const where = await writeToDir(d, f.blob, f.name, f.client);
           if (f.offerNo) await markSaved(f.offerNo);
           const el = $(box).querySelector('.saved') || $(box).appendChild(Object.assign(document.createElement('div'), {className:'msg ok saved'}));
-          el.textContent = 'اتحفظ في: ' + where;
+          el.textContent = 'حُفظ في: ' + where;
           return;
         }
       }
-    }catch(e){ /* لو حصلت مشكلة نرجع للتنزيل العادي */ }
+    }catch(e){ /* إذا حصلت مشكلة نرجع للتنزيل العادي */ }
   }
   forceDownload(box);
 }
@@ -1068,23 +1068,23 @@ function forceDownload(box){
 }
 
 /* ---------- قائمة العروض ---------- */
-/** المدير: يتنقل بين المندوبين واحد ورا التاني */
+/** المدير: يتنقل بين المندوبين واحد ورا الآخر */
 function repNav(d){
   const s = $('listRep'), n = s.options.length; if (!n) return;
   s.selectedIndex = (s.selectedIndex + d + n) % n; loadList();
 }
-/** حذف عرض (للمدير بس) — all = بكل تعديلاته */
+/** حذف عرض (للمدير فقط) — all = بكل تعديلاته */
 async function delOffer(no, all, client){
-  if (!confirm('تحذف العرض رقم ' + no + (client ? ' (' + client + ')' : '') + (all ? ' بكل تعديلاته' : '') + '؟\nهيختفي من القوايم والمتابعة.')) return;
-  try{ const r = await call('deleteOffer', {offerNo: no, all: !!all}); alert('اتحذف: ' + r.deleted.join('، ')); loadList(); }
+  if (!confirm('تحذف العرض رقم ' + no + (client ? ' (' + client + ')' : '') + (all ? ' بكل تعديلاته' : '') + '؟\nسيختفي من القوايم والمتابعة.')) return;
+  try{ const r = await call('deleteOffer', {offerNo: no, all: !!all}); alert('حُذف: ' + r.deleted.join('، ')); loadList(); }
   catch(err){ alert(err.message); }
 }
 /** ألوان حالة المتابعة على صف العرض */
 function statusStyle(st){
-  const map = {'جاد':'background:#fff3b0','متردد':'background:#fde2e2','تم التعاقد مع شركة أخرى':'background:#b71c1c;color:#fff','تم التعاقد':'background:#c8e6c9'};
+  const map = {'جاد':'background:#fff3b0','جاد جدا':'background:#e6f7d4','متردد':'background:#fde2e2','تم التعاقد مع شركة أخرى':'background:#b71c1c;color:#fff','تم التعاقد':'background:#c8e6c9'};
   return map[st] || '';
 }
-const FOLLOW_LIST = ['جاد', 'متردد', 'تم التعاقد', 'تم التعاقد مع شركة أخرى', 'أخرى'];
+const FOLLOW_LIST = ['جاد', 'جاد جدا', 'متردد', 'تم التعاقد', 'تم التعاقد مع شركة أخرى', 'أخرى'];
 /** خانة حالة المتابعة في قايمة العروض (المندوب يغيّرها مباشرة) */
 function followCell(r){
   const cur = r.followStatus || '';
@@ -1098,14 +1098,14 @@ async function setFollow(el){
   const st = tr.querySelector('.fsel').value, note = tr.querySelector('.fnote').value;
   tr.setAttribute('style', statusStyle(st));
   try{ await call('setFollow', {offerNo: no, followStatus: st, followNote: note}); }
-  catch(err){ $('listCount').textContent = 'ما اتحفظتش المتابعة: ' + err.message; }
+  catch(err){ $('listCount').textContent = 'لم يُحفظ المتابعة: ' + err.message; }
 }
 async function loadList(){
   const admin = S.user.role === 'مدير';
-  $('listTbl').innerHTML = '<tr><td>جاري التحميل...</td></tr>';
+  $('listTbl').innerHTML = '<tr><td>جارٍ التحميل...</td></tr>';
   try{
     const rows = await call('listOffers', {userId: admin ? $('listRep').value : ''});
-    if (!rows.length){ $('listTbl').innerHTML = '<tr><td>مفيش عروض لسه</td></tr>'; $('listCount').textContent = ''; return; }
+    if (!rows.length){ $('listTbl').innerHTML = '<tr><td>لا توجد عروض بعد</td></tr>'; $('listCount').textContent = ''; return; }
     // تجميع المراجعات تحت رقم العرض (الأحدث فوق)
     const groups = {}, order = [];
     rows.forEach(r => { const k = r.userId+'|'+(r.origNo || r.offerNo); if (!groups[k]){ groups[k] = []; order.push(k); } groups[k].push(r); });
@@ -1154,7 +1154,7 @@ async function reprice(offerNo){
     clearLifts(); (o.moreLifts || []).forEach(l => addLift(Object.assign({}, l, {landingDoors: l.landing}), true));
     toggleMore(!!(o.installDays || o.warrantyYears || o.maintYears || (o.extraItems || []).length)); checkInstall();
     $('editNote').hidden = false;
-    $('editNote').innerHTML = 'بتعدّل على العرض رقم <b>'+esc(o.offerNo)+'</b> (آخر مراجعة '+esc(o.revision)+') — لما تحفظ هيتسجّل مراجعة جديدة بنفس الرقم. <a href="#" onclick="cancelEdit();return false">إلغاء</a>';
+    $('editNote').innerHTML = 'تُعدِّل على العرض رقم <b>'+esc(o.offerNo)+'</b> (آخر مراجعة '+esc(o.revision)+') — لما تحفظ ستُسجَّل مراجعة جديدة بالرقم نفسه. <a href="#" onclick="cancelEdit();return false">إلغاء</a>';
     msg('oMsg',''); $('oFiles').innerHTML = ''; checkPhone(); recalc();
     window.scrollTo(0,0);
   }catch(err){ alert(err.message); }
@@ -1170,7 +1170,7 @@ $('dChips').addEventListener('click', e => {
 });
 async function loadDash(period){
   S.period = period;
-  $('dTbl').innerHTML = '<tr><td>جاري التحميل...</td></tr>';
+  $('dTbl').innerHTML = '<tr><td>جارٍ التحميل...</td></tr>';
   try{
     const d = await call('dashboard', {period, from:$('dFrom').value, to:$('dTo').value});
     $('dLabel').textContent = d.label + ': من ' + d.from + ' إلى ' + d.to;
@@ -1193,12 +1193,12 @@ async function loadUsersIntoFilter(){
   }catch(e){}
 }
 async function loadUsers(){
-  $('uTbl').innerHTML = '<tr><td>جاري التحميل...</td></tr>';
+  $('uTbl').innerHTML = '<tr><td>جارٍ التحميل...</td></tr>';
   try{
     const us = await call('listUsers'); S.users = us;
     $('uTbl').innerHTML = '<tr><th>الاسم</th><th>اسم المستخدم</th><th>الإيميل</th><th>الصلاحية</th><th>الحالة</th><th>آخر دخول</th><th></th></tr>'+
       us.map(u => '<tr><td>'+esc(u.name)+'</td><td dir="ltr">'+esc(u.username)+'</td><td dir="ltr" class="small">'+(esc(u.email)||'—')+'</td><td>'+esc(u.role)+'</td>'+
-        '<td><span class="tag '+(u.status==='نشط'?'on':'off')+'">'+esc(u.status)+'</span>'+(u.mustChange?' <span class="small">(لسه ما غيّرش الباسورد)</span>':'')+'</td>'+
+        '<td><span class="tag '+(u.status==='نشط'?'on':'off')+'">'+esc(u.status)+'</span>'+(u.mustChange?' <span class="small">(لم تُغيَّر كلمة المرور بعد)</span>':'')+'</td>'+
         '<td class="small">'+esc(u.lastLogin)+'</td><td class="actions">'+
         '<button class="btn ghost" onclick="editUser(\''+u.id+'\')">تعديل</button>'+
         '<button class="btn ghost" onclick="resetPw(\''+u.id+'\')">كلمة مرور جديدة</button>'+
@@ -1216,10 +1216,10 @@ async function editUser(id){
   catch(err){ msg('uMsg', err.message); }
 }
 async function resetPw(id){
-  if (!confirm('هيتعمل كلمة مرور مؤقتة جديدة، والقديمة هتبطل. تكمل؟')) return;
+  if (!confirm('سيُنشأ كلمة مرور مؤقتة جديدة، والقديمة ستبطل. هل تريد المتابعة؟')) return;
   try{
     const r = await call('resetPassword', {id});
-    msg('uMsg', 'بيانات دخول '+esc(r.name)+':<br>اسم المستخدم: <span class="pwbox">'+esc(r.username)+'</span><br>كلمة المرور المؤقتة: <span class="pwbox">'+esc(r.password)+'</span><br><span class="small">ابعتهاله — هيُطلب منه يغيّرها أول ما يدخل.</span>', 'ok');
+    msg('uMsg', 'بيانات دخول '+esc(r.name)+':<br>اسم المستخدم: <span class="pwbox">'+esc(r.username)+'</span><br>كلمة المرور المؤقتة: <span class="pwbox">'+esc(r.password)+'</span><br><span class="small">أرسلها له — سيُطلب منه تغييرها عند أول دخول.</span>', 'ok');
     loadUsers();
   }catch(err){ msg('uMsg', err.message); }
 }
@@ -1259,7 +1259,7 @@ function renderSettings(list){
 }
 async function loadPrices(){
   msg('prMsg',''); msg('stMsg','');
-  $('prTbl').innerHTML = '<tr><td>جاري التحميل...</td></tr>';
+  $('prTbl').innerHTML = '<tr><td>جارٍ التحميل...</td></tr>';
   try{ const d = await call('getAdminData'); renderPrices(d.prices); renderSettings(d.settings); }
   catch(err){ msg('prMsg', err.message); }
 }

@@ -148,7 +148,7 @@
           <div class="grid">
             <div class="field wide"><label>اسم العميل *</label><div style="display:flex;gap:6px"><input name="client" id="fClient" required oninput="autoEn();renderRecent()" autocomplete="off" style="flex:1"><button type="button" class="btn ghost" style="white-space:nowrap" onclick="toggleRecent()">آخر العملاء</button></div><div id="recentBox" class="recent" hidden></div></div>
             <div class="field"><label>جوال العميل *</label><input name="phone" id="fPhone" dir="ltr" inputmode="tel" required placeholder="05xxxxxxxx" onchange="checkPhone()" onblur="checkPhone()"></div>
-            <div class="field"><label>المدينة *</label><input name="city" value="الرياض" required></div>
+            <div class="field"><label>المدينة *</label><select name="city" id="fCity" required><option value="الرياض">الرياض</option><option value="جدة">جدة</option><option value="الدمام">الدمام</option><option value="حفر الباطن">حفر الباطن</option><option value="الخبر">الخبر</option></select></div>
             <div class="field"><label>الحي</label><input name="district" id="fDist" oninput="autoEn()"></div>
           </div>
           <div class="grid" id="enBox" hidden>
@@ -294,7 +294,7 @@ const TR_WORDS = {
   // أحياء ومدن
   'الرياض': 'Riyadh', 'جدة': 'Jeddah', 'جده': 'Jeddah', 'الدمام': 'Dammam', 'الخبر': 'Khobar', 'مكة': 'Makkah', 'مكه': 'Makkah',
   'المدينة': 'Madinah', 'المدينه': 'Madinah', 'بريدة': 'Buraidah', 'بريده': 'Buraidah', 'القصيم': 'Qassim', 'ابها': 'Abha', 'أبها': 'Abha',
-  'تبوك': 'Tabuk', 'حائل': 'Hail', 'الطائف': 'Taif', 'الخرج': 'Al-Kharj', 'جازان': 'Jazan', 'نجران': 'Najran', 'الجبيل': 'Jubail',
+  'تبوك': 'Tabuk', 'حائل': 'Hail', 'الطائف': 'Taif', 'الخرج': 'Al-Kharj', 'حفر': 'Hafr', 'الباطن': 'Al-Batin', 'جازان': 'Jazan', 'نجران': 'Najran', 'الجبيل': 'Jubail',
   'الاحساء': 'Al-Ahsa', 'الأحساء': 'Al-Ahsa', 'الدرعية': 'Diriyah', 'نجد': 'Najd',
   'العليا': 'Al-Olaya', 'الملز': 'Al-Malaz', 'السليمانية': 'Al-Sulaimaniyah', 'الياسمين': 'Al-Yasmin', 'النرجس': 'Al-Narjis',
   'الملقا': 'Al-Malqa', 'القادسية': 'Al-Qadisiyah', 'الربوة': 'Al-Rabwah', 'الندوة': 'Al-Nadwa', 'عرقة': 'Irqah', 'حطين': 'Hittin',
@@ -553,9 +553,12 @@ function renderRecent(){
     ? list.map(x => '<button type="button" class="recent-item" data-no="'+esc(x.offerNo)+'"><b>'+esc(x.client)+'</b> <span class="small">'+esc(x.city||'')+(x.phone ? ' · ' + esc(x.phone) : '')+'</span></button>').join('')
     : '<div class="small" style="padding:8px 10px">مفيش عملاء مطابقين</div>';
 }
+/** لو المدينة المحفوظة في عرض قديم مش في القائمة، نضيفها عشان ما تضيعش */
+function setCityOpt(v){ const s = $('fCity'); if (v && ![...s.options].some(x => x.value === v)) s.add(new Option(v, v)); }
 /** يعبّي بيانات العميل بس (الاسم والجوال والمدينة والحي والأسماء الإنجليزي) — المصاعد والأسعار بتفضل زي ما هي */
 function fillClient(o){
   const f = $('fOffer').elements;
+  setCityOpt(o.city);
   ['client','phone','city','district'].forEach(k => { if (f[k] && o[k] != null) f[k].value = o[k]; });
   $('fClientEn').value = o.clientEn || ''; $('fDistEn').value = o.districtEn || '';
   ['fClientEn','fDistEn'].forEach(id => { if ($(id).value) $(id).dataset.touched = 1; else delete $(id).dataset.touched; });
@@ -1065,6 +1068,7 @@ async function reprice(offerNo){
     if (opt){ $('fLoadSel').value = String(o.load); $('fLoadTxt').value = ''; }
     else { $('fLoadSel').value = 'other'; $('fLoadTxt').value = o.load + ' كجم / ' + o.persons + ' أشخاص'; }
     onLoadSel();
+    setCityOpt(o.city);
     ['client','phone','city','district','clientEn','districtEn','lifts','stops','landingDoors','carDoors','speed','shaftW','shaftD','overhead','pit','cabin','doorW','doorType','doorFinish','doorBrand','doorH','discount','notes','installDays','warrantyYears','maintYears']
       .forEach(k => { if (f[k] != null && o[k] !== '' && o[k] != null) f[k].value = o[k]; });
     $('fLanding').dataset.touched = 1; $('fDoorType').dataset.touched = 1; $('fBrand').dataset.touched = 1; if (o.doorH) $('fDoorH').dataset.touched = 1; autoDoorH();

@@ -209,6 +209,8 @@
             <div class="field"><label>سعر المصعد قبل الضريبة (ريال) *</label><input name="unitPrice" id="fUnit" type="number" min="0" step="500" required oninput="this.dataset.touched=1"><div class="small" id="fSuggest"></div></div>
             <div class="field"><label>الخصم على العرض (ريال)</label><input name="discount" id="fDisc" type="number" min="0" step="500" value="" placeholder="من غير خصم"></div>
             <div class="field wide"><label>ملاحظات <span class="small">(بتتكتب في آخر العرض)</span></label><textarea name="notes" id="fNotes" rows="2" oninput="checkNotes()" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;width:100%;box-sizing:border-box"></textarea><div id="fNotesMsg"></div></div>
+            <div class="field"><label>حالة المتابعة</label><select name="followStatus" id="fFollow"><option value="">— بدون —</option><option value="جاد">جاد</option><option value="متردد">متردد</option><option value="تم التعاقد">تم التعاقد</option><option value="تم التعاقد مع شركة أخرى">تم التعاقد مع شركة أخرى</option><option value="أخرى">أخرى</option></select></div>
+            <div class="field wide"><label>ملاحظة المتابعة <span class="small">(اكتبها لو الحالة أخرى)</span></label><textarea name="followNote" rows="2" style="font:inherit;padding:8px;border:1px solid #ccc;border-radius:8px"></textarea></div>
           </div>
           <div id="oMsg"></div>
           <div id="oFiles"></div>
@@ -1025,6 +1027,11 @@ async function delOffer(no, all, client){
   try{ const r = await call('deleteOffer', {offerNo: no, all: !!all}); alert('اتحذف: ' + r.deleted.join('، ')); loadList(); }
   catch(err){ alert(err.message); }
 }
+/** ألوان حالة المتابعة على صف العرض */
+function statusStyle(st){
+  const map = {'جاد':'background:#fff3b0','متردد':'background:#fde2e2','تم التعاقد مع شركة أخرى':'background:#b71c1c;color:#fff','تم التعاقد':'background:#c8e6c9'};
+  return map[st] || '';
+}
 async function loadList(){
   const admin = S.user.role === 'مدير';
   $('listTbl').innerHTML = '<tr><td>جاري التحميل...</td></tr>';
@@ -1038,7 +1045,7 @@ async function loadList(){
     $('listCount').textContent = order.length + ' عرض' + (admin && $('listRep').value ? ' — ' + $('listRep').selectedOptions[0].textContent : (admin ? ' — كل المندوبين' : ''));
     $('listTbl').innerHTML = '<tr><th></th><th>الملفات</th><th>آخر تعديل</th><th>رقم العرض</th>'+(admin?'<th>المندوب</th>':'')+'<th>العميل</th><th>الجوال</th><th>المدينة</th><th>النوع</th><th>المصاعد</th><th>الوقفات</th><th>سعر المصعد</th><th>الخصم</th><th>الإجمالي شامل الضريبة</th><th>المراجعات</th></tr>'+
       order.map(k => { const g = groups[k], r = g[0];
-        return '<tr><td style="white-space:nowrap"><button class="btn ghost" style="padding:4px 10px;font-size:13px;white-space:nowrap" onclick="reprice('+JSON.stringify(r.offerNo)+')">إعادة تسعير</button>'+
+        return '<tr style="'+statusStyle(r.followStatus)+'"><td style="white-space:nowrap"><button class="btn ghost" style="padding:4px 10px;font-size:13px;white-space:nowrap" onclick="reprice('+JSON.stringify(r.offerNo)+')">إعادة تسعير</button>'+
           (admin ? ' <button class="btn ghost" style="padding:4px 10px;font-size:13px;color:var(--err)" onclick="delOffer('+esc(JSON.stringify(r.offerNo))+','+(g.length>1)+','+esc(JSON.stringify(r.client))+')">حذف</button>' : '')+'</td>'+
           '<td><span id="lf'+r.offerNo+'"><a href="#" onclick="getFiles('+JSON.stringify(r.offerNo)+','+(r.revision||1)+',\'lf'+r.offerNo+'\');return false">Word</a></span></td>'+
           '<td>'+esc(r.date)+'</td><td>'+esc(r.offerNo)+'</td>'+(admin?'<td>'+esc(r.repName)+'</td>':'')+'<td>'+esc(r.client)+'</td><td dir="ltr">'+esc(r.phone)+'</td><td>'+esc(r.city)+'</td><td>'+esc(r.type)+'</td><td>'+r.lifts+'</td><td>'+esc(r.stops)+'</td><td class="num">'+money(r.unit)+'</td><td class="num">'+money(r.discount)+'</td><td class="num">'+money(r.total)+'</td>'+
@@ -1069,7 +1076,7 @@ async function reprice(offerNo){
     else { $('fLoadSel').value = 'other'; $('fLoadTxt').value = o.load + ' كجم / ' + o.persons + ' أشخاص'; }
     onLoadSel();
     setCityOpt(o.city);
-    ['client','phone','city','district','clientEn','districtEn','lifts','stops','landingDoors','carDoors','speed','shaftW','shaftD','overhead','pit','cabin','doorW','doorType','doorFinish','doorBrand','doorH','discount','notes','installDays','warrantyYears','maintYears']
+    ['client','phone','city','district','clientEn','followStatus','followNote','districtEn','lifts','stops','landingDoors','carDoors','speed','shaftW','shaftD','overhead','pit','cabin','doorW','doorType','doorFinish','doorBrand','doorH','discount','notes','installDays','warrantyYears','maintYears']
       .forEach(k => { if (f[k] != null && o[k] !== '' && o[k] != null) f[k].value = o[k]; });
     $('fLanding').dataset.touched = 1; $('fDoorType').dataset.touched = 1; $('fBrand').dataset.touched = 1; if (o.doorH) $('fDoorH').dataset.touched = 1; autoDoorH();
     ['fClientEn','fDistEn'].forEach(id => { if ($(id).value) $(id).dataset.touched = 1; else delete $(id).dataset.touched; }); autoEn();

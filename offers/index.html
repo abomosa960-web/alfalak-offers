@@ -217,7 +217,7 @@
           <div id="oMsg"></div>
           <div id="oFiles"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn" id="oBtn">حفظ العرض</button>
+            <button class="btn" id="oBtn">حفظ العرض وتحميل الورد</button>
             <button type="button" class="btn ghost" onclick="if(confirm('تفضّي كل الخانات وتبدأ عرض جديد؟')){cancelEdit();msg('oMsg','');$('oFiles').innerHTML='';msg('phMsg','');phoneBlocked=false;}">عميل جديد (فضّي الخانات)</button>
           </div>
         </form>
@@ -289,6 +289,14 @@ const store = {
   clear(){ try{ localStorage.removeItem('alfalak_t'); sessionStorage.removeItem('alfalak_t'); sessionStorage.removeItem('alfalak_ok'); }catch(e){} }
 };
 const $ = id => document.getElementById(id);
+/* الأرقام العربية الهندي (٠-٩) والفارسية (۰-۹) بتتحول لأرقام لاتينية في كل الخانات */
+const toLatinDigits = s => String(s).replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x660)).replace(/[\u06F0-\u06F9]/g, d => String(d.charCodeAt(0) - 0x6F0));
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (!t || (t.tagName !== 'INPUT' && t.tagName !== 'TEXTAREA') || t.type === 'password') return;
+  const v = t.value, nv = toLatinDigits(v);
+  if (nv !== v){ const pos = t.selectionStart; t.value = nv; try{ t.setSelectionRange(pos, pos); }catch(_){} }
+}, true);
 const money = n => Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2});
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const msg = (el, text, kind) => { $(el).innerHTML = text ? '<div class="msg '+(kind||'err')+'">'+text+'</div>' : ''; };
@@ -873,12 +881,45 @@ async function saveOffer(e){
     if (data.clientEn && S.cfg.learned){ S.cfg.learned[String(data.client).trim().replace(/\s+/g,' ')] = data.clientEn; if (data.district && data.districtEn) S.cfg.learned[String(data.district).trim().replace(/\s+/g,' ')] = data.districtEn; }
     // البيانات بتفضل زي ما هي بعد الحفظ — عشان تعمل نوع تاني لنفس العميل أو تعدّل وتحفظ تاني
     S.editing = null; $('editNote').hidden = true; loadRecentClients();
-    getFiles(r.offerNo, r.revision, 'oFiles');
+    makeAndSaveDoc({offerNo: r.offerNo, revision: r.revision});
   }catch(err){ msg('oMsg', err.message); }
   $('oBtn').disabled = false;
 }
 
 /* ---------- ملفات العرض ---------- */
+const DOCX_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+/** بعد الحفظ: يجهّز الورد ويحمّله على طول لو الجهاز متاح، ولو مش متاح يكتب إنه هيتحمّل لما يتاح */
+async function makeAndSaveDoc(r){
+  const box = 'oFiles', el = $(box);
+  el.innerHTML = '<div class="msg warn">جاري تجهيز الورد...</div>';
+  try{
+    const f = await call('makeDocs', {offerNo: r.offerNo, revision: r.revision});
+    const bin = atob(f.docx), arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    const blob = new Blob([arr], {type: DOCX_TYPE}), name = f.name + '.docx';
+    S.files = S.files || {};
+    S.files[box] = { blob, name, client: f.client || '', offerNo: String(r.offerNo) };
+    const link = URL.createObjectURL(blob);
+    let status;
+    if (canPickDir){
+      const d = await kv.get('saveDir');
+      const ok = d ? (await d.queryPermission({mode:'readwrite'})) === 'granted' : false;
+      if (ok){
+        const where = await writeToDir(d, blob, name, f.client || '');
+        await markSaved(r.offerNo);
+        status = 'اتحمّل الورد على الجهاز في: ' + where;
+      } else {
+        status = 'الورد هيتحمّل على الجهاز لما يبقى متاح (لازم تختار فولدر الحفظ من ⚙ الإعدادات)';
+      }
+    } else {
+      forceDownload(box);
+      status = 'اتحمّل الورد على الجهاز';
+    }
+    el.innerHTML = '<div class="msg ok">' + esc(status) + ' — <a href="' + link + '" target="_blank" rel="noopener">افتح المستند</a></div>';
+  }catch(err){
+    el.innerHTML = '<div class="msg err">الورد ما اتجهزش: ' + esc(err.message) + ' — <a href="#" onclick="makeAndSaveDoc(' + esc(JSON.stringify(r)) + ');return false">حاول تاني</a></div>';
+  }
+}
 function b64Url(b64, type){
   const bin = atob(b64), arr = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);

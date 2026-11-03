@@ -167,18 +167,18 @@
               <input id="fLoadTxt" hidden placeholder="مثلاً 1150 كجم / 15 أشخاص" oninput="onLoadChange()">
               <input type="hidden" name="load" id="fLoad"><input type="hidden" name="persons" id="fPersons">
             </div>
-            <div class="field"><label>عدد المصاعد</label><input name="lifts" type="number" min="1" value="1" required></div>
-            <div class="field"><label>عدد الوقفات</label><input name="stops" id="fStops" type="number" min="2" value="3" required oninput="syncDoors()"></div>
-            <div class="field"><label>الأبواب الخارجية</label><input name="landingDoors" id="fLanding" type="number" min="2" value="3" oninput="this.dataset.touched=1"></div>
+            <div class="field"><label>عدد المصاعد</label><input name="lifts" type="text" inputmode="decimal" min="1" value="1" required></div>
+            <div class="field"><label>عدد الوقفات</label><input name="stops" id="fStops" type="text" inputmode="decimal" min="2" value="3" required oninput="syncDoors()"></div>
+            <div class="field"><label>الأبواب الخارجية</label><input name="landingDoors" id="fLanding" type="text" inputmode="decimal" min="2" value="3" oninput="this.dataset.touched=1"></div>
             <div class="field"><label>مداخل الكابينة</label><select name="carDoors"><option value="1">مدخل واحد</option><option value="2">مدخلين</option></select></div>
             <div class="field"><label>السرعة</label><select name="speed"><option value="1">1 متر/ث</option><option value="1.5">1.5 متر/ث</option><option value="2">2 متر/ث</option></select></div>
           </div>
           <h3>المقاسات</h3>
           <div class="grid">
-            <div class="field"><label>عرض البئر (مم)</label><input name="shaftW" id="fShaftW" type="number" inputmode="numeric" value="1800" oninput="autoDoorType()"></div>
-            <div class="field"><label>عمق البئر (مم)</label><input name="shaftD" type="number" inputmode="numeric" value="1800"></div>
-            <div class="field"><label>الأوفر هيد (مم)</label><input name="overhead" type="number" value="4100"></div>
-            <div class="field"><label>عمق الحفرة (مم)</label><input name="pit" type="number" value="1200"></div>
+            <div class="field"><label>عرض البئر (مم)</label><input name="shaftW" id="fShaftW" type="text" inputmode="decimal" inputmode="numeric" value="1800" oninput="autoDoorType()"></div>
+            <div class="field"><label>عمق البئر (مم)</label><input name="shaftD" type="text" inputmode="decimal" inputmode="numeric" value="1800"></div>
+            <div class="field"><label>الأوفر هيد (مم)</label><input name="overhead" type="text" inputmode="decimal" value="4100"></div>
+            <div class="field"><label>عمق الحفرة (مم)</label><input name="pit" type="text" inputmode="decimal" value="1200"></div>
             <div class="field wide"><label>مقاس الكابينة</label><input name="cabin" id="fCabin" placeholder="سيبها فاضية = أكبر كابينة ممكنة"></div>
           </div>
           <h3>الأبواب</h3>
@@ -198,9 +198,9 @@
           <div id="moreBox" hidden>
             <p class="small">سيبها فاضية عشان يفضل المكتوب في العرض زي ما هو.</p>
             <div class="grid">
-              <div class="field"><label>مدة التوريد والتركيب (يوم)</label><input name="installDays" id="fInstall" type="number" min="30" inputmode="numeric" oninput="checkInstall()"><div id="fInstallMsg"></div></div>
-              <div class="field"><label>مدة الضمان (سنة)</label><input name="warrantyYears" id="fWarranty" type="number" min="1" inputmode="numeric"></div>
-              <div class="field"><label>الصيانة المجانية (سنة)</label><input name="maintYears" id="fMaint" type="number" min="1" inputmode="numeric"></div>
+              <div class="field"><label>مدة التوريد والتركيب (يوم)</label><input name="installDays" id="fInstall" type="text" inputmode="decimal" min="30" inputmode="numeric" oninput="checkInstall()"><div id="fInstallMsg"></div></div>
+              <div class="field"><label>مدة الضمان (سنة)</label><input name="warrantyYears" id="fWarranty" type="text" inputmode="decimal" min="1" inputmode="numeric"></div>
+              <div class="field"><label>الصيانة المجانية (سنة)</label><input name="maintYears" id="fMaint" type="text" inputmode="decimal" min="1" inputmode="numeric"></div>
             </div>
             <h4 style="margin:14px 0 6px">بنود تسعير إضافية <span class="small">(زي فك مصعد قديم — بتتضاف تحت المصعد في جدول العرض المالي)</span></h4>
             <div id="xItems"></div>
@@ -208,8 +208,8 @@
           </div>
           <h3>السعر</h3>
           <div class="grid">
-            <div class="field"><label>سعر المصعد قبل الضريبة (ريال) *</label><input name="unitPrice" id="fUnit" type="number" min="0" step="500" required oninput="this.dataset.touched=1"><div class="small" id="fSuggest"></div></div>
-            <div class="field"><label>الخصم على العرض (ريال)</label><input name="discount" id="fDisc" type="number" min="0" step="500" value="" placeholder="من غير خصم"></div>
+            <div class="field"><label>سعر المصعد قبل الضريبة (ريال) *</label><input name="unitPrice" id="fUnit" type="text" inputmode="decimal" min="0" step="500" required oninput="this.dataset.touched=1"><div class="small" id="fSuggest"></div></div>
+            <div class="field"><label>الخصم على العرض (ريال)</label><input name="discount" id="fDisc" type="text" inputmode="decimal" min="0" step="500" value="" placeholder="من غير خصم"></div>
             <div class="field wide"><label>ملاحظات <span class="small">(بتتكتب في آخر العرض)</span></label><textarea name="notes" id="fNotes" rows="2" oninput="checkNotes()" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;width:100%;box-sizing:border-box"></textarea><div id="fNotesMsg"></div></div>
           </div>
           <div id="oMsg"></div>
@@ -682,8 +682,8 @@ function addItem(it){
     '<div class="field" style="max-width:80px"><label>رقم البند</label><input data-k="no" value="'+esc(it.no || n)+'"></div>'+
     '<div class="field"><label>النوع</label><input data-k="type" placeholder="مثلاً: فك المصعد القديم" value="'+esc(it.type || '')+'"></div>'+
     '<div class="field wide"><label>المواصفات</label><input data-k="spec" placeholder="مثلاً: فك المصعد" value="'+esc(it.spec || '')+'"></div>'+
-    '<div class="field" style="max-width:90px"><label>الكمية</label><input data-k="qty" type="number" min="1" value="'+esc(it.qty || 1)+'"></div>'+
-    '<div class="field"><label>سعر الوحدة (قبل الضريبة)</label><input data-k="price" type="number" min="0" value="'+esc(it.price == null ? '' : it.price)+'"></div>'+
+    '<div class="field" style="max-width:90px"><label>الكمية</label><input data-k="qty" type="text" inputmode="decimal" min="1" value="'+esc(it.qty || 1)+'"></div>'+
+    '<div class="field"><label>سعر الوحدة (قبل الضريبة)</label><input data-k="price" type="text" inputmode="decimal" min="0" value="'+esc(it.price == null ? '' : it.price)+'"></div>'+
     '<div class="field" style="max-width:70px;align-self:end"><button type="button" class="btn ghost" title="حذف البند" onclick="this.closest(\'.xitem\').remove();recalc()">×</button></div>';
   box.appendChild(d);
   recalc();
@@ -731,7 +731,7 @@ function addLift(o, saved){
   let n = 2; while (used.has('L' + n)) n++;
   const label = saved && o.label ? o.label : 'L' + n;
   const sel = (k, opts) => '<select data-k="'+k+'">' + opts.map(v => '<option value="'+esc(v[0])+'"'+(String(o[k]) === String(v[0]) ? ' selected' : '')+'>'+esc(v[1])+'</option>').join('') + '</select>';
-  const num = (k, lbl, extra) => '<div class="field"><label>'+lbl+'</label><input data-k="'+k+'" type="number" inputmode="numeric" value="'+esc(o[k] == null ? '' : o[k])+'"'+(extra || '')+'></div>';
+  const num = (k, lbl, extra) => '<div class="field"><label>'+lbl+'</label><input data-k="'+k+'" type="text" inputmode="decimal" inputmode="numeric" value="'+esc(o[k] == null ? '' : o[k])+'"'+(extra || '')+'></div>';
   const d = document.createElement('div');
   d.className = 'xlift';
   d.style.cssText = 'border:1px dashed var(--gold);border-radius:10px;padding:10px;margin-bottom:10px';
@@ -751,7 +751,7 @@ function addLift(o, saved){
       '<div class="field wide"><label>مقاس الكابينة</label><input data-k="cabin" placeholder="سيبها فاضية = أكبر كابينة ممكنة" value="'+esc(o.cabin || '')+'"></div>'+
       '<div class="field"><label>عرض الباب</label>'+sel('doorW', [['800','800 مم'],['700','700 مم'],['650','650 مم']])+'</div>'+
       '<div class="field"><label>نوع الباب</label>'+sel('doorType', [['','— المندوب يختار —'],['جانبي','جانبي'],['سنتر','سنتر'],['نص أوتوماتيك','نص أوتوماتيك']])+'</div>'+
-      '<div class="field"><label>سعر المصعد قبل الضريبة</label><input data-k="price" type="number" min="0" step="'+((S.cfg && Number(S.cfg.settings.step)) || 500)+'" value="'+esc(o.price || '')+'" oninput="this.dataset.touched=1"'+(saved ? ' data-touched="1"' : '')+'><div class="small xl-sug"></div></div>'+
+      '<div class="field"><label>سعر المصعد قبل الضريبة</label><input data-k="price" type="text" inputmode="decimal" min="0" step="'+((S.cfg && Number(S.cfg.settings.step)) || 500)+'" value="'+esc(o.price || '')+'" oninput="this.dataset.touched=1"'+(saved ? ' data-touched="1"' : '')+'><div class="small xl-sug"></div></div>'+
     '</div>';
   box.appendChild(d);
   if (saved) d.querySelector('[data-k=landingDoors]').dataset.touched = 1;
@@ -885,6 +885,14 @@ async function saveOffer(e){
 }
 
 /* ---------- ملفات العرض ---------- */
+/** يفتح نافذة الملفات جوه الفولدر اللي المندوب حدده، عشان يختار المستند ويفتحه من هناك */
+async function openDocInFolder(){
+  const info = S.docDir; if (!info || !info.dir) return;
+  try{
+    await window.showOpenFilePicker({ startIn: info.dir, multiple: false,
+      types: [{ description: 'Word', accept: { [DOCX_TYPE]: ['.docx'] } }] });
+  }catch(e){ /* المندوب قفل النافذة */ }
+}
 const DOCX_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 /** بعد الحفظ: يجهّز الورد ويحمّله على طول لو الجهاز متاح، ولو مش متاح يكتب إنه هيتحمّل لما يتاح */
 async function makeAndSaveDoc(r){
@@ -905,7 +913,10 @@ async function makeAndSaveDoc(r){
       if (ok){
         const where = await writeToDir(d, blob, name, f.client || '');
         await markSaved(r.offerNo);
-        status = 'اتحمّل الورد على الجهاز في: ' + where;
+        S.docDir = { dir: (perClient() && f.client) ? await d.getDirectoryHandle(f.client, {create:true}) : d };
+        status = 'اتحفظ الورد في: ' + where;
+        el.innerHTML = '<div class="msg ok">' + esc(status) + ' — <button type="button" class="btn ghost" onclick="openDocInFolder()">افتح المستند</button></div>';
+        return;
       } else {
         status = 'الورد هيتحمّل على الجهاز لما يبقى متاح (لازم تختار فولدر الحفظ من ⚙ الإعدادات)';
       }
@@ -1244,7 +1255,7 @@ function readPriceRows(){
   });
 }
 function renderSettings(list){
-  $('stGrid').innerHTML = list.map(x => '<div class="field"><label>'+esc(x.key)+'</label><input type="number" data-key="'+esc(x.key)+'" value="'+esc(x.value)+'"></div>').join('');
+  $('stGrid').innerHTML = list.map(x => '<div class="field"><label>'+esc(x.key)+'</label><input type="text" inputmode="decimal" data-key="'+esc(x.key)+'" value="'+esc(x.value)+'"></div>').join('');
 }
 async function loadPrices(){
   msg('prMsg',''); msg('stMsg','');

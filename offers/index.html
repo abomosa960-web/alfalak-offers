@@ -76,6 +76,8 @@
   .recent{border:1px solid var(--line);border-radius:8px;max-height:260px;overflow:auto;margin-top:6px;background:#fff}
   .recent-item{display:block;width:100%;text-align:right;background:none;border:0;border-bottom:1px solid var(--line);padding:9px 10px;font:inherit;cursor:pointer;color:var(--ink)}
   .recent-item:hover{background:#faf7f0}
+  .recent-arrow{position:absolute;left:4px;top:50%;transform:translateY(-50%);background:none;border:0;font-size:16px;line-height:1;padding:6px 8px;cursor:pointer;color:#666}
+  .recent-arrow:hover{color:var(--ink)}
   [hidden]{display:none!important}
   @media (max-width:760px){.layout{grid-template-columns:1fr}.price{position:static}.grid .wide{grid-column:span 1}}
 </style>
@@ -146,7 +148,7 @@
           <div id="editNote" class="msg warn" hidden></div>
           <h3 style="margin-top:0">بيانات العميل</h3>
           <div class="grid">
-            <div class="field wide"><label>اسم العميل *</label><div style="display:flex;gap:6px"><input name="client" id="fClient" required oninput="autoEn();renderRecent()" autocomplete="off" style="flex:1"><button type="button" class="btn ghost" style="white-space:nowrap" onclick="toggleRecent()">آخر العملاء</button></div><div id="recentBox" class="recent" hidden></div></div>
+            <div class="field wide"><label>اسم العميل *</label><div style="position:relative"><input name="client" id="fClient" required oninput="autoEn();renderRecent()" autocomplete="off" style="width:100%;padding-left:34px;box-sizing:border-box"><button type="button" class="recent-arrow" onclick="toggleRecent()" aria-label="آخر العملاء" title="آخر العملاء">▾</button></div><div id="recentBox" class="recent" hidden></div></div>
             <div class="field"><label>جوال العميل *</label><input name="phone" id="fPhone" dir="ltr" inputmode="tel" required placeholder="05xxxxxxxx" onchange="checkPhone()" onblur="checkPhone()"></div>
             <div class="field"><label>المدينة *</label><select name="city" id="fCity" required><option value="الرياض">الرياض</option><option value="جدة">جدة</option><option value="الدمام">الدمام</option><option value="حفر الباطن">حفر الباطن</option><option value="الخبر">الخبر</option></select></div>
             <div class="field"><label>الحي</label><input name="district" id="fDist" oninput="autoEn()"></div>
@@ -539,7 +541,7 @@ async function loadRecentClients(){
       if (!k || seen.has(k)) return;
       seen.add(k); out.push({client: k, phone: r.phone, city: r.city, offerNo: r.offerNo});
     });
-    S.recent = out.slice(0, 20);
+    S.recent = out.slice(0, 10);
   }catch(e){ S.recent = S.recent || []; }
 }
 function toggleRecent(){

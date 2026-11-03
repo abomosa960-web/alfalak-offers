@@ -150,7 +150,7 @@
           <div class="grid">
             <div class="field wide"><label>اسم العميل *</label><div style="position:relative"><input name="client" id="fClient" required oninput="autoEn();renderRecent()" autocomplete="off" style="width:100%;padding-left:34px;box-sizing:border-box"><button type="button" class="recent-arrow" onclick="toggleRecent()" aria-label="آخر العملاء" title="آخر العملاء">▾</button></div><div id="recentBox" class="recent" hidden></div></div>
             <div class="field"><label>جوال العميل *</label><input name="phone" id="fPhone" dir="ltr" inputmode="tel" required placeholder="05xxxxxxxx" onchange="checkPhone()" onblur="checkPhone()"></div>
-            <div class="field"><label>المدينة *</label><select name="city" id="fCity" required><option value="الرياض">الرياض</option><option value="جدة">جدة</option><option value="الدمام">الدمام</option><option value="حفر الباطن">حفر الباطن</option><option value="الخبر">الخبر</option></select></div>
+            <div class="field"><label>المدينة *</label><select name="city" id="fCity" required><option value="الرياض">الرياض</option><option value="جدة">جدة</option><option value="الدمام">الدمام</option><option value="الخبر">الخبر</option></select></div>
             <div class="field"><label>الحي</label><input name="district" id="fDist" oninput="autoEn()"></div>
           </div>
           <div class="grid" id="enBox" hidden>
@@ -298,7 +298,7 @@ const TR_WORDS = {
   // أحياء ومدن
   'الرياض': 'Riyadh', 'جدة': 'Jeddah', 'جده': 'Jeddah', 'الدمام': 'Dammam', 'الخبر': 'Khobar', 'مكة': 'Makkah', 'مكه': 'Makkah',
   'المدينة': 'Madinah', 'المدينه': 'Madinah', 'بريدة': 'Buraidah', 'بريده': 'Buraidah', 'القصيم': 'Qassim', 'ابها': 'Abha', 'أبها': 'Abha',
-  'تبوك': 'Tabuk', 'حائل': 'Hail', 'الطائف': 'Taif', 'الخرج': 'Al-Kharj', 'حفر': 'Hafr', 'الباطن': 'Al-Batin', 'جازان': 'Jazan', 'نجران': 'Najran', 'الجبيل': 'Jubail',
+  'تبوك': 'Tabuk', 'حائل': 'Hail', 'الطائف': 'Taif', 'الخرج': 'Al-Kharj', 'جازان': 'Jazan', 'نجران': 'Najran', 'الجبيل': 'Jubail',
   'الاحساء': 'Al-Ahsa', 'الأحساء': 'Al-Ahsa', 'الدرعية': 'Diriyah', 'نجد': 'Najd',
   'العليا': 'Al-Olaya', 'الملز': 'Al-Malaz', 'السليمانية': 'Al-Sulaimaniyah', 'الياسمين': 'Al-Yasmin', 'النرجس': 'Al-Narjis',
   'الملقا': 'Al-Malqa', 'القادسية': 'Al-Qadisiyah', 'الربوة': 'Al-Rabwah', 'الندوة': 'Al-Nadwa', 'عرقة': 'Irqah', 'حطين': 'Hittin',

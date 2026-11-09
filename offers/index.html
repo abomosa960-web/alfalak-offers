@@ -217,6 +217,7 @@
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn" id="oBtn">حفظ العرض وتحميل الورد</button>
             <button type="button" class="btn ghost" onclick="if(confirm('هل تريد تفريغ كل الخانات وبدء عرض جديد؟')){cancelEdit();msg('oMsg','');$('oFiles').innerHTML='';msg('phMsg','');phoneBlocked=false;}">عميل جديد (فضّي الخانات)</button>
+            <button type="button" class="btn ghost" onclick="openDrawings()">المخططات الهندسية</button>
           </div>
         </form>
         <aside class="price" id="pricePanel"></aside>
@@ -582,6 +583,17 @@ $('recentBox').addEventListener('click', async e => {
   try{ fillClient(await call('getOffer', {offerNo: b.dataset.no})); }
   catch(err){ msg('phMsg', err.message); }
 });
+
+/* ---------- المخططات الهندسية (تحت التجربة: للمديرين فقط) ---------- */
+function openDrawings(){
+  if (!S.user || S.user.role !== 'مدير'){ msg('oMsg', 'المخططات الهندسية: جاري العمل عليها، سيتم الإتاحة فيما بعد.', 'ok'); return; }
+  const f = $('fOffer').elements, v = n => (f[n] ? f[n].value : '');
+  const d = { role: S.user.role, client: v('clientEn') || v('client'), project: v('districtEn') || v('district'), offerNo: S.editing || '',
+              shaftW: v('shaftW'), shaftD: v('shaftD'), pit: v('pit'), overhead: v('overhead'), stops: v('stops'),
+              doorW: v('doorW'), doorType: v('doorType'), type: v('type') };
+  try{ sessionStorage.setItem('alfalak_draw', JSON.stringify(d)); localStorage.setItem('alfalak_draw', JSON.stringify(d)); }catch(e){}
+  window.open('drawings.html', '_blank');
+}
 
 /* ---------- عرض جديد ---------- */
 function fillTypes(){

@@ -597,6 +597,7 @@ async function checkDrawCode(){
 
 /* ---------- المخططات الهندسية (تحت التجربة: للمديرين فقط) ---------- */
 function openDrawings(){
+  if (/GKE/i.test($('fType').value)){ msg('oMsg', 'المخططات الهندسية متاحة للعروض المحلية (MR / MRL) فقط، مش لعروض GKE.', 'warn'); return; }
   let access = (S.user && S.user.role === 'مدير') ? 'مدير' : '';
   try{ if (!access && localStorage.getItem('alfalak_draw_code') === DRAW_CODE_HASH) access = 'code'; }catch(e){}
   if (!access){

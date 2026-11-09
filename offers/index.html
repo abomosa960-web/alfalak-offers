@@ -584,11 +584,27 @@ $('recentBox').addEventListener('click', async e => {
   catch(err){ msg('phMsg', err.message); }
 });
 
+/* كود دخول المخططات لغير المديرين (مثل م. محمد بخيت) — بيتحفظ كبصمة SHA-256 بس */
+const DRAW_CODE_HASH = 'fb634ff372a857bd7da49efc61f1e2b15524c28451f7277fad92a8b216167145';
+async function checkDrawCode(){
+  const v = (($('drawCode') || {}).value || '').trim().toUpperCase();
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v));
+  const h = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+  if (h !== DRAW_CODE_HASH){ msg('oMsg', 'الكود غير صحيح.', 'err'); return; }
+  try{ localStorage.setItem('alfalak_draw_code', h); }catch(e){}
+  msg('oMsg', ''); openDrawings();
+}
+
 /* ---------- المخططات الهندسية (تحت التجربة: للمديرين فقط) ---------- */
 function openDrawings(){
-  if (!S.user || S.user.role !== 'مدير'){ msg('oMsg', 'المخططات الهندسية: جاري العمل عليها، سيتم الإتاحة فيما بعد.', 'ok'); return; }
+  let access = (S.user && S.user.role === 'مدير') ? 'مدير' : '';
+  try{ if (!access && localStorage.getItem('alfalak_draw_code') === DRAW_CODE_HASH) access = 'code'; }catch(e){}
+  if (!access){
+    msg('oMsg', 'المخططات الهندسية: جاري العمل عليها، سيتم الإتاحة فيما بعد.<br><span class="small">لو معاك كود الدخول اكتبه هنا:</span> <input id="drawCode" dir="ltr" style="width:130px;padding:4px 8px"> <button type="button" class="btn ghost" style="padding:4px 12px" onclick="checkDrawCode()">دخول</button>', 'ok');
+    return;
+  }
   const f = $('fOffer').elements, v = n => (f[n] ? f[n].value : '');
-  const d = { role: S.user.role, client: v('clientEn') || v('client'), project: v('districtEn') || v('district'), offerNo: S.editing || '',
+  const d = { role: access === 'مدير' ? 'مدير' : '', access, client: v('clientEn') || v('client'), project: v('districtEn') || v('district'), offerNo: S.editing || '',
               shaftW: v('shaftW'), shaftD: v('shaftD'), pit: v('pit'), overhead: v('overhead'), stops: v('stops'),
               doorW: v('doorW'), doorType: v('doorType'), type: v('type') };
   try{ sessionStorage.setItem('alfalak_draw', JSON.stringify(d)); localStorage.setItem('alfalak_draw', JSON.stringify(d)); }catch(e){}

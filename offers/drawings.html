@@ -1110,7 +1110,7 @@ $("svgBtn").addEventListener("click", async () => {
   try{ token = sessionStorage.getItem("alfalak_t") || localStorage.getItem("alfalak_t"); }catch(e){}
   try{ d = JSON.parse(sessionStorage.getItem("alfalak_draw") || localStorage.getItem("alfalak_draw") || "null"); }catch(e){}
   if(!token){ location.replace("../?next=" + encodeURIComponent(location.href)); return; }
-  if(!d || d.role !== "مدير"){
+  if(!d || (d.role !== "مدير" && d.access !== "code")){
     document.querySelector(".wrap").innerHTML = '<div class="panel" style="grid-column:1/-1;text-align:center;font-size:18px">المخططات الهندسية: جاري العمل عليها، سيتم الإتاحة فيما بعد.<br><br><a href="./" style="color:var(--accent)">الرجوع للعروض</a></div>';
     return;
   }

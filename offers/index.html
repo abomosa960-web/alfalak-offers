@@ -81,6 +81,7 @@
   [hidden]{display:none!important}
   @media (max-width:760px){.layout{grid-template-columns:1fr}.price{position:static}.grid .wide{grid-column:span 1}}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
@@ -216,8 +217,8 @@
           <div id="oFiles"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn" id="oBtn">حفظ العرض وتحميل الورد</button>
+            <button type="button" class="btn" id="oBtnDraw" onclick="saveWithDrawings()">حفظ العرض وتحميل الورد شامل المخططات الهندسية</button>
             <button type="button" class="btn ghost" onclick="if(confirm('هل تريد تفريغ كل الخانات وبدء عرض جديد؟')){cancelEdit();msg('oMsg','');$('oFiles').innerHTML='';msg('phMsg','');phoneBlocked=false;}">عميل جديد (فضّي الخانات)</button>
-            <button type="button" class="btn ghost" onclick="openDrawings()">المخططات الهندسية</button>
           </div>
         </form>
         <aside class="price" id="pricePanel"></aside>
@@ -592,24 +593,98 @@ async function checkDrawCode(){
   const h = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
   if (h !== DRAW_CODE_HASH){ msg('oMsg', 'الكود غير صحيح.', 'err'); return; }
   try{ localStorage.setItem('alfalak_draw_code', h); }catch(e){}
-  msg('oMsg', ''); openDrawings();
+  msg('oMsg', ''); if (S.afterCode){ const f = S.afterCode; S.afterCode = null; f(); }
 }
 
 /* ---------- المخططات الهندسية (تحت التجربة: للمديرين فقط) ---------- */
-function openDrawings(){
+function drawAccess(){
+  if (S.user && S.user.role === 'مدير') return 'مدير';
+  try{ if (localStorage.getItem('alfalak_draw_code') === DRAW_CODE_HASH) return 'code'; }catch(e){}
+  return '';
+}
+/** زرار «حفظ العرض شامل المخططات الهندسية» — تحت التجربة: المديرين + اللي معاه الكود */
+function saveWithDrawings(){
   if (/GKE/i.test($('fType').value)){ msg('oMsg', 'المخططات الهندسية متاحة للعروض المحلية (MR / MRL) فقط، مش لعروض GKE.', 'warn'); return; }
-  let access = (S.user && S.user.role === 'مدير') ? 'مدير' : '';
-  try{ if (!access && localStorage.getItem('alfalak_draw_code') === DRAW_CODE_HASH) access = 'code'; }catch(e){}
-  if (!access){
+  if (!drawAccess()){
+    S.afterCode = saveWithDrawings;
     msg('oMsg', 'المخططات الهندسية: جاري العمل عليها، سيتم الإتاحة فيما بعد.<br><span class="small">لو معاك كود الدخول اكتبه هنا:</span> <input id="drawCode" dir="ltr" style="width:130px;padding:4px 8px"> <button type="button" class="btn ghost" style="padding:4px 12px" onclick="checkDrawCode()">دخول</button>', 'ok');
     return;
   }
-  const f = $('fOffer').elements, v = n => (f[n] ? f[n].value : '');
-  const d = { role: access === 'مدير' ? 'مدير' : '', access, client: v('clientEn') || v('client'), project: v('districtEn') || v('district'), offerNo: S.editing || '',
-              shaftW: v('shaftW'), shaftD: v('shaftD'), pit: v('pit'), overhead: v('overhead'), stops: v('stops'),
-              doorW: v('doorW'), doorType: v('doorType'), type: v('type') };
-  try{ sessionStorage.setItem('alfalak_draw', JSON.stringify(d)); localStorage.setItem('alfalak_draw', JSON.stringify(d)); }catch(e){}
-  window.open('drawings.html', '_blank');
+  S.withDrawings = true;
+  const f = $('fOffer');
+  if (f.requestSubmit) f.requestSubmit($('oBtn')); else $('oBtn').click();
+}
+/** محرك الرسم: صفحة المخططات محمّلة في إطار مخفي (نفس الموقع) */
+function drawEngine(){
+  if (S.drawWin) return Promise.resolve(S.drawWin);
+  try{ const d = JSON.stringify({role: drawAccess() === 'مدير' ? 'مدير' : '', access: drawAccess()}); sessionStorage.setItem('alfalak_draw', d); localStorage.setItem('alfalak_draw', d); }catch(e){}
+  return new Promise((res, rej) => {
+    const fr = document.createElement('iframe');
+    fr.style.cssText = 'position:absolute;width:1200px;height:900px;left:-99999px;top:0;border:0';
+    fr.onload = () => { const w = fr.contentWindow; if (w && w.compute && w.pages) { S.drawWin = w; res(w); } else rej(new Error('تعذر تحميل محرك الرسم')); };
+    fr.onerror = () => rej(new Error('تعذر تحميل محرك الرسم'));
+    fr.src = 'drawings.html?embed=1';
+    document.body.appendChild(fr);
+  });
+}
+/** يحسب المخطط من خانات العرض ويرجّع الحسبة + صور الصفحتين */
+async function buildDrawings(data){
+  const w = await drawEngine();
+  const cm = v => { const n = parseFloat(String(v||'').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d.]/g,'')); return n > 0 ? n/10 : 0; };
+  const p = { SW: cm(data.shaftW), SD: cm(data.shaftD), pit: cm(data.pit), oh: cm(data.overhead),
+    cw: 'auto', off: 'left', door: data.doorType === 'جانبي' ? 'side' : 'center', DW: cm(data.doorW) || 80, unit: 'mm',
+    carmode: 'auto', stops: Math.max(2, parseInt(data.stops) || 2), fh: 300, dh: cm(data.doorH) || 200, ch: 230,
+    etype: /MRL/i.test(data.type || '') ? 'MRL' : (/MR/i.test(data.type || '') ? 'MR' : 'MRL'), stype: 'Concrete', view: 'both', orient: 'portrait',
+    client: data.clientEn || data.client || '', project: data.districtEn || data.district || '', offer: data.offerNo || '' };
+  const g = w.compute(p);
+  if (g.err) throw new Error((Array.isArray(g.err) ? g.err.join(' ') : g.err) + ' — راجع المهندس المسؤول أو راجع مهندس محمد');
+  return { g, w, p };
+}
+async function drawingImages(w, g){
+  const imgs = [];
+  for (const svg of w.pages(g, true)){
+    const r = await w.svgToPngData(svg, 2000);
+    const vb = svg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+    imgs.push({ b64: r.data.split(',')[1], w: +vb[1], h: +vb[2], type: r.data.startsWith('data:image/png') ? 'png' : 'jpeg' });
+  }
+  return imgs;
+}
+/** يضيف صفحتين المخططات في آخر ملف الورد (صور، كل واحدة في صفحة) */
+async function appendDrawingsToDocx(blob, imgs){
+  const zip = await JSZip.loadAsync(blob);
+  let doc = await zip.file('word/document.xml').async('string');
+  let rels = await zip.file('word/_rels/document.xml.rels').async('string');
+  let ct = await zip.file('[Content_Types].xml').async('string');
+  const num = (re, d) => { const m = doc.match(re); return m ? +m[1] : d; };
+  const sect = (doc.match(/<w:sectPr[\s\S]*?<\/w:sectPr>(?![\s\S]*<w:sectPr)/) || [''])[0];
+  const g = (re, d) => { const m = sect.match(re); return m ? +m[1] : d; };
+  const pgW = g(/<w:pgSz[^>]*w:w="(\d+)"/, 11906), pgH = g(/<w:pgSz[^>]*w:h="(\d+)"/, 16838);
+  const mL = g(/<w:pgMar[^>]*w:left="(\d+)"/, 1134), mR = g(/<w:pgMar[^>]*w:right="(\d+)"/, 1134);
+  const mT = g(/<w:pgMar[^>]*w:top="(\d+)"/, 1134), mB = g(/<w:pgMar[^>]*w:bottom="(\d+)"/, 1134);
+  const availW = (pgW - mL - mR) * 635, availH = (pgH - mT - mB) * 635 * 0.94;
+  let paras = '';
+  imgs.forEach((im, i) => {
+    const id = 'rIdAlfDrw' + (i+1), fn = 'alf_drawing_' + (i+1) + '.' + (im.type === 'png' ? 'png' : 'jpeg');
+    zip.file('word/media/' + fn, im.b64, {base64: true});
+    rels = rels.replace('</Relationships>', '<Relationship Id="'+id+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/'+fn+'"/></Relationships>');
+    let cx = availW, cy = Math.round(cx * im.h / im.w);
+    if (cy > availH){ cy = Math.round(availH); cx = Math.round(cy * im.w / im.h); }
+    paras += '<w:p><w:r><w:br w:type="page"/></w:r></w:p>' +
+      '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr><w:r><w:drawing>' +
+      '<wp:inline distT="0" distB="0" distL="0" distR="0" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><wp:extent cx="'+cx+'" cy="'+cy+'"/><wp:docPr id="'+(9000+i)+'" name="Elevator drawing '+(i+1)+'"/>' +
+      '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
+      '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="'+(9000+i)+'" name="'+fn+'"/><pic:cNvPicPr/></pic:nvPicPr>' +
+      '<pic:blipFill><a:blip r:embed="'+id+'" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>' +
+      '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>' +
+      '</a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>';
+  });
+  // before the body's final section properties
+  const k = doc.lastIndexOf('<w:sectPr');
+  doc = k > 0 ? doc.slice(0, k) + paras + doc.slice(k) : doc.replace('</w:body>', paras + '</w:body>');
+  if (!/Extension="png"/i.test(ct)) ct = ct.replace('<Types ', '<Types ').replace(/(<Types[^>]*>)/, '$1<Default Extension="png" ContentType="image/png"/>');
+  if (!/Extension="jpeg"/i.test(ct)) ct = ct.replace(/(<Types[^>]*>)/, '$1<Default Extension="jpeg" ContentType="image/jpeg"/>');
+  zip.file('word/document.xml', doc); zip.file('word/_rels/document.xml.rels', rels); zip.file('[Content_Types].xml', ct);
+  return await zip.generateAsync({type: 'blob', mimeType: DOCX_TYPE, compression: 'DEFLATE'});
 }
 
 /* ---------- عرض جديد ---------- */
@@ -889,7 +964,7 @@ async function checkPhone(){
     const r = await call('checkPhone', {phone:v});
     if (seq !== phoneSeq) return;
     phoneBlocked = !!r.blocked;
-    $('oBtn').disabled = phoneBlocked;
+    $('oBtn').disabled = phoneBlocked; $('oBtnDraw').disabled = phoneBlocked;
     msg('phMsg', r.found ? esc(r.message) : '', r.blocked ? 'err' : 'warn');
   }catch(err){}
 }
@@ -901,16 +976,25 @@ async function saveOffer(e){
   [...document.querySelectorAll('#xItems [data-k]')].forEach(el => { delete data[el.name]; });
   data.extraItems = readItems();
   data.moreLifts = readLifts();
-  $('oBtn').disabled = true;
+  const withDraw = !!S.withDrawings; S.withDrawings = false;
+  let draw = null;
+  $('oBtn').disabled = true; $('oBtnDraw').disabled = true;
   try{
+    if (withDraw){
+      msg('oMsg', 'جارٍ حساب المخطط...', 'warn');
+      draw = await buildDrawings(data);
+      // مقاس الكابينة في العرض من حسبة المخطط (لو الخانة فاضية)
+      if (!String(data.cabin || '').trim()) data.cabin = Math.round(draw.g.carW*10) + ' × ' + Math.round(draw.g.carD*10) + ' مم';
+    }
     const r = await call('saveOffer', data);
     msg('oMsg', 'تم حفظ العرض رقم <b>'+r.offerNo+'</b>'+(r.revision > 1 ? ' (تعديل رقم '+r.revision+' لنفس العميل)' : '')+' — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');
     if (data.clientEn && S.cfg.learned){ S.cfg.learned[String(data.client).trim().replace(/\s+/g,' ')] = data.clientEn; if (data.district && data.districtEn) S.cfg.learned[String(data.district).trim().replace(/\s+/g,' ')] = data.districtEn; }
     // البيانات بتفضل زي ما هي بعد الحفظ — لكي تعمل نوع آخر لنفس العميل أو تعدّل وتحفظ آخر
     S.editing = null; $('editNote').hidden = true; loadRecentClients();
-    makeAndSaveDoc({offerNo: r.offerNo, revision: r.revision});
+    if (draw){ draw.p.offer = String(r.offerNo); draw.g = draw.w.compute(draw.p); }
+    makeAndSaveDoc({offerNo: r.offerNo, revision: r.revision, draw});
   }catch(err){ msg('oMsg', err.message); }
-  $('oBtn').disabled = false;
+  $('oBtn').disabled = false; $('oBtnDraw').disabled = false;
 }
 
 /* ---------- ملفات العرض ---------- */
@@ -931,7 +1015,11 @@ async function makeAndSaveDoc(r){
     const f = await call('makeDocs', {offerNo: r.offerNo, revision: r.revision});
     const bin = atob(f.docx), arr = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-    const blob = new Blob([arr], {type: DOCX_TYPE}), name = f.name + '.docx';
+    let blob = new Blob([arr], {type: DOCX_TYPE}), name = f.name + '.docx';
+    if (r.draw){
+      el.innerHTML = '<div class="msg warn">جارٍ إضافة المخططات الهندسية للورد...</div>';
+      blob = await appendDrawingsToDocx(blob, await drawingImages(r.draw.w, r.draw.g));
+    }
     S.files = S.files || {};
     S.files[box] = { blob, name, client: f.client || '', offerNo: String(r.offerNo) };
     const link = URL.createObjectURL(blob);
@@ -955,7 +1043,7 @@ async function makeAndSaveDoc(r){
     }
     el.innerHTML = '<div class="msg ok">' + esc(status) + ' — <a href="' + link + '" target="_blank" rel="noopener">افتح المستند</a></div>';
   }catch(err){
-    el.innerHTML = '<div class="msg err">الورد لم يُجهَّز: ' + esc(err.message) + ' — <a href="#" onclick="makeAndSaveDoc(' + esc(JSON.stringify(r)) + ');return false">حاول مرة أخرى</a></div>';
+    el.innerHTML = '<div class="msg err">الورد لم يُجهَّز: ' + esc(err.message) + ' — <a href="#" onclick="makeAndSaveDoc(' + esc(JSON.stringify({offerNo:r.offerNo, revision:r.revision})) + ');return false">حاول مرة أخرى</a></div>';
   }
 }
 function b64Url(b64, type){

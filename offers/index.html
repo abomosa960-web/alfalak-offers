@@ -1035,10 +1035,13 @@ async function saveOffer(e){
 
 /* ---------- ملفات العرض ---------- */
 /** يفتح نافذة الملفات جوه المجلد الذي المندوب حدده، ليختار المستند ويفتحه من هناك */
+/** يفتح نافذة المجلد على طول (من غير ما يفتح المستند)، والمندوب يدوّر على العرض جوه */
 async function openDocInFolder(){
-  const info = S.docDir; if (!info || !info.dir) return;
+  let dir = S.docDir && S.docDir.dir;
+  if (!dir){ const d = await kv.get('saveDir'); if (d) dir = d; }
+  if (!dir) return;
   try{
-    await window.showOpenFilePicker({ startIn: info.dir, multiple: false,
+    await window.showOpenFilePicker({ startIn: dir, multiple: false,
       types: [{ description: 'Word', accept: { [DOCX_TYPE]: ['.docx'] } }] });
   }catch(e){ /* المندوب قفل النافذة */ }
 }
@@ -1068,7 +1071,7 @@ async function makeAndSaveDoc(r){
         await markSaved(r.offerNo);
         S.docDir = { dir: (perClient() && f.client) ? await d.getDirectoryHandle(f.client, {create:true}) : d };
         status = 'حُفظ الورد في: ' + where;
-        el.innerHTML = '<div class="msg ok">' + esc(status) + ' — <button type="button" class="btn ghost" onclick="openDocInFolder()">افتح المستند</button></div>';
+        el.innerHTML = '<div class="msg ok">' + esc(status) + ' — <button type="button" class="btn ghost" onclick="openDocInFolder()">افتح المجلد</button></div>';
         return;
       } else {
         status = 'الورد سيُنزَّل على الجهاز لما يبقى متاح (يجب أن تختار مجلد الحفظ من ⚙ الإعدادات)';

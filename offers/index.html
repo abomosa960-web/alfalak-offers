@@ -182,7 +182,7 @@
           </div>
           <h3>الأبواب</h3>
           <div class="grid">
-            <div class="field wide"><label>الباب (العرض والنوع)</label><select id="fDoorChoice" onchange="doorChoiceChanged()"><option value="">— المندوب يختار —</option><option value="700|سنتر">70 سنتر أو 80 جانبي</option><option value="800|جانبي">80 جانبي</option><option value="800|سنتر">80 سنتر</option><option value="700|جانبي">70 جانبي</option><option value="900|جانبي">90 جانبي</option><option value="900|سنتر">90 سنتر</option><option value="1000|جانبي">100 جانبي</option><option value="1000|سنتر">100 سنتر</option><option value="1100|جانبي">110 جانبي</option><option value="1100|سنتر">110 سنتر</option></select><div class="small" id="fDoorHint"></div><input type="hidden" name="doorW" id="fDoorW"><input type="hidden" name="doorType" id="fDoorType"></div>
+            <div class="field wide"><label>الباب (العرض والنوع)</label><select id="fDoorChoice" onchange="doorChoiceChanged()"><option value="">— المندوب يختار —</option><option value="700|سنتر أو جانبي">700 سنتر أو 800 جانبي</option><option value="800|جانبي">800 جانبي</option><option value="800|سنتر">800 سنتر</option><option value="700|جانبي">700 جانبي</option><option value="900|جانبي">900 جانبي</option><option value="900|سنتر">900 سنتر</option><option value="1000|جانبي">1000 جانبي</option><option value="1000|سنتر">1000 سنتر</option><option value="1100|جانبي">1100 جانبي</option><option value="1100|سنتر">1100 سنتر</option></select><div class="small" id="fDoorHint"></div><input type="hidden" name="doorW" id="fDoorW"><input type="hidden" name="doorType" id="fDoorType"></div>
             <div class="field"><label>تلبيس الأبواب</label><select name="doorFinish"><option>ستانلس ستيل فضي</option><option>ستانلس ستيل فضي هيرلاين</option><option>ستانلس ستيل فضي مراية</option><option>ستانلس ستيل ذهبي هيرلاين</option><option>ستانلس ستيل ذهبي مراية</option><option>ستانلس ستيل نحاسي</option><option>ستانلس ستيل نحاسي هيرلاين</option><option>ستانلس ستيل نحاسي مراية</option><option>ستانلس ستيل أسود</option><option>ابواب زجاج مع اطار من الستانلس ستيل الفضي الهيرلاين</option><option>ابواب زجاج مع اطار من الستانلس ستيل الفضي المراية</option><option>ابواب زجاج مع اطار من الستانلس ستيل الذهبي الهيرلاين</option><option>ابواب زجاج مع اطار من الستانلس ستيل الذهبي المراية</option><option>ابواب زجاج مع اطار من الستانلس ستيل النحاسي الهيرلاين</option><option>ابواب زجاج مع اطار من الستانلس ستيل النحاسي المراية</option><option>ابواب زجاج مع ستانلس ستيل اسود هيرلاين اسود مراية</option></select></div>
             <div class="field"><label>موديل الأبواب</label><select name="doorBrand" id="fBrand" onchange="this.dataset.touched=1;autoDoorH()"><option>سيلكوم</option></select></div>
             <div class="field" style="max-width:120px"><label>ارتفاع الباب</label><select name="doorH" id="fDoorH" onchange="this.dataset.touched=1" style="font-size:13px;padding:6px"><option value="2000">2000 مم</option><option value="2100">2100 مم</option></select></div>
@@ -740,7 +740,7 @@ function onLoadChange(){
 /** نوع الباب: الافتراضي فاضي دايماً (يختار المندوب). العرض الافتراضي 800. */
 /** اقتراح الباب من مقاس البير (سم) — لحد 80 سنتر بس في العروض. GKE = +6 سم على كل مقاس مطلوب */
 function suggestDoor(){ return doorSuggestFor($('fShaftW').value); }
-const DOOR_NEED = {'700|جانبي':135, '800|جانبي':150, '700|سنتر':154, '800|سنتر':174, '900|جانبي':185, '900|سنتر':195, '1000|جانبي':180, '1000|سنتر':220, '1100|جانبي':195, '1100|سنتر':235};
+const DOOR_NEED = {'700|سنتر أو جانبي':150, '800|جانبي':150, '800|سنتر':174, '700|جانبي':135, '900|جانبي':185, '900|سنتر':195, '1000|جانبي':180, '1000|سنتر':220, '1100|جانبي':195, '1100|سنتر':235};
 function syncDoorHidden(){
   const parts = ($('fDoorChoice').value || '|').split('|');
   $('fDoorW').value = parts[0] || '800'; $('fDoorType').value = parts[1] || '';
@@ -889,14 +889,14 @@ function readLifts(){
     return o;
   });
 }
-const DOOR_OPTS = [['','— المندوب يختار —'],['700|سنتر','70 سنتر أو 80 جانبي'],['800|جانبي','80 جانبي'],['800|سنتر','80 سنتر'],['700|جانبي','70 جانبي'],['900|جانبي','90 جانبي'],['900|سنتر','90 سنتر'],['1000|جانبي','100 جانبي'],['1000|سنتر','100 سنتر'],['1100|جانبي','110 جانبي'],['1100|سنتر','110 سنتر']];
+const DOOR_OPTS = [['','— المندوب يختار —'],['700|سنتر أو جانبي','700 سنتر أو 800 جانبي'],['800|جانبي','800 جانبي'],['800|سنتر','800 سنتر'],['700|جانبي','700 جانبي'],['900|جانبي','900 جانبي'],['900|سنتر','900 سنتر'],['1000|جانبي','1000 جانبي'],['1000|سنتر','1000 سنتر'],['1100|جانبي','1100 جانبي'],['1100|سنتر','1100 سنتر']];
 function doorChoiceOptions(cur){ return DOOR_OPTS.map(v => '<option value="'+v[0]+'"'+(String(cur || '') === v[0] ? ' selected' : '')+'>'+v[1]+'</option>').join(''); }
 function doorChoiceFrom(w, t){ const v = String(w) + '|' + String(t); return DOOR_OPTS.some(x => x[0] === v) ? v : ''; }
 /** اقتراح الباب لمصعد من عرض البئر بتاعه (مم) — نفس قواعد L1، GKE +6 سم، لحد 80 سنتر */
 function doorSuggestFor(shaftMm){
   const w = (Number(shaftMm) || 0) / 10, off = /GKE/i.test($('fType').value) ? 6 : 0;
   if (w >= 174 + off) return '800|سنتر';
-  if (w >= 154 + off) return '700|سنتر';
+  if (w >= 154 + off) return '700|سنتر أو جانبي';
   if (w >= 150 + off) return '800|جانبي';
   if (w >= 135 + off) return '700|جانبي';
   return '';

@@ -854,6 +854,8 @@ function addLift(o, saved){
   const used = new Set(['L1'].concat(readLifts().map(l => String(l.label).toUpperCase())));
   let n = 2; while (used.has('L' + n)) n++;
   const label = saved && o.label ? o.label : 'L' + n;
+  if (!saved) { delete o.doorW; delete o.doorType; }
+  if (o.doorChoice == null) o.doorChoice = (o.doorW || o.doorType) ? doorChoiceFrom(o.doorW, o.doorType) : doorSuggestFor(o.shaftW);
   const sel = (k, opts) => '<select data-k="'+k+'">' + opts.map(v => '<option value="'+esc(v[0])+'"'+(String(o[k]) === String(v[0]) ? ' selected' : '')+'>'+esc(v[1])+'</option>').join('') + '</select>';
   const num = (k, lbl, extra) => '<div class="field"><label>'+lbl+'</label><input data-k="'+k+'" type="text" inputmode="decimal" inputmode="numeric" value="'+esc(o[k] == null ? '' : o[k])+'"'+(extra || '')+'></div>';
   const d = document.createElement('div');
@@ -870,15 +872,14 @@ function addLift(o, saved){
       num('landingDoors', 'الأبواب الخارجية', ' min="2" oninput="this.dataset.touched=1"')+
       '<div class="field"><label>مداخل الكابينة</label>'+sel('carDoors', [['1','مدخل واحد'],['2','مدخلين']])+'</div>'+
       '<div class="field"><label>السرعة</label>'+sel('speed', [['1','1 متر/ث'],['1.5','1.5 متر/ث'],['2','2 متر/ث']])+'</div>'+
-      num('shaftW', 'عرض البئر (مم)')+num('shaftD', 'عمق البئر (مم)')+
+      num('shaftW', 'عرض البئر (مم)', ' oninput="liftDoorSuggest(this)"')+num('shaftD', 'عمق البئر (مم)')+
       num('overhead', 'الأوفر هيد (مم)')+num('pit', 'عمق الحفرة (مم)')+
       '<div class="field wide"><label>مقاس الكابينة</label><input data-k="cabin" placeholder="اتركها فارغة = أكبر كابينة ممكنة" value="'+esc(o.cabin || '')+'"></div>'+
-      '<div class="field"><label>عرض الباب</label>'+sel('doorW', [['800','800 مم'],['700','700 مم'],['650','650 مم']])+'</div>'+
-      '<div class="field"><label>نوع الباب</label>'+sel('doorType', [['','— يختار المندوب —'],['جانبي','جانبي'],['سنتر','سنتر'],['نص أوتوماتيك','نص أوتوماتيك']])+'</div>'+
+      '<div class="field wide"><label>الباب (العرض والنوع)</label><select data-k="doorChoice" onchange="this.dataset.touched=1">'+doorChoiceOptions(o.doorChoice)+'</select></div>'+
       '<div class="field"><label>سعر المصعد قبل الضريبة</label><input data-k="price" type="text" inputmode="decimal" min="0" step="'+((S.cfg && Number(S.cfg.settings.step)) || 500)+'" value="'+esc(o.price || '')+'" oninput="this.dataset.touched=1"'+(saved ? ' data-touched="1"' : '')+'><div class="small xl-sug"></div></div>'+
     '</div>';
   box.appendChild(d);
-  if (saved) d.querySelector('[data-k=landingDoors]').dataset.touched = 1;
+  if (saved) { d.querySelector('[data-k=landingDoors]').dataset.touched = 1; d.querySelector('[data-k=doorChoice]').dataset.touched = 1; }
   recalc();
   if (!saved && d.scrollIntoView) d.scrollIntoView({behavior:'smooth', block:'center'});
 }
@@ -886,8 +887,28 @@ function liftStops(el){
   const l = el.closest('.xlift').querySelector('[data-k=landingDoors]');
   if (!l.dataset.touched) l.value = el.value;
 }
+/** خانة الباب الواحدة في المصاعد التانية: بتتحول لعرض ونوع عشان السيرفر */
 function readLifts(){
-  return liftCards().map(d => { const o = {}; d.querySelectorAll('[data-k]').forEach(el => o[el.dataset.k] = el.value.trim()); return o; });
+  return liftCards().map(d => {
+    const o = {}; d.querySelectorAll('[data-k]').forEach(el => o[el.dataset.k] = el.value.trim());
+    if ('doorChoice' in o) { const pr = (o.doorChoice || '|').split('|'); o.doorW = pr[0] || '800'; o.doorType = pr[1] || ''; delete o.doorChoice; }
+    return o;
+  });
+}
+const DOOR_OPTS = [['','— المندوب يختار —'],['700|جانبي','70 جانبي'],['700|سنتر','70 سنتر'],['800|جانبي','80 جانبي'],['800|سنتر','80 سنتر']];
+function doorChoiceOptions(cur){ return DOOR_OPTS.map(v => '<option value="'+v[0]+'"'+(String(cur || '') === v[0] ? ' selected' : '')+'>'+v[1]+'</option>').join(''); }
+function doorChoiceFrom(w, t){ const v = String(w) + '|' + String(t); return DOOR_OPTS.some(x => x[0] === v) ? v : ''; }
+/** اقتراح الباب لمصعد من عرض البئر بتاعه (مم) — نفس قواعد L1، GKE +6 سم، لحد 80 سنتر */
+function doorSuggestFor(shaftMm){
+  const w = (Number(shaftMm) || 0) / 10, off = /GKE/i.test($('fType').value) ? 6 : 0;
+  if (w >= 174 + off) return '800|سنتر';
+  if (w >= 154 + off) return '700|سنتر';
+  if (w >= 135 + off) return '700|جانبي';
+  return '';
+}
+function liftDoorSuggest(el){
+  const c = el.closest('.xlift').querySelector('[data-k=doorChoice]');
+  if (!c.dataset.touched) c.value = doorSuggestFor(el.value);
 }
 function clearLifts(){ $('xLifts').innerHTML = ''; }
 function refreshLiftLoads(){ liftCards().forEach(d => { const s = d.querySelector('[data-k=load]'); s.innerHTML = liftLoadOptions(s.value); }); }

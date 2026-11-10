@@ -182,7 +182,7 @@
           </div>
           <h3>الأبواب</h3>
           <div class="grid">
-            <div class="field wide"><label>الباب (العرض والنوع)</label><select id="fDoorChoice" onchange="doorChoiceChanged()"><option value="">— المندوب يختار —</option><option value="700|سنتر أو جانبي">700 سنتر أو 800 جانبي</option><option value="800|جانبي">800 جانبي</option><option value="800|سنتر">800 سنتر</option><option value="700|جانبي">700 جانبي</option><option value="900|جانبي">900 جانبي</option><option value="900|سنتر">900 سنتر</option><option value="1000|جانبي">1000 جانبي</option><option value="1000|سنتر">1000 سنتر</option><option value="1100|جانبي">1100 جانبي</option><option value="1100|سنتر">1100 سنتر</option></select><div class="small" id="fDoorHint"></div><input type="hidden" name="doorW" id="fDoorW"><input type="hidden" name="doorType" id="fDoorType"></div>
+            <div class="field wide"><label>الباب (العرض والنوع)</label><select id="fDoorChoice" onchange="doorChoiceChanged()"><option value="">— المندوب يختار —</option><option value="700|سنتر أو جانبي">700 سنتر أو 800 جانبي</option><option value="800|جانبي">800 جانبي</option><option value="800|سنتر">800 سنتر</option><option value="700|جانبي">700 جانبي</option><option value="900|جانبي">900 جانبي</option><option value="900|سنتر">900 سنتر</option><option value="1000|جانبي">1000 جانبي</option><option value="1000|سنتر">1000 سنتر</option><option value="1100|جانبي">1100 جانبي</option><option value="1100|سنتر">1100 سنتر</option></select><div class="small" id="fDoorHint"></div><input type="hidden" name="doorW" id="fDoorW"><input type="hidden" name="doorType" id="fDoorType"><input type="hidden" name="doorText" id="fDoorText"></div>
             <div class="field"><label>تلبيس الأبواب</label><select name="doorFinish"><option>ستانلس ستيل فضي</option><option>ستانلس ستيل فضي هيرلاين</option><option>ستانلس ستيل فضي مراية</option><option>ستانلس ستيل ذهبي هيرلاين</option><option>ستانلس ستيل ذهبي مراية</option><option>ستانلس ستيل نحاسي</option><option>ستانلس ستيل نحاسي هيرلاين</option><option>ستانلس ستيل نحاسي مراية</option><option>ستانلس ستيل أسود</option><option>ابواب زجاج مع اطار من الستانلس ستيل الفضي الهيرلاين</option><option>ابواب زجاج مع اطار من الستانلس ستيل الفضي المراية</option><option>ابواب زجاج مع اطار من الستانلس ستيل الذهبي الهيرلاين</option><option>ابواب زجاج مع اطار من الستانلس ستيل الذهبي المراية</option><option>ابواب زجاج مع اطار من الستانلس ستيل النحاسي الهيرلاين</option><option>ابواب زجاج مع اطار من الستانلس ستيل النحاسي المراية</option><option>ابواب زجاج مع ستانلس ستيل اسود هيرلاين اسود مراية</option></select></div>
             <div class="field"><label>موديل الأبواب</label><select name="doorBrand" id="fBrand" onchange="this.dataset.touched=1;autoDoorH()"><option>سيلكوم</option></select></div>
             <div class="field" style="max-width:120px"><label>ارتفاع الباب</label><select name="doorH" id="fDoorH" onchange="this.dataset.touched=1" style="font-size:13px;padding:6px"><option value="2000">2000 مم</option><option value="2100">2100 مم</option></select></div>
@@ -738,24 +738,58 @@ function onLoadChange(){
   recalc();
 }
 /** نوع الباب: الافتراضي فاضي دايماً (يختار المندوب). العرض الافتراضي 800. */
-/** اقتراح الباب من مقاس البير (سم) — لحد 80 سنتر بس في العروض. GKE = +6 سم على كل مقاس مطلوب */
-function suggestDoor(){ return doorSuggestFor($('fShaftW').value); }
-const DOOR_NEED = {'700|سنتر أو جانبي':150, '800|جانبي':150, '800|سنتر':174, '700|جانبي':135, '900|جانبي':185, '900|سنتر':195, '1000|جانبي':180, '1000|سنتر':220, '1100|جانبي':195, '1100|سنتر':235};
+/** خيارات الأبواب من تاب "الأبواب" في الشيت، حسب نوع المصعد */
+/** لو السيرفر لسه ما اتحدّثش، بنستخدم نفس الجدول دا كاحتياطي */
+const DOOR_FALLBACK = [
+  {type:'محلي', text:'700 سنتر أو 800 جانبي', w:700, minShaft:154},
+  {type:'محلي', text:'800 جانبي', w:800, minShaft:150},
+  {type:'محلي', text:'800 سنتر', w:800, minShaft:174},
+  {type:'محلي', text:'700 جانبي', w:700, minShaft:135},
+  {type:'محلي', text:'900 جانبي', w:900, minShaft:185},
+  {type:'محلي', text:'900 سنتر', w:900, minShaft:195},
+  {type:'محلي', text:'1000 جانبي', w:1000, minShaft:220},
+  {type:'محلي', text:'1000 سنتر', w:1000, minShaft:235},
+  {type:'محلي', text:'1100 جانبي', w:1100, minShaft:250},
+  {type:'محلي', text:'1100 سنتر', w:1100, minShaft:265},
+  {type:'GKE', text:'700 Center Opening or 800 Telescopic Opening', w:700, minShaft:160}
+];
+function doorRows(){
+  const gke = /GKE/i.test($('fType').value);
+  const all = (S.cfg && S.cfg.doors && S.cfg.doors.length) ? S.cfg.doors : DOOR_FALLBACK;
+  return all.filter(d => gke ? /GKE/i.test(d.type) : !/GKE/i.test(d.type));
+}
+function renderDoorChoices(){
+  const sel = $('fDoorChoice'), cur = sel.value, rows = doorRows();
+  sel.innerHTML = '<option value="">— المندوب يختار —</option>' + rows.map((r, i) => '<option value="' + i + '">' + esc(r.text) + '</option>').join('');
+  if (cur !== '' && rows[Number(cur)]) sel.value = cur;
+}
+/** الاقتراح التلقائي: أكبر خيار من الـ 700/800 بيكفيه مقاس البئر */
+function suggestDoorIdx(){
+  const cm = (Number($('fShaftW').value) || 0) / 10, rows = doorRows();
+  let best = -1, bestMin = -1;
+  rows.forEach((r, i) => { if (r.w <= 800 && r.minShaft <= cm && r.minShaft > bestMin){ best = i; bestMin = r.minShaft; } });
+  return best >= 0 ? String(best) : '';
+}
+function doorKindOf(t){ if (/أو/.test(t)) return 'سنتر أو جانبي'; if (/سنتر|Center/i.test(t)) return 'سنتر'; if (/جانبي|Side/i.test(t)) return 'جانبي'; return ''; }
 function syncDoorHidden(){
-  const parts = ($('fDoorChoice').value || '|').split('|');
-  $('fDoorW').value = parts[0] || '800'; $('fDoorType').value = parts[1] || '';
+  const r = doorRows()[Number($('fDoorChoice').value)];
+  $('fDoorW').value = r ? r.w : '800';
+  $('fDoorType').value = r ? doorKindOf(r.text) : '';
+  $('fDoorText').value = r ? r.text : '';
 }
 function updateDoorHint(){
-  const c = $('fDoorChoice'), gke = /GKE/i.test($('fType').value), off = gke ? 6 : 0, need = DOOR_NEED[c.value];
+  const r = doorRows()[Number($('fDoorChoice').value)], gke = /GKE/i.test($('fType').value);
+  const cm = (Number($('fShaftW').value) || 0) / 10;
   let msg = gke ? 'يرجى مراجعة المقاسات مع الكتالوج' : '';
-  if (need && (Number($('fShaftW').value) || 0) / 10 < need + off) msg = 'المساحة مش مناسبة، المساحة محتاجة ' + (need + off) + ' سم';
+  if (r && cm < r.minShaft) msg = 'المساحة مش مناسبة، المساحة محتاجة ' + r.minShaft + ' سم';
   $('fDoorHint').textContent = msg;
 }
 function doorChoiceChanged(){ $('fDoorChoice').dataset.touched = 1; syncDoorHidden(); updateDoorHint(); }
 function autoDoorType(){
   const gke = /GKE/i.test($('fType').value), c = $('fDoorChoice'), br = $('fBrand');
-  if (!c.dataset.touched) { c.value = suggestDoor(); syncDoorHidden(); }
-  updateDoorHint();
+  renderDoorChoices();
+  if (!c.dataset.touched) c.value = suggestDoorIdx();
+  syncDoorHidden(); updateDoorHint();
   // GKE: موديل GKE بس — المحلي: سيلكوم، سيلكوم صيني، SJ
   const list = gke ? ['GKE'] : ['سيلكوم','سيلكوم صيني','SJ'];
   const cur = br.value;
@@ -1302,7 +1336,7 @@ async function reprice(offerNo){
     setCityOpt(o.city);
     ['client','phone','city','district','clientEn','followStatus','followNote','districtEn','lifts','stops','landingDoors','carDoors','speed','shaftW','shaftD','overhead','pit','cabin','doorW','doorType','doorFinish','doorBrand','doorH','discount','notes','installDays','warrantyYears','maintYears']
       .forEach(k => { if (f[k] != null && o[k] !== '' && o[k] != null) f[k].value = o[k]; });
-    $('fLanding').dataset.touched = 1; $('fDoorChoice').dataset.touched = 1; $('fDoorChoice').value = (['700','800'].indexOf(String(o.doorW)) >= 0 && o.doorType && ['جانبي','سنتر'].indexOf(o.doorType) >= 0) ? String(o.doorW)+'|'+o.doorType : ''; updateDoorHint(); $('fBrand').dataset.touched = 1; if (o.doorH) $('fDoorH').dataset.touched = 1; autoDoorH();
+    $('fLanding').dataset.touched = 1; $('fDoorChoice').dataset.touched = 1; renderDoorChoices(); { const ix = doorRows().findIndex(r => r.text === String(o.doorText || o.door || '')); $('fDoorChoice').value = ix >= 0 ? String(ix) : ''; } $('fDoorText').value = o.doorText || o.door || ''; updateDoorHint(); $('fBrand').dataset.touched = 1; if (o.doorH) $('fDoorH').dataset.touched = 1; autoDoorH();
     ['fClientEn','fDistEn'].forEach(id => { if ($(id).value) $(id).dataset.touched = 1; else delete $(id).dataset.touched; }); autoEn();
     $('fUnit').value = o.unitPrice; $('fUnit').dataset.touched = 1;
     S.editing = o.offerNo;

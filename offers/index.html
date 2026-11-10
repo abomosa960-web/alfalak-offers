@@ -747,11 +747,14 @@ const DOOR_FALLBACK = [
   {type:'محلي', text:'700 جانبي', w:700, minShaft:135},
   {type:'محلي', text:'900 جانبي', w:900, minShaft:185},
   {type:'محلي', text:'900 سنتر', w:900, minShaft:195},
-  {type:'محلي', text:'1000 جانبي', w:1000, minShaft:220},
-  {type:'محلي', text:'1000 سنتر', w:1000, minShaft:235},
-  {type:'محلي', text:'1100 جانبي', w:1100, minShaft:250},
-  {type:'محلي', text:'1100 سنتر', w:1100, minShaft:265},
-  {type:'GKE', text:'700 Center Opening or 800 Telescopic Opening', w:700, minShaft:160}
+  {type:'محلي', text:'1000 جانبي', w:1000, minShaft:180},
+  {type:'محلي', text:'1000 سنتر', w:1000, minShaft:220},
+  {type:'محلي', text:'1100 جانبي', w:1100, minShaft:195},
+  {type:'محلي', text:'1100 سنتر', w:1100, minShaft:235},
+  {type:'GKE', text:'800 Center Opening', w:800, minShaft:179},
+  {type:'GKE', text:'700 Center Opening', w:700, minShaft:159},
+  {type:'GKE', text:'800 Side Opening', w:800, minShaft:156},
+  {type:'GKE', text:'700 Side Opening', w:700, minShaft:141}
 ];
 function doorRows(){
   const gke = /GKE/i.test($('fType').value);

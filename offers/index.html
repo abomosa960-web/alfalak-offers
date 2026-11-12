@@ -1045,6 +1045,7 @@ async function checkPhone(){
 async function saveOffer(e){
   e.preventDefault(); msg('oMsg','');
   if (!checkNotes()) { msg('oMsg', $('fNotesMsg').textContent); $('fNotes').focus(); return; }
+  const saveDir = canPickDir ? await ensureSaveDir() : null;
   const data = Object.fromEntries(new FormData($('fOffer')).entries());
   [...document.querySelectorAll('#xItems [data-k]')].forEach(el => { delete data[el.name]; });
   data.extraItems = readItems();
@@ -1065,7 +1066,7 @@ async function saveOffer(e){
     // البيانات بتفضل زي ما هي بعد الحفظ — لكي تعمل نوع آخر لنفس العميل أو تعدّل وتحفظ آخر
     S.editing = null; $('editNote').hidden = true; loadRecentClients();
     if (draw){ draw.p.offer = String(r.offerNo); draw.g = draw.w.compute(draw.p); }
-    makeAndSaveDoc({offerNo: r.offerNo, revision: r.revision, draw});
+    makeAndSaveDoc({offerNo: r.offerNo, revision: r.revision, draw, dir: saveDir});
   }catch(err){ msg('oMsg', err.message); }
   $('oBtn').disabled = false; $('oBtnDraw').disabled = false;
 }
@@ -1084,6 +1085,35 @@ async function openDocInFolder(){
 }
 const DOCX_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 /** بعد الحفظ: يجهّز الورد ويحمّله على طول إذا الجهاز متاح، وإن لم متاح يكتب إنه سيُنزَّل لما يتاح */
+/** يختار مجلد الحفظ من جديد (لازم يتنده من ضغطة زرار أو من تفاعل المستخدم) */
+async function pickSaveDir(){
+  try{
+    const d = await window.showDirectoryPicker({ id: 'alfalak-offers', mode: 'readwrite' });
+    await kv.set('saveDir', d);
+    return d;
+  }catch(e){ return null; }
+}
+/** يرجّع مجلد الحفظ الصالح: المحفوظ لو الإذن موجود، أو يطلب الإذن، أو يفتح الاختيار أول مرة */
+async function ensureSaveDir(){
+  try{
+    const d = await kv.get('saveDir');
+    if (d){
+      if ((await d.queryPermission({mode:'readwrite'})) === 'granted') return d;
+      if ((await d.requestPermission({mode:'readwrite'})) === 'granted') return d;
+    }
+    return await pickSaveDir();
+  }catch(e){ return null; }
+}
+/** زرار "اختيار مجلد الحفظ": يفتح الاختيار ويحفظ الورد الجاهز فيه */
+async function chooseSaveFolder(){
+  const f = S.files && S.files.oFiles;
+  const d = await pickSaveDir();
+  if (!d || !f) return;
+  const where = await writeToDir(d, f.blob, f.name, f.client);
+  await markSaved(f.offerNo);
+  S.docDir = { dir: d };
+  $('oFiles').innerHTML = '<div class="msg ok">حُفظ الورد في: ' + esc(where) + '</div>';
+}
 async function makeAndSaveDoc(r){
   const box = 'oFiles', el = $(box);
   el.innerHTML = '<div class="msg warn">جارٍ تجهيز الورد...</div>';
@@ -1098,26 +1128,22 @@ async function makeAndSaveDoc(r){
     }
     S.files = S.files || {};
     S.files[box] = { blob, name, client: f.client || '', offerNo: String(r.offerNo) };
-    const link = URL.createObjectURL(blob);
-    let status;
+
     if (canPickDir){
-      const d = await kv.get('saveDir');
-      const ok = d ? (await d.queryPermission({mode:'readwrite'})) === 'granted' : false;
-      if (ok){
-        const where = await writeToDir(d, blob, name, f.client || '');
+      if (r.dir){
+        const where = await writeToDir(r.dir, blob, name, f.client || '');
         await markSaved(r.offerNo);
-        S.docDir = { dir: (perClient() && f.client) ? await d.getDirectoryHandle(f.client, {create:true}) : d };
-        status = 'حُفظ الورد في: ' + where;
-        el.innerHTML = '<div class="msg ok">' + esc(status) + ' — <button type="button" class="btn ghost" onclick="openDocInFolder()">افتح المجلد</button></div>';
+        S.docDir = { dir: r.dir };
+        el.innerHTML = '<div class="msg ok">حُفظ الورد في: ' + esc(where) + '</div>';
         return;
-      } else {
-        status = 'الورد سيُنزَّل على الجهاز لما يبقى متاح (يجب أن تختار مجلد الحفظ من ⚙ الإعدادات)';
       }
-    } else {
-      forceDownload(box);
-      status = 'نُزِّل الورد على الجهاز';
+      el.innerHTML = '<div class="msg warn">العرض اتحفظ والورد جاهز، بس مجلد الحفظ مش مختار. ' +
+        '<button type="button" class="btn" onclick="chooseSaveFolder()">📁 اختيار مجلد الحفظ</button></div>';
+      return;
     }
-    el.innerHTML = '<div class="msg ok">' + esc(status) + ' — <a href="' + link + '" target="_blank" rel="noopener">افتح المستند</a></div>';
+    // المتصفح ما بيدعمش اختيار المجلد (موبايل): تنزيل عادي
+    forceDownload(box);
+    el.innerHTML = '<div class="msg ok">نُزِّل الورد على الجهاز</div>';
   }catch(err){
     el.innerHTML = '<div class="msg err">الورد لم يُجهَّز: ' + esc(err.message) + ' — <a href="#" onclick="makeAndSaveDoc(' + esc(JSON.stringify({offerNo:r.offerNo, revision:r.revision})) + ');return false">حاول مرة أخرى</a></div>';
   }

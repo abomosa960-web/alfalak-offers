@@ -582,8 +582,13 @@ function fillClient(o){
 }
 $('recentBox').addEventListener('click', async e => {
   const b = e.target.closest('.recent-item'); if (!b) return;
-  try{ fillClient(await call('getOffer', {offerNo: b.dataset.no})); }
-  catch(err){ msg('phMsg', err.message); }
+  try{
+    const o = await call('getOffer', {offerNo: b.dataset.no});
+    fillOfferForm(o);
+    S.editing = null; $('editNote').hidden = true;
+    $('recentBox').hidden = true;
+    msg('phMsg',''); checkPhone(); recalc();
+  }catch(err){ msg('phMsg', err.message); }
 });
 
 /* كود دخول المخططات لغير المديرين (مثل م. محمد بخيت) — بيتحفظ كبصمة SHA-256 بس */
@@ -1352,29 +1357,33 @@ function toggleHist(a, k){
 }
 
 /* ---------- إعادة تسعير: نرجّع العرض للصفحة الرئيسية ---------- */
+/** يعبّي الفورم كله من عرض سابق (العميل + المصاعد + الأبواب + الأسعار) */
+function fillOfferForm(o){
+  const f = $('fOffer').elements;
+  $('fType').value = o.type; fillLoads();
+  const opt = [...$('fLoadSel').options].find(x => x.value === String(o.load));
+  if (opt){ $('fLoadSel').value = String(o.load); $('fLoadTxt').value = ''; }
+  else { $('fLoadSel').value = 'other'; $('fLoadTxt').value = o.load + ' كجم / ' + o.persons + ' أشخاص'; }
+  onLoadSel();
+  setCityOpt(o.city);
+  ['client','phone','city','district','clientEn','followStatus','followNote','districtEn','lifts','stops','landingDoors','carDoors','speed','shaftW','shaftD','overhead','pit','cabin','doorW','doorType','doorFinish','doorBrand','doorH','discount','notes','installDays','warrantyYears','maintYears']
+    .forEach(k => { if (f[k] != null && o[k] !== '' && o[k] != null) f[k].value = o[k]; });
+  $('fLanding').dataset.touched = 1; $('fDoorChoice').dataset.touched = 1; renderDoorChoices(); { const ix = doorRows().findIndex(r => r.text === String(o.doorText || o.door || '')); $('fDoorChoice').value = ix >= 0 ? String(ix) : ''; } $('fDoorText').value = o.doorText || o.door || ''; updateDoorHint(); $('fBrand').dataset.touched = 1; if (o.doorH) $('fDoorH').dataset.touched = 1; autoDoorH();
+  ['fClientEn','fDistEn'].forEach(id => { if ($(id).value) $(id).dataset.touched = 1; else delete $(id).dataset.touched; }); autoEn();
+  $('fUnit').value = o.unitPrice; $('fUnit').dataset.touched = 1;
+  clearItems(); (o.extraItems || []).forEach(it => addItem(it));
+  clearLifts(); (o.moreLifts || []).forEach(l => addLift(Object.assign({}, l, {landingDoors: l.landing}), true));
+  toggleMore(!!(o.installDays || o.warrantyYears || o.maintYears || (o.extraItems || []).length)); checkInstall();
+  msg('oMsg',''); $('oFiles').innerHTML = ''; checkPhone(); recalc();
+}
 async function reprice(offerNo){
   try{
     const o = await call('getOffer', {offerNo});
     openTab('tNew');
-    const f = $('fOffer').elements;
-    $('fType').value = o.type; fillLoads();
-    const opt = [...$('fLoadSel').options].find(x => x.value === String(o.load));
-    if (opt){ $('fLoadSel').value = String(o.load); $('fLoadTxt').value = ''; }
-    else { $('fLoadSel').value = 'other'; $('fLoadTxt').value = o.load + ' كجم / ' + o.persons + ' أشخاص'; }
-    onLoadSel();
-    setCityOpt(o.city);
-    ['client','phone','city','district','clientEn','followStatus','followNote','districtEn','lifts','stops','landingDoors','carDoors','speed','shaftW','shaftD','overhead','pit','cabin','doorW','doorType','doorFinish','doorBrand','doorH','discount','notes','installDays','warrantyYears','maintYears']
-      .forEach(k => { if (f[k] != null && o[k] !== '' && o[k] != null) f[k].value = o[k]; });
-    $('fLanding').dataset.touched = 1; $('fDoorChoice').dataset.touched = 1; renderDoorChoices(); { const ix = doorRows().findIndex(r => r.text === String(o.doorText || o.door || '')); $('fDoorChoice').value = ix >= 0 ? String(ix) : ''; } $('fDoorText').value = o.doorText || o.door || ''; updateDoorHint(); $('fBrand').dataset.touched = 1; if (o.doorH) $('fDoorH').dataset.touched = 1; autoDoorH();
-    ['fClientEn','fDistEn'].forEach(id => { if ($(id).value) $(id).dataset.touched = 1; else delete $(id).dataset.touched; }); autoEn();
-    $('fUnit').value = o.unitPrice; $('fUnit').dataset.touched = 1;
+    fillOfferForm(o);
     S.editing = o.offerNo;
-    clearItems(); (o.extraItems || []).forEach(it => addItem(it));
-    clearLifts(); (o.moreLifts || []).forEach(l => addLift(Object.assign({}, l, {landingDoors: l.landing}), true));
-    toggleMore(!!(o.installDays || o.warrantyYears || o.maintYears || (o.extraItems || []).length)); checkInstall();
     $('editNote').hidden = false;
     $('editNote').innerHTML = 'تُعدِّل على العرض رقم <b>'+esc(o.offerNo)+'</b> (آخر مراجعة '+esc(o.revision)+') — لما تحفظ ستُسجَّل مراجعة جديدة بالرقم نفسه. <a href="#" onclick="cancelEdit();return false">إلغاء</a>';
-    msg('oMsg',''); $('oFiles').innerHTML = ''; checkPhone(); recalc();
     window.scrollTo(0,0);
   }catch(err){ alert(err.message); }
 }

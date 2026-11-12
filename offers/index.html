@@ -1117,20 +1117,24 @@ async function chooseSaveFolder(){
   const where = await writeToDir(d, f.blob, f.name, f.client);
   await markSaved(f.offerNo);
   S.docDir = { dir: d };
-  $('oFiles').innerHTML = '<div class="msg ok">حُفظ الورد في: ' + esc(where) + ' ' + OPEN_BTN + '</div>';
+  $('oFiles').innerHTML = '<div class="msg ok">حُفظ الورد في: ' + esc(where) + ' ' + openFolderBtn(f.client) + '</div>';
 }
-/** يفتح نافذة الملفات جوه المكان اللي اتحفظ فيه الورد (المتصفح مش بيفتح Word أو الفولدر بنفسه) */
-async function openSavedFile(){
-  const fh = await kv.get('lastDoc');
-  const d = fh ? null : await kv.get('saveDir');
-  const startIn = fh || d;
-  if (!startIn) return;
-  try{
-    await window.showOpenFilePicker({ startIn: startIn, multiple: false,
-      types: [{ description: 'Word', accept: { [DOCX_TYPE]: ['.docx'] } }] });
-  }catch(e){ /* المستخدم قفل النافذة */ }
+/** يفتح مجلد الحفظ (ومجلد العميل جواه) في Windows Explorer عن طريق الرابط alfalak-open: (بيتسجّل على اللابتوب مرة واحدة) */
+function openSavedFolder(el){
+  let base = '';
+  try{ base = localStorage.getItem('openBase') || ''; }catch(e){}
+  if (!base){
+    base = (prompt('اكتب مسار مجلد الحفظ كامل على اللابتوب ده (مثال: F:\\OneDrive\\عروض)') || '').trim();
+    if (!base) return;
+    try{ localStorage.setItem('openBase', base); }catch(e){}
+  }
+  const client = el && el.dataset ? el.dataset.client : '';
+  const p = base.replace(/[\\\/]+$/, '') + (perClient() && client ? '\\' + client : '');
+  const a = document.createElement('a');
+  a.href = 'alfalak-open:' + encodeURI(p);
+  document.body.appendChild(a); a.click(); a.remove();
 }
-const OPEN_BTN = '<button type="button" class="btn ghost" style="padding:4px 12px" onclick="openSavedFile()">📂 افتح الملف</button>';
+const openFolderBtn = client => '<button type="button" class="btn ghost" style="padding:4px 12px" data-client="' + esc(client || '') + '" onclick="openSavedFolder(this)">📂 افتح المجلد</button>';
 async function makeAndSaveDoc(r){
   const box = 'oFiles', el = $(box);
   el.innerHTML = '<div class="msg warn">جارٍ تجهيز الورد...</div>';
@@ -1151,7 +1155,7 @@ async function makeAndSaveDoc(r){
         const where = await writeToDir(r.dir, blob, name, f.client || '');
         await markSaved(r.offerNo);
         S.docDir = { dir: r.dir };
-        el.innerHTML = '<div class="msg ok">حُفظ الورد في: ' + esc(where) + ' ' + OPEN_BTN + '</div>';
+        el.innerHTML = '<div class="msg ok">حُفظ الورد في: ' + esc(where) + ' ' + openFolderBtn(f.client) + '</div>';
         return;
       }
       el.innerHTML = '<div class="msg warn">العرض اتحفظ والورد جاهز، بس مجلد الحفظ مش مختار. ' +

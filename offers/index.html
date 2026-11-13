@@ -708,6 +708,9 @@ function enTouched(el){ if (el.value.trim()) el.dataset.touched = 1; else { dele
 function fillLoads(){
   const t = $('fType').value;
   $('enBox').hidden = !/GKE/i.test(t);
+  // تغيير النوع = السعر يتحسب من جديد للنوع الجديد (مش يفضل سعر النوع القديم)
+  delete $('fUnit').dataset.touched;
+  liftCards().forEach(d => { const p = d.querySelector('[data-k=price]'); if (p) delete p.dataset.touched; });
   autoDoorType();
   const loads = S.cfg.products.filter(p => p.type === t).sort((x,y) => x.load - y.load);
   $('fLoadSel').innerHTML = loads.map(p => '<option value="'+p.load+'">'+loadLabel(p.load, p.persons)+'</option>').join('') +
@@ -768,7 +771,7 @@ function doorRows(){
 }
 function renderDoorChoices(){
   const sel = $('fDoorChoice'), cur = sel.value, rows = doorRows();
-  sel.innerHTML = '<option value="">— المندوب يختار —</option>' + rows.map((r, i) => '<option value="' + i + '">' + esc(r.text) + '</option>').join('');
+  sel.innerHTML = rows.map((r, i) => '<option value="' + i + '">' + esc(r.text) + '</option>').join('');
   if (cur !== '' && rows[Number(cur)]) sel.value = cur;
 }
 /** الاقتراح التلقائي: أكبر خيار من الـ 700/800 بيكفيه مقاس البئر */
@@ -796,7 +799,9 @@ function doorChoiceChanged(){ $('fDoorChoice').dataset.touched = 1; syncDoorHidd
 function autoDoorType(){
   const gke = /GKE/i.test($('fType').value), c = $('fDoorChoice'), br = $('fBrand');
   renderDoorChoices();
-  if (!c.dataset.touched) c.value = suggestDoorIdx();
+  // الباب بيتحسب تلقائي من عرض البئر والنوع، والمندوب يقدر يعدّله بعد كده
+  c.value = suggestDoorIdx();
+  delete c.dataset.touched;
   syncDoorHidden(); updateDoorHint();
   // GKE: موديل GKE بس — SJ MRL: موديل SJ بس — المحلي: سيلكوم، سيلكوم صيني، SJ
   const sj = /\bSJ\b/i.test($('fType').value);

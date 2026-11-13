@@ -798,15 +798,16 @@ function autoDoorType(){
   renderDoorChoices();
   if (!c.dataset.touched) c.value = suggestDoorIdx();
   syncDoorHidden(); updateDoorHint();
-  // GKE: موديل GKE بس — المحلي: سيلكوم، سيلكوم صيني، SJ
-  const list = gke ? ['GKE'] : ['سيلكوم','سيلكوم صيني','SJ'];
+  // GKE: موديل GKE بس — SJ MRL: موديل SJ بس — المحلي: سيلكوم، سيلكوم صيني، SJ
+  const sj = /\bSJ\b/i.test($('fType').value);
+  const list = gke ? ['GKE'] : sj ? ['SJ'] : ['سيلكوم','سيلكوم صيني','SJ'];
   const cur = br.value;
   br.innerHTML = list.map(x => '<option>'+x+'</option>').join('');
   if (br.dataset.touched && list.indexOf(cur) >= 0) br.value = cur; else { br.value = list[0]; delete br.dataset.touched; }
   autoDoorH();
   // الافتراضي المكتوب في القوالب
   $('fInstall').placeholder = gke ? '180 (كالقالب)' : '60 (كالقالب)';
-  $('fWarranty').placeholder = gke ? '2 (كالقالب)' : '10 (كالقالب)';
+  $('fWarranty').placeholder = gke ? '2 (كالقالب)' : sj ? '3 (كالقالب)' : '10 (كالقالب)';
   $('fMaint').placeholder = '1 (كالقالب)';
   checkInstall(); checkNotes();
 }
@@ -973,7 +974,8 @@ function toggleMore(show){
 }
 /** ارتفاع الباب لوحده حسب الموديل (GKE دايماً 2100) — ويمكن للمندوب يغيّره في المحلي */
 function autoDoorH(){
-  const gke = /GKE/i.test($('fType').value), h = $('fDoorH');
+  // GKE و SJ MRL: الارتفاع دايماً 2100
+  const gke = /GKE/i.test($('fType').value) || /\bSJ\b/i.test($('fType').value), h = $('fDoorH');
   h.disabled = gke;
   if (gke) h.value = '2100';
   else if (!h.dataset.touched) h.value = String(doorHeightFor($('fBrand').value, false));

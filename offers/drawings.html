@@ -376,7 +376,8 @@ function compute(p){
     g.cwZone = {z0, z1};
   } else {
     // rear counterweight, along x, centred
-    const c = SW/2 + (p.off === "right" ? 1 : -1) * RULES.rear.offset;
+    // MR only: the counterweight centre is the car centre (no 10 cm offset). MRL keeps the offset.
+    const c = p.etype === "MR" ? SW/2 : SW/2 + (p.off === "right" ? 1 : -1) * RULES.rear.offset;
     // rail feet must stay at least 7 cm from the side walls
     const room = Math.min(c, SW - c) - RULES.rear.wallMin;              // from CW centre to the 7 cm line
     var cwDBG = Math.min(RULES.cwDBG, 2*(room - RULES.cwRail.h));
@@ -997,7 +998,7 @@ function update(){
   UNIT = p.unit;
   $("dirWrap").hidden = p.door !== "side";
   $("manWrap").hidden = p.carmode !== "manual";
-  $("offWrap").hidden = !(p.cw === "rear" || (p.cw === "auto" && p.SW <= p.SD));
+  $("offWrap").hidden = p.etype === "MR" || !(p.cw === "rear" || (p.cw === "auto" && p.SW <= p.SD));
   current = compute(p);
   $("sheet").innerHTML = $("paper").value === "a4x2" ? pages(current).map(x => `<div style="max-width:620px;margin:0 auto 12px;border:1px solid #ddd">${x}</div>`).join("") : compose(current);
   summary(current);

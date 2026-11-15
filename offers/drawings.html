@@ -100,6 +100,7 @@ small.hint{color:var(--muted);font-size:12px}
       </div>
       <div class="grid2">
         <label>نوع المصعد<select id="etype"><option value="MRL">MRL</option><option value="MR">MR</option></select></label>
+        <label>مداخل الكابينة<select id="ent"><option value="1">باب واحد</option><option value="2">بابين (أمامي وخلفي)</option></select></label>
         <label>نوع البير<select id="stype"><option value="Concrete">خرساني</option><option value="Steel">حديد</option></select></label>
       </div>
     </fieldset>
@@ -235,7 +236,7 @@ const toLatin = s => String(s).replace(/[\u0660-\u0669]/g, d => d.charCodeAt(0)-
 function num(id){ const el = $(id), v = toLatin(el.value); if(v !== el.value) el.value = v; return parseFloat(v); }
 function readInputs(){
   return { SW:num("sw"), SD:num("sd"), pit:num("pit"), oh:num("oh"),
-           cw:radio("cw"), off:$("off").value, door:radio("door"), DW:num("dw"), unit:radio("unit"), carmode:radio("carmode"), load:num("load"), manW:num("manW"), manD:num("manD"), client:$("client").value.trim(), stops:Math.max(2, Math.round(num("stops")||2)), fh:num("fh"), dh:num("dh"), ch:num("ch"), etype:$("etype").value, stype:$("stype").value, view:radio("view"), orient:$("orient").value, offer:$("offer").value.trim(), project:$("project").value.trim() };
+           cw:radio("cw"), off:$("off").value, door:radio("door"), DW:num("dw"), unit:radio("unit"), carmode:radio("carmode"), load:num("load"), manW:num("manW"), manD:num("manD"), client:$("client").value.trim(), stops:Math.max(2, Math.round(num("stops")||2)), fh:num("fh"), dh:num("dh"), ch:num("ch"), etype:$("etype").value, stype:$("stype").value, entrances:+$("ent").value||1, view:radio("view"), orient:$("orient").value, offer:$("offer").value.trim(), project:$("project").value.trim() };
 }
 
 /* ---------- geometry ---------- */
@@ -257,6 +258,9 @@ function compute(p){
     else if(SW < SD){ cw = "rear"; g.info.push("العرض أصغر من العمق ← ثقل خلفي."); }
     else { cw = "rear"; g.info.push("العرض يساوي العمق ← ثقل خلفي."); }
   }
+  const two = (p.entrances|0) === 2;
+  g.two = two;
+  if(two && cw === "rear"){ if(p.cw === "auto") g.info.pop(); cw = p.off === "left" ? "left" : "right"; g.info.push("الكابينة ببابين (أمامي وخلفي) ← الثقل لازم يكون جانبي."); }
   g.cw = cw;
   const side = cw === "left" || cw === "right";
   const fr = RULES.front[door], front = sum(fr);
@@ -284,7 +288,7 @@ function compute(p){
     const tipR = SW - RULES.bracket - RULES.carRail.h;   // SW-13.5
     DBG = tipR - tipL; carW = DBG - 2*RULES.shoe;
     carL = tipL + RULES.shoe; carR = carL + carW;
-    back = RULES.back; carY1 = SD - back;
+    back = two ? sum(RULES.front[door]) : RULES.back; carY1 = SD - back;
   } else {
     const tipL = RULES.bracket + RULES.carRail.h, tipR = SW - tipL;
     DBG = tipR - tipL; carW = DBG - 2*RULES.shoe;
@@ -356,7 +360,7 @@ function compute(p){
 
   if(side){
     // left-based layout, mirrored later for right
-    const avail = SD - RULES.cwBackGap - RULES.doorClear[door];
+    const avail = two ? SD - 2*RULES.doorClear[door] : SD - RULES.cwBackGap - RULES.doorClear[door];
     var cwDBG = Math.min(RULES.cwDBG, avail - RULES.cwExtra);
     const zoneL = cwDBG + RULES.cwExtra;
     const c = RULES.doorClear[door] + zoneL/2;   // CW starts right after the door clearance (35 side / 30 center)
@@ -381,7 +385,7 @@ function compute(p){
       [38.5,fbx-6.5,"DBG"],[fbx-6.5,fbx,"6.5"],[fbx,SW,"FREE"]];
     tops.push(T);
     tops.push([[38.5,carL,"6"],[carL,carR,"CAR"],[carR,carR+6,"6"]]);
-    vCw.push([[0,z0,"CLEAR"],[z0,c-cwDBG/2,"FREE"],[c-cwDBG/2,c+cwDBG/2,"CWDBG"],[c+cwDBG/2,z1,"FREE"],[z1,SD,"BACKGAP"]]);
+    vCw.push([[0,z0,"CLEAR"],[z0,c-cwDBG/2,"FREE"],[c-cwDBG/2,c+cwDBG/2,"CWDBG"],[c+cwDBG/2,z1,"FREE"],[z1,SD,two ? "CLEAR" : "BACKGAP"]]);
     g.cwDBG = cwDBG;
     g.cwZone = {z0, z1};
   } else {
@@ -466,7 +470,11 @@ function compute(p){
     }
   };
   panels(lsY[0], lsY[1]); panels(csY[0], csY[1]);
-  D.push({t:"poly", cls:"car", pts:[[dx0,carY0-ent],[dx0,carY0],[carL,carY0],[carL,carY1],[carR,carY1],[carR,carY0],[dx1,carY0],[dx1,carY0-ent]]});
+  // second (rear) entrance: copy every door element mirrored about the shaft depth
+  if(two){ const n = D.length; for(let i=0;i<n;i++){ const q = D[i]; if(q.t === "rect") D.push({...q, y0: SD - q.y1, y1: SD - q.y0}); } }
+  D.push({t:"poly", cls:"car", pts:[[dx0,carY0-ent],[dx0,carY0],[carL,carY0],[carL,carY1],
+    ...(two ? [[dx0,carY1],[dx0,carY1+ent],[dx0,carY1],[dx1,carY1],[dx1,carY1+ent],[dx1,carY1]] : []),
+    [carR,carY1],[carR,carY0],[dx1,carY0],[dx1,carY0-ent]]});
   const cwt = 3;  // car wall / flange 3 cm
   D.push({t:"poly", cls:"carin", pts:[[dx0-1.5,carY0+cwt],[carL+cwt,carY0+cwt],[carL+cwt,carY1-cwt],[carR-cwt,carY1-cwt],[carR-cwt,carY0+cwt],[dx1+1.5,carY0+cwt]]});
   D.push({t:"cg", x:cx, y:(carY0+carY1)/2});
@@ -500,7 +508,8 @@ function compute(p){
   let y = 0; const dchain = [];
   fr.forEach(v => { dchain.push([y, y+v, fmt(v)]); y += v; });
   dchain.push([carY0, carY1, p.carmode === "hide" ? "" : "CD=" + fmt(lblD)]);
-  if(side) dchain.push([carY1, SD, fmt(SD - carY1)]);
+  if(two){ let yb = carY1; [...fr].reverse().forEach(v => { dchain.push([yb, yb+v, fmt(v)]); yb += v; }); }
+  else if(side) dchain.push([carY1, SD, fmt(SD - carY1)]);
   else { const rc = g.rearRC || 12.5, f = SD - rc - 7.5; dchain.push([carY1, f, fmt(f - carY1)]); dchain.push([f, SD - rc, fmt(7.5)]); dchain.push([SD - rc, SD, fmt(rc)]); }
   const depthSide = cw === "left" ? "right" : "left";
   g.dims.v = { left:[], right:[] };
@@ -644,6 +653,7 @@ function render(g){
       row("Car guide rails", "T 70 x 65 x 9 mm");
       row("CW guide rails", "T 50 x 50 x 5 mm");
       row("Counterweight", {right:"Side - right", left:"Side - left", rear:"Rear"}[g.cw]);
+      row("Car entrances", g.two ? "2 (front + rear)" : "1");
       row("Door", (g.door === "center" ? "Center" : "Side telescopic") + "  DW " + MM(g.DW));
       row("Wall opening", MM(g.wo1 - g.wo0));
     } else {
@@ -662,7 +672,8 @@ function render(g){
   // shaft + walls
   R(0, SW, 0, SD, "shaft");
   const dx0 = g.err ? SW/2 - (p.DW||80)/2 : g.wo0, dx1 = g.err ? SW/2 + (p.DW||80)/2 : g.wo1;
-  R(-T, SW+T, SD, SD+T, "wall");
+  if(g.two && !g.err){ R(-T, Math.max(0,dx0), SD, SD+T, "wall"); R(Math.min(SW,dx1), SW+T, SD, SD+T, "wall"); }
+  else R(-T, SW+T, SD, SD+T, "wall");
   R(-T, 0, -T, SD, "wall");
   R(SW, SW+T, -T, SD, "wall");
   R(0, Math.max(0, dx0), -T, 0, "wall");
@@ -1104,9 +1115,11 @@ function buildDXF(g){
   add(0,"ENDTAB",0,"ENDSEC",0,"SECTION",2,"ENTITIES");
   const SW = g.SW, SD = g.SD, T = 20;
   // shaft and walls
-  line("WALLS", 0, SD, SW, SD); line("WALLS", 0, 0, 0, SD); line("WALLS", SW, 0, SW, SD);
+  if(g.two){ line("WALLS", 0, SD, g.wo0, SD); line("WALLS", g.wo1, SD, SW, SD); line("WALLS", g.wo0, SD, g.wo0, SD+T); line("WALLS", g.wo1, SD, g.wo1, SD+T); }
+  else line("WALLS", 0, SD, SW, SD);
+  line("WALLS", 0, 0, 0, SD); line("WALLS", SW, 0, SW, SD);
   line("WALLS", 0, 0, g.wo0, 0); line("WALLS", g.wo1, 0, SW, 0);
-  line("WALLS", -T, SD+T, SW+T, SD+T); line("WALLS", -T, -T, -T, SD+T); line("WALLS", SW+T, -T, SW+T, SD+T);
+  if(g.two){ line("WALLS", -T, SD+T, g.wo0, SD+T); line("WALLS", g.wo1, SD+T, SW+T, SD+T); } else line("WALLS", -T, SD+T, SW+T, SD+T); line("WALLS", -T, -T, -T, SD+T); line("WALLS", SW+T, -T, SW+T, SD+T);
   line("WALLS", -T, -T, g.wo0, -T); line("WALLS", g.wo1, -T, SW+T, -T);
   line("WALLS", g.wo0, -T, g.wo0, 0); line("WALLS", g.wo1, -T, g.wo1, 0);
   // drawing primitives
@@ -1158,6 +1171,7 @@ $("svgBtn").addEventListener("click", async () => {
   setv("sw", cm(d.shaftW)); setv("sd", cm(d.shaftD)); setv("pit", cm(d.pit)); setv("oh", cm(d.overhead));
   setv("dw", cm(d.doorW)); if(d.load) setv("load", parseFloat(d.load)); if(d.stops) $("stops").value = String(parseInt(d.stops)||3);
   if(d.doorType === "جانبي") $("door-side").checked = true; else if(d.doorType === "سنتر") $("door-center").checked = true;
+  if(parseInt(d.carDoors) === 2) $("ent").value = "2";
   if(/MR\b/.test(d.type||"") && !/MRL/.test(d.type||"")) $("etype").value = "MR";
   if(d.client) $("client").value = d.client;
   if(d.project) $("project").value = d.project;

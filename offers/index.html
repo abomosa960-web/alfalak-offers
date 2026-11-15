@@ -639,7 +639,7 @@ async function buildDrawings(data){
   const cm = v => { const n = parseFloat(String(v||'').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d.]/g,'')); return n > 0 ? n/10 : 0; };
   const p = { SW: cm(data.shaftW), SD: cm(data.shaftD), pit: cm(data.pit), oh: cm(data.overhead),
     cw: 'auto', off: 'left', door: data.doorType === 'جانبي' ? 'side' : 'center', DW: cm(data.doorW) || 80, unit: 'mm',
-    carmode: 'auto', load: Number(String(data.load||'').replace(/[^\d.]/g,'')) || 0, stops: Math.max(2, parseInt(data.stops) || 2), fh: 350, dh: cm(data.doorH) || 200, ch: 230,
+    carmode: 'auto', load: Number(String(data.load||'').replace(/[^\d.]/g,'')) || 0, entrances: (parseInt(data.carDoors) === 2 ? 2 : 1), stops: Math.max(2, parseInt(data.stops) || 2), fh: 350, dh: cm(data.doorH) || 200, ch: 230,
     etype: (/MR/i.test(data.type || '') && !/MRL/i.test(data.type || '') && !/SJ/i.test(data.type || '')) ? 'MR' : 'MRL', stype: 'Concrete', view: 'both', orient: 'portrait',
     client: data.clientEn || data.client || '', project: data.districtEn || data.district || '', offer: data.offerNo || '' };
   const g = w.compute(p);

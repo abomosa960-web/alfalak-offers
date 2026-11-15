@@ -323,12 +323,12 @@ function compute(p){
   /* Combination: a 5 cm U channel fixed to the wall (legs to the wall, base toward the car).
      The counterweight rails sit INSIDE it, one on each leg, blades facing each other.
      Along the rail axis: leg 5 | 1.5 | rail 5 | DBG 102 | rail 5 | 1.5 | leg 5 = 125. */
-  function counterweight(c, place, cwDBG, kind){
+  function counterweight(c, place, cwDBG, kind, rcIn){
     const out = [];
     const R2 = (u0,u1,v0,v1,cls) => { const a=place(u0,v0), b=place(u1,v1); rect(a.x,b.x,a.y,b.y,cls,out); };
     const L2 = (u0,v0,u1,v1,cls) => { const a=place(u0,v0), b=place(u1,v1); line(a.x,a.y,b.x,b.y,cls,out); };
     const half = cwDBG/2, CR = RULES.cwRail, zone = (cwDBG + RULES.cwExtra)/2;
-    const rc = RULES.side.toRailC;                                            // 12.5 rail centre from wall
+    const rc = rcIn || RULES.side.toRailC;                                   // rail centre from wall (12.5, more in the rear case)
     const baseV0 = RULES.side.toRailC + RULES.side.toFrame, baseV1 = baseV0 + RULES.side.frame; // 25..30
     const leg = RULES.side.frame;                                             // 5
     // counterweight block between the rail tips
@@ -394,7 +394,10 @@ function compute(p){
     if(cwDBG < RULES.cwDBGmin){ g.err = [`عرض البير لا يكفي لثقل الموازنة الخلفي: DBG الثقل ${fix(cwDBG)} سم، وأقل حاجة ${RULES.cwDBGmin} سم.`]; g.errEn=[`Shaft width too small for rear counterweight (CW DBG ${fix(cwDBG)} cm, min ${RULES.cwDBGmin} cm).`]; return g; }
     if(cwDBG < RULES.cwDBG) g.info.push(`مساحة الثقل صغرت: DBG الثقل ${fix(cwDBG)} سم بدل ${RULES.cwDBG}.`);
     g.cwDBG = cwDBG;
-    const cwg = counterweight(c, (u,v)=>({x:u, y:SD - v}), cwDBG, "tri");
+    // keep 12.5 cm between the counterweight and the car: when the car is shorter the counterweight comes forward
+    const rcR = Math.max(RULES.rear.toRailC, (SD - carY1) - 12.5 - 7.5);
+    g.rearRC = rcR;
+    const cwg = counterweight(c, (u,v)=>({x:u, y:SD - v}), cwDBG, "tri", rcR);
     P.push(...cwg.prims);
     text(cwg.label.x, cwg.label.y, "COUNTERWEIGHT", "lbl", 0);
     const brk = carL - RULES.shoe - RULES.carRail.h;   // 7 cm normally, bigger when the car is narrowed by the code
@@ -498,7 +501,7 @@ function compute(p){
   fr.forEach(v => { dchain.push([y, y+v, fmt(v)]); y += v; });
   dchain.push([carY0, carY1, p.carmode === "hide" ? "" : "CD=" + fmt(lblD)]);
   if(side) dchain.push([carY1, SD, fmt(SD - carY1)]);
-  else { const S = RULES.side; dchain.push([carY1, SD-30, fmt(SD-30-carY1)]); dchain.push([SD-30, SD-25, fmt(S.frame)]); dchain.push([SD-25, SD-12.5, fmt(S.toFrame)]); dchain.push([SD-12.5, SD, fmt(S.toRailC)]); }
+  else { const rc = g.rearRC || 12.5, f = SD - rc - 7.5; dchain.push([carY1, f, fmt(f - carY1)]); dchain.push([f, SD - rc, fmt(7.5)]); dchain.push([SD - rc, SD, fmt(rc)]); }
   const depthSide = cw === "left" ? "right" : "left";
   g.dims.v = { left:[], right:[] };
   g.dims.v[depthSide].push(dchain, [[0, SD, "SD=" + fmt(SD)]]);
@@ -786,7 +789,7 @@ function renderSection(g){
   // car rail axis and counterweight zone
   L(g.center.railY, -pit, g.center.railY, roof, "#b03ab0", lw, `${fs*1.6} ${fs*0.5} ${fs*0.25} ${fs*0.5}`);
   let cw0, cw1;
-  if(g.cw === "rear"){ cw0 = SD - 25; cw1 = SD - 3; }
+  if(g.cw === "rear"){ const rc = g.rearRC || 12.5; cw0 = SD - rc - 7.5; cw1 = SD - rc + 7.5; }
   else if(g.cwZone){ cw0 = g.cwZone.z0; cw1 = g.cwZone.z1; }
   if(cw0 !== undefined){
     R(cw0, cw1, -pit+30, roof-30, "none", "#888", lw*0.6, `stroke-dasharray="${fs} ${fs*0.6}"`);

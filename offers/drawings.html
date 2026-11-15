@@ -444,6 +444,24 @@ function compute(p){
     const minEdge = RULES.wallMin + RULES.frameSafety + RULES.doorFrame.side.open;
     if(stackDir > 0){ dx0 = Math.max(carL, minEdge); dx1 = dx0 + DW; } else { dx1 = Math.min(carR, SW - minEdge); dx0 = dx1 - DW; }
   }
+  if(door === "center"){
+    // centre door: the open panels need DW/2 + 7 cm beside the opening on each side (70 -> 154 cm total, 80 -> 174 cm).
+    // If one side is short, the entrance moves inside the car toward the wider side (car keeps its place).
+    const need = DW/2 + 7;
+    if(SW < DW + 2*need){
+      g.err = [`باب سنتر ${DW} سم يحتاج عرض بير ${fix(DW + 2*need)} سم على الأقل (${fix(need)} سم كل ناحية بعد فتحة الباب). البير ${fix(SW)} سم.`];
+      g.errEn = [`Centre door ${DW} cm needs shaft width of at least ${fix(DW + 2*need)} cm (${fix(need)} cm each side of the opening).`];
+      return g;
+    }
+    if(dx0 < need){ dx0 = need; dx1 = dx0 + DW; }
+    if(SW - dx1 < need){ dx1 = SW - need; dx0 = dx1 - DW; }
+    if(dx0 < carL || dx1 > carR){
+      g.err = [`مدخل الكابينة ${DW} سم مش هيكفي جوه الكابينة بعد ما يتساب ${fix(need)} سم لفتح الضلف كل ناحية. راجع المهندس المسؤول.`];
+      g.errEn = [`Door opening ${DW} cm does not fit inside the car with ${fix(need)} cm stacking room each side.`];
+      return g;
+    }
+    if(Math.abs((dx0+dx1)/2 - cx) > 0.5) g.info.push(`مدخل الكابينة اترحّل ${fix(Math.abs((dx0+dx1)/2 - cx))} سم عشان الضلف لما تفتح تبقى بره المدخل (${fix(need)} سم كل ناحية).`);
+  }
   const sillExt = door === "center" ? [dx0 - DW/2, dx1 + DW/2]
                  : stackDir > 0 ? [dx0 - 3, dx1 + DW/2 + 3] : [dx0 - DW/2 - 3, dx1 + 3];
   const sillMargin = 5;
@@ -462,7 +480,7 @@ function compute(p){
   const panels = (y0,y1) => {
     if(door === "center"){
       const yc = (y0+y1)/2;
-      rect(dx0, cx+0.3, yc-1.1, yc+1.1, "door", D); rect(cx-0.3, dx1, yc-1.1, yc+1.1, "door", D);
+      const dc = (dx0+dx1)/2; rect(dx0, dc+0.3, yc-1.1, yc+1.1, "door", D); rect(dc-0.3, dx1, yc-1.1, yc+1.1, "door", D);
     } else {
       const ya = y0 + (y1-y0)*0.3, yb = y0 + (y1-y0)*0.72, h = DW/2;
       if(stackDir > 0){ rect(dx0, dx0+h+2, ya-1, ya+1, "door", D); rect(dx0+h-2, dx1, yb-1, yb+1, "door", D); }

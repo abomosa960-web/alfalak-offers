@@ -244,14 +244,17 @@ function readInputs(){
 /* Door fallback (local doors are 70 / 80 only; never shrink below that):
    requested door -> centre 70 -> side 80 -> side 70 -> suggest semi-automatic. Centre has priority. */
 function compute(p){
+  // door rules table: side 70 needs shaft width 135, side 80 needs 150 (room for the panels to stack);
+  // centre needs DW/2 + 7 each side (70 -> 154, 80 -> 174, checked inside). Below 135 -> semi-automatic.
+  const sideOK = (d, w) => d !== "side" || p.SW >= (w >= 80 ? 150 : 135);
   const first = computeOne(p);
-  if(!first.err && !first.warn.some(w => /الحيطة جنب الباب/.test(w))) return first;
+  if(!first.err && sideOK(p.door, p.DW) && !first.warn.some(w => /الحيطة جنب الباب/.test(w))) return first;
   const errTxt = [].concat(first.err || []).join(" ");
   if(/الحفرة|الأوفر|أدخل|الكابينة الناتجة|لثقل/.test(errTxt)) return first;
   const nm = d => d === "side" ? "جانبي" : d === "semi" ? "نص أوتوماتيك" : "سنتر";   // not a door problem
-  const tries = [["center",70],["side",80],["side",70],["semi",80]].filter(([d,w]) => !(d === p.door && w === p.DW));
+  const tries = (p.SW < 135 ? [["semi",80]] : [["center",70],["side",80],["side",70],["semi",80]]).filter(([d,w]) => !(d === p.door && w === p.DW));
   for(const [d,w] of tries){
-    if(d === "side" && p.SW < (w >= 80 ? 150 : 135)) continue;   // side door table: 80 needs 150 cm, 70 needs 135 cm
+    if(!sideOK(d, w)) continue;
     const g = computeOne({...p, door:d, DW:w});
     if(!g.err && (d === "semi" || !g.warn.some(x => /الحيطة جنب الباب/.test(x)))){
       g.doorChanged = true;

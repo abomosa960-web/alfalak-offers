@@ -136,6 +136,7 @@ small.hint{color:var(--muted);font-size:12px}
       <div class="seg" role="radiogroup" aria-label="نوع الباب">
         <label><input type="radio" name="door" id="door-center" value="center" checked><span>سنتر</span></label>
         <label><input type="radio" name="door" id="door-side" value="side"><span>جانبي (تلسكوبي)</span></label>
+        <label><input type="radio" name="door" id="door-semi" value="semi"><span>نص أوتوماتيك</span></label>
       </div>
       <div class="grid2">
         <label>فتحة الباب (سم)<input id="dw" lang="en" inputmode="decimal" type="text" pattern="[0-9.]*" value="80"></label>
@@ -204,9 +205,9 @@ const RULES = {
   minPit: 80, minOH: 400,
   engineerMsg: "راجع المهندس المسؤول أو راجع مهندس محمد",
   // depth from landing-door wall: frame, landing sill, gap, car sill, car entrance
-  front: { center:[6,7.5,3,7.5,4], side:[6,9,3,9,5] },
+  front: { center:[6,7.5,3,7.5,4], side:[6,9,3,9,5], semi:[6,7.5,3,7.5,4] },
   frontNames: ["فريم","عتبة","فراغ","عتبة كابينة","مدخل"],
-  doorClear: { center:29, side:35 },     // no counterweight in front of this
+  doorClear: { center:29, side:35, semi:29 },     // no counterweight in front of this
   back: 11,                              // car to back wall (side counterweight)
   // side counterweight, from the wall: 12.5 to rail centre, 12.5 to U frame, 5 frame, 2 gap, then car rail 6.5
   side: { toRailC:12.5, toFrame:12.5, frame:5, gap:2 },
@@ -218,7 +219,7 @@ const RULES = {
   cwExtra: 23,                           // zone = CW DBG + 23 (leg 5 + 1.5 + rail 5, both ends)
   rear: { toRailC:12.5, offset:10, wallMin:7 },
   // landing-door frame visible either side of the opening + 1 cm safety each side
-  doorFrame: { center:{a:12, b:12}, side:{open:12, stack:12} }, frameSafety: 1, wallMin: 10
+  doorFrame: { center:{a:12, b:12}, side:{open:12, stack:12}, semi:{a:12, b:12} }, frameSafety: 1, wallMin: 10
 };
 const sum = a => a.reduce((s,v)=>s+v,0);
 /* EN 81-1:1998 Table 1.1 - rated load (kg) -> maximum available car area (m2); linear between rows */
@@ -246,14 +247,16 @@ function compute(p){
   const first = computeOne(p);
   if(!first.err && !first.warn.some(w => /الحيطة جنب الباب/.test(w))) return first;
   const errTxt = [].concat(first.err || []).join(" ");
-  if(/الحفرة|الأوفر|أدخل|الكابينة الناتجة|لثقل/.test(errTxt)) return first;   // not a door problem
-  const tries = [["center",70],["side",80],["side",70]].filter(([d,w]) => !(d === p.door && w === p.DW));
+  if(/الحفرة|الأوفر|أدخل|الكابينة الناتجة|لثقل/.test(errTxt)) return first;
+  const nm = d => d === "side" ? "جانبي" : d === "semi" ? "نص أوتوماتيك" : "سنتر";   // not a door problem
+  const tries = [["center",70],["side",80],["side",70],["semi",80]].filter(([d,w]) => !(d === p.door && w === p.DW));
   for(const [d,w] of tries){
     if(d === "side" && p.SW < (w >= 80 ? 150 : 135)) continue;   // side door table: 80 needs 150 cm, 70 needs 135 cm
     const g = computeOne({...p, door:d, DW:w});
-    if(!g.err && !g.warn.some(x => /الحيطة جنب الباب/.test(x))){
+    if(!g.err && (d === "semi" || !g.warn.some(x => /الحيطة جنب الباب/.test(x)))){
       g.doorChanged = true;
-      g.info.unshift(`الباب المطلوب (${p.DW*10} ${p.door === "side" ? "جانبي" : "سنتر"}) مش مناسب للبير، فاتغيّر إلى ${w*10} ${d === "side" ? "جانبي" : "سنتر"}.`);
+      g.info.unshift(d === "semi" ? `نقترح أن يتحول المصعد ده لنص أوتوماتيك لعدم كفاية المساحة. الباب ${g.DW*10} نص أوتوماتيك بقد الكابينة.`
+        : `الباب المطلوب (${p.DW*10} ${nm(p.door)}) مش مناسب للبير، فاتغيّر إلى ${w*10} ${nm(d)}.`);
       return g;
     }
   }
@@ -264,7 +267,7 @@ function compute(p){
 }
 function computeOne(p){
   const g = { p, prims:[], dims:[], warn:[], info:[] };
-  const {SW,SD,pit,oh,door,DW} = p;
+  const {SW,SD,pit,oh,door} = p; let DW = p.DW;
   if(!(SW>0 && SD>0 && DW>0)){ g.err = "أدخل عرض البير وعمقه وفتحة الباب."; return g; }
   const reasons = [];
   if(!(pit > RULES.minPit)) reasons.push(`الحفرة ${pit} سم، والمطلوب أكثر من ${RULES.minPit} سم.`);
@@ -340,7 +343,9 @@ function computeOne(p){
   if(carW < 60 || carD < 60){
     g.err = [`الكابينة الناتجة ${fix(carW)} × ${fix(carD)} سم صغيرة جدًا على هذا البير.`]; g.errEn=[`Resulting car ${fix(carW)} x ${fix(carD)} cm is too small for this shaft.`]; return g;
   }
-  if(DW > carW - 10){
+  // semi-automatic: the car decides the door (car 80 -> door 80), never more than 80
+  if(door === "semi") DW = Math.min(DW || 80, 80, Math.floor(carW));
+  else if(DW > carW - 10){
     g.err = [`فتحة الباب ${DW} سم لا تناسب عرض الكابينة ${fix(carW)} سم.`]; g.errEn=[`Door opening ${DW} cm does not fit car width ${fix(carW)} cm.`]; return g;
   }
   const railY = (carY0 + carY1)/2;
@@ -484,7 +489,7 @@ function computeOne(p){
     }
     if(Math.abs((dx0+dx1)/2 - cx) > 0.5) g.info.push(`مدخل الكابينة اترحّل ${fix(Math.abs((dx0+dx1)/2 - cx))} سم عشان الضلف لما تفتح تبقى بره المدخل (${fix(need)} سم كل ناحية).`);
   }
-  const sillExt = door === "center" ? [dx0 - DW/2, dx1 + DW/2]
+  const sillExt = door === "semi" ? [dx0 - 3, dx1 + 3] : door === "center" ? [dx0 - DW/2, dx1 + DW/2]
                  : stackDir > 0 ? [dx0 - 3, dx1 + DW/2 + 3] : [dx0 - DW/2 - 3, dx1 + 3];
   const sillMargin = 5;
   const sx0 = Math.max(sillMargin, sillExt[0]), sx1 = Math.min(SW-sillMargin, sillExt[1]);
@@ -494,13 +499,14 @@ function computeOne(p){
   rect(sx0, sx1, csY[0], csY[1], "sill", D);
   const DF = RULES.doorFrame;
   let jL, jR;
-  if(door === "center"){ jL = DF.center.a; jR = DF.center.b; }
+  if(door === "center" || door === "semi"){ jL = DF[door].a; jR = DF[door].b; }
   else { jL = stackDir < 0 ? DF.side.stack : DF.side.open; jR = stackDir < 0 ? DF.side.open : DF.side.stack; }
   const wo0 = dx0 - jL - RULES.frameSafety, wo1 = dx1 + jR + RULES.frameSafety;   // structural wall opening
   rect(dx0-jL, dx0, 0, sillY0, "jamb", D); rect(dx1, dx1+jR, 0, sillY0, "jamb", D);
   if(wo0 < RULES.wallMin || SW - wo1 < RULES.wallMin) g.warn.push("الحيطة جنب الباب أقل من 10 سم. راجع مقاس البير أو نوع الباب.");
   const panels = (y0,y1) => {
-    if(door === "center"){
+    if(door === "semi"){ const yc = (y0+y1)/2; rect(dx0, dx1, yc-1.1, yc+1.1, "door", D); }
+    else if(door === "center"){
       const yc = (y0+y1)/2;
       const dc = (dx0+dx1)/2; rect(dx0, dc+0.3, yc-1.1, yc+1.1, "door", D); rect(dc-0.3, dx1, yc-1.1, yc+1.1, "door", D);
     } else {
@@ -694,7 +700,7 @@ function render(g){
       row("CW guide rails", "T 50 x 50 x 5 mm");
       row("Counterweight", {right:"Side - right", left:"Side - left", rear:"Rear"}[g.cw]);
       row("Car entrances", g.two ? "2 (front + rear)" : "1");
-      row("Door", (g.door === "center" ? "Center" : "Side telescopic") + "  DW " + MM(g.DW));
+      row("Door", (g.door === "center" ? "Center" : g.door === "semi" ? "Semi-automatic" : "Side telescopic") + "  DW " + MM(g.DW));
       row("Wall opening", MM(g.wo1 - g.wo0));
     } else {
       row("Status", "Not issued");
@@ -787,7 +793,7 @@ function render(g){
 
   // title strip
   const cwName = {right:"Side (right)", left:"Side (left)", rear:"Rear"}[g.cw];
-  const doorName = g.door === "center" ? "Center opening" : "Side opening (telescopic)";
+  const doorName = g.door === "semi" ? "Semi-automatic" : g.door === "center" ? "Center opening" : "Side opening (telescopic)";
   const yT = -T - 8 - step*2 - fs*1.8;
   Tx(SW/2, yT, `SHAFT PLAN  ${fmt(SW)} x ${fmt(SD)}`, "title", 1.25);
   { const lw = fs*12, lh = lw*ARLBL_AR; o.push(`<image href="${ARLBL}" xlink:href="${ARLBL}" x="${(+X(SW/2) - lw/2).toFixed(2)}" y="${(+Y(yT - fs*2.7)).toFixed(2)}" width="${lw.toFixed(2)}" height="${lh.toFixed(2)}"/>`); }
@@ -958,7 +964,7 @@ function renderFront(g){
     if(g.jR > vR) R(dx1 + vR, dx1 + g.jR + 1, fl, fl+DH+8, "url(#conc3)", "#1e1e1e", lw*0.6);
     R(dx0 - vL, dx0, fl, fl+DH, "url(#ssf)", "#6f757b", lw); R(dx1, dx1 + vR, fl, fl+DH, "url(#ssf)", "#6f757b", lw);
     R(dx0 - vL, dx1 + vR, fl+DH, fl+DH+8, "url(#ssf)", "#6f757b", lw);
-    const mid = g.door === "center" ? (dx0+dx1)/2 : dx0 + g.DW/2;
+    const mid = g.door === "center" ? (dx0+dx1)/2 : g.door === "semi" ? dx1 : dx0 + g.DW/2;
     R(dx0, mid, fl, fl+DH, "url(#ssd)", "#6f757b", lw); R(mid, dx1, fl, fl+DH, "url(#ssd)", "#6f757b", lw);
     for(let k=1;k<6;k++){ const xa = dx0 + (mid-dx0)*k/6, xb = mid + (dx1-mid)*k/6; L(xa, fl+2, xa, fl+DH-2, "#e9ebed", lw*0.5); L(xb, fl+2, xb, fl+DH-2, "#e9ebed", lw*0.5); }
     R(dx0 - g.jL, dx1 + g.jR, fl-1.5, fl, "#5d6268", "#3a3e42", lw*0.6);   // landing sill

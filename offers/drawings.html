@@ -93,7 +93,7 @@ small.hint{color:var(--muted);font-size:12px}
         <label>الحفرة (سم)<input id="pit" lang="en" inputmode="decimal" type="text" pattern="[0-9.]*" value="100"></label>
         <label>الأوفر هيد (سم)<input id="oh" lang="en" inputmode="decimal" type="text" pattern="[0-9.]*" value="410"></label>
         <label>عدد الوقفات<input id="stops" lang="en" inputmode="decimal" type="text" pattern="[0-9]*" value="3"></label>
-        <label>ارتفاع الدور (سم)<input id="fh" lang="en" inputmode="decimal" type="text" pattern="[0-9.]*" value="300"></label>
+        <label>ارتفاع الدور (سم)<input id="fh" lang="en" inputmode="decimal" type="text" pattern="[0-9.]*" value="350"></label>
         <label>ارتفاع الباب (سم)<input id="dh" lang="en" inputmode="decimal" type="text" pattern="[0-9.]*" value="200"></label>
         <label>ارتفاع الكابينة (سم)<input id="ch" lang="en" inputmode="decimal" type="text" pattern="[0-9.]*" value="230"></label>
       </div>
@@ -216,7 +216,7 @@ const RULES = {
   cwExtra: 23,                           // zone = CW DBG + 23 (leg 5 + 1.5 + rail 5, both ends)
   rear: { toRailC:12.5, offset:10, wallMin:7 },
   // landing-door frame visible either side of the opening + 1 cm safety each side
-  doorFrame: { center:{a:12, b:12}, side:{open:10, stack:34} }, frameSafety: 1
+  doorFrame: { center:{a:12, b:12}, side:{open:12, stack:12} }, frameSafety: 1, wallMin: 10
 };
 const sum = a => a.reduce((s,v)=>s+v,0);
 
@@ -402,7 +402,9 @@ function compute(p){
     stackDir = cw === "left" ? -1 : cw === "right" ? 1 : (p.off === "right" ? 1 : -1);   // door opens toward the counterweight side (more room there)
     // side door is not centred: the opening sits against the car wall on the closing side,
     // so the wall on the stacking side is the large one (panels slide behind it)
-    if(stackDir > 0){ dx0 = carL; dx1 = carL + DW; } else { dx1 = carR; dx0 = carR - DW; }
+    // small side: wall >= 10 + 1 clearance + 12 frame = 23 cm from the side wall
+    const minEdge = RULES.wallMin + RULES.frameSafety + RULES.doorFrame.side.open;
+    if(stackDir > 0){ dx0 = Math.max(carL, minEdge); dx1 = dx0 + DW; } else { dx1 = Math.min(carR, SW - minEdge); dx0 = dx1 - DW; }
   }
   const sillExt = door === "center" ? [dx0 - DW/2, dx1 + DW/2]
                  : stackDir > 0 ? [dx0 - 3, dx1 + DW/2 + 3] : [dx0 - DW/2 - 3, dx1 + 3];
@@ -418,7 +420,7 @@ function compute(p){
   else { jL = stackDir < 0 ? DF.side.stack : DF.side.open; jR = stackDir < 0 ? DF.side.open : DF.side.stack; }
   const wo0 = dx0 - jL - RULES.frameSafety, wo1 = dx1 + jR + RULES.frameSafety;   // structural wall opening
   rect(dx0-jL, dx0, 0, sillY0, "jamb", D); rect(dx1, dx1+jR, 0, sillY0, "jamb", D);
-  if(wo0 < 0 || wo1 > SW) g.warn.push("فريم الباب أعرض من المساحة المتاحة في الحيطة الأمامية.");
+  if(wo0 < RULES.wallMin || SW - wo1 < RULES.wallMin) g.warn.push("الحيطة جنب الباب أقل من 10 سم. راجع مقاس البير أو نوع الباب.");
   const panels = (y0,y1) => {
     if(door === "center"){
       const yc = (y0+y1)/2;
@@ -712,7 +714,7 @@ function render(g){
 /* ---------- vertical section + composition ---------- */
 function renderSection(g){
   const p = g.p, SD = p.SD || 160, T = 20;
-  const n = p.stops || 2, FH = p.fh > 0 ? p.fh : 300, pit = p.pit || 0, oh = p.oh || 0;
+  const n = p.stops || 2, FH = p.fh > 0 ? p.fh : 350, pit = p.pit || 0, oh = p.oh || 0;
   const DH = p.dh > 0 ? p.dh : 200, CH = p.ch > 0 ? p.ch : 230;
   const top = (n-1)*FH, roof = top + oh, totalH = pit + top + oh;
   const fs = Math.min(20, Math.max(4, totalH/55));
@@ -756,7 +758,7 @@ function renderSection(g){
   else if(g.cwZone){ cw0 = g.cwZone.z0; cw1 = g.cwZone.z1; }
   if(cw0 !== undefined){
     R(cw0, cw1, -pit+30, roof-30, "none", "#888", lw*0.6, `stroke-dasharray="${fs} ${fs*0.6}"`);
-    const cwH = Math.min(250, top*0.6 + 120);
+    const cwH = Math.min(290, roof + pit - 120);   // counterweight about 2.90 m, 60 cm below the ceiling
     R(cw0+2, cw1-2, roof - 60 - cwH, roof - 60, "#ece6d6", "#555", lw);
     Tx((cw0+cw1)/2, roof - 60 - cwH/2, "CW", 0.9, "middle", "#111", 700, g.cw === "rear" ? -90 : 0);
   }
@@ -839,7 +841,7 @@ function compose(g){
 /* ---------- front elevation (landing doors side) ---------- */
 function renderFront(g){
   const p = g.p, SW = p.SW || 160, T = 20;
-  const n = p.stops || 2, FH = p.fh > 0 ? p.fh : 300, pit = p.pit || 0, oh = p.oh || 0;
+  const n = p.stops || 2, FH = p.fh > 0 ? p.fh : 350, pit = p.pit || 0, oh = p.oh || 0;
   const DH = p.dh > 0 ? p.dh : 200;
   const top = (n-1)*FH, roof = top + oh, totalH = pit + top + oh;
   const fs = Math.min(20, Math.max(4, totalH/55)), step = fs*3.4, lw = fs*0.1;
@@ -875,7 +877,8 @@ function renderFront(g){
     for(let k=1;k<6;k++){ const xa = dx0 + (mid-dx0)*k/6, xb = mid + (dx1-mid)*k/6; L(xa, fl+2, xa, fl+DH-2, "#e9ebed", lw*0.5); L(xb, fl+2, xb, fl+DH-2, "#e9ebed", lw*0.5); }
     R(dx0 - g.jL, dx1 + g.jR, fl-1.5, fl, "#5d6268", "#3a3e42", lw*0.6);   // landing sill
     // hall button box beside the frame
-    { const bx = g.stackDir < 0 ? dx1 + g.jR + 8 : dx0 - g.jL - 16; R(bx, bx+8, fl+100, fl+125, "url(#ssf)", "#6f757b", lw*0.7); }
+    // landing panel: right by default; a side door stacking right puts it on the left
+    { const bx = g.stackDir > 0 ? dx0 - g.jL - 16 : dx1 + g.jR + 8; R(bx, bx+8, fl+100, fl+125, "url(#ssf)", "#6f757b", lw*0.7); }
     Tx(-T-fs*2.4, fl + fs*1.2, `STOP ${i+1}`, 0.75, "middle", "#111", 700, -90);
   }
   // vertical dimensions

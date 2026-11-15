@@ -639,7 +639,7 @@ async function buildDrawings(data){
   const cm = v => { const n = parseFloat(String(v||'').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d.]/g,'')); return n > 0 ? n/10 : 0; };
   const p = { SW: cm(data.shaftW), SD: cm(data.shaftD), pit: cm(data.pit), oh: cm(data.overhead),
     cw: 'auto', off: 'left', door: data.doorType === 'جانبي' ? 'side' : 'center', DW: cm(data.doorW) || 80, unit: 'mm',
-    carmode: 'auto', stops: Math.max(2, parseInt(data.stops) || 2), fh: 300, dh: cm(data.doorH) || 200, ch: 230,
+    carmode: 'auto', stops: Math.max(2, parseInt(data.stops) || 2), fh: 350, dh: cm(data.doorH) || 200, ch: 230,
     etype: /MRL/i.test(data.type || '') ? 'MRL' : (/MR/i.test(data.type || '') ? 'MR' : 'MRL'), stype: 'Concrete', view: 'both', orient: 'portrait',
     client: data.clientEn || data.client || '', project: data.districtEn || data.district || '', offer: data.offerNo || '' };
   const g = w.compute(p);
@@ -1070,7 +1070,9 @@ async function saveOffer(e){
       msg('oMsg', 'جارٍ حساب المخطط...', 'warn');
       draw = await buildDrawings(data);
       // مقاس الكابينة في العرض من حسبة المخطط (لو الخانة فاضية)
-      if (!String(data.cabin || '').trim()) data.cabin = Math.round(draw.g.carW*10) + ' × ' + Math.round(draw.g.carD*10) + ' مم';
+      // مقاس الكابينة في العرض = مقاس الكابينة في المخطط بالظبط (W × D بالملي)
+      data.cabin = Math.round(draw.g.carW*10) + ' × ' + Math.round(draw.g.carD*10);
+      if ($('fCabin')) $('fCabin').value = data.cabin;
     }
     const r = await call('saveOffer', data);
     msg('oMsg', 'تم حفظ العرض رقم <b>'+r.offerNo+'</b>'+(r.revision > 1 ? ' (تعديل رقم '+r.revision+' لنفس العميل)' : '')+' — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');

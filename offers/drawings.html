@@ -240,7 +240,29 @@ function readInputs(){
 }
 
 /* ---------- geometry ---------- */
+/* Door fallback (local doors are 70 / 80 only; never shrink below that):
+   requested door -> centre 70 -> side 80 -> side 70 -> suggest semi-automatic. Centre has priority. */
 function compute(p){
+  const first = computeOne(p);
+  if(!first.err && !first.warn.some(w => /الحيطة جنب الباب/.test(w))) return first;
+  const errTxt = [].concat(first.err || []).join(" ");
+  if(/الحفرة|الأوفر|أدخل|الكابينة الناتجة|لثقل/.test(errTxt)) return first;   // not a door problem
+  const tries = [["center",70],["side",80],["side",70]].filter(([d,w]) => !(d === p.door && w === p.DW));
+  for(const [d,w] of tries){
+    if(d === "side" && p.SW < (w >= 80 ? 150 : 135)) continue;   // side door table: 80 needs 150 cm, 70 needs 135 cm
+    const g = computeOne({...p, door:d, DW:w});
+    if(!g.err && !g.warn.some(x => /الحيطة جنب الباب/.test(x))){
+      g.doorChanged = true;
+      g.info.unshift(`الباب المطلوب (${p.DW*10} ${p.door === "side" ? "جانبي" : "سنتر"}) مش مناسب للبير، فاتغيّر إلى ${w*10} ${d === "side" ? "جانبي" : "سنتر"}.`);
+      return g;
+    }
+  }
+  const msg = "نقترح أن يتحول المصعد ده لنص أوتوماتيك لعدم كفاية المساحة.";
+  first.err = [].concat(first.err || [], msg);
+  first.errEn = [].concat(first.errEn || [], "Space is not enough for an automatic door. Semi-automatic door suggested.");
+  return first;
+}
+function computeOne(p){
   const g = { p, prims:[], dims:[], warn:[], info:[] };
   const {SW,SD,pit,oh,door,DW} = p;
   if(!(SW>0 && SD>0 && DW>0)){ g.err = "أدخل عرض البير وعمقه وفتحة الباب."; return g; }

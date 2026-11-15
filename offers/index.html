@@ -1073,6 +1073,13 @@ async function saveOffer(e){
       // مقاس الكابينة في العرض = مقاس الكابينة في المخطط بالظبط (W × D بالملي)
       data.cabin = Math.round(draw.g.carW*10) + ' × ' + Math.round(draw.g.carD*10);
       if ($('fCabin')) $('fCabin').value = data.cabin;
+      // لو المخطط غيّر الباب (سنتر 70 / جانبي 80 / جانبي 70) العرض ياخد نفس الباب
+      if (draw.g.doorChanged){
+        const want = Math.round(draw.g.DW*10) + ' ' + (draw.g.door === 'side' ? 'جانبي' : 'سنتر'), rows = doorRows();
+        let ix = rows.findIndex(r => r.text === want); if (ix < 0) ix = rows.findIndex(r => String(r.text).indexOf(want) === 0);
+        if (ix >= 0){ $('fDoorChoice').value = String(ix); syncDoorHidden(); updateDoorHint();
+          data.doorW = $('fDoorW').value; data.doorType = $('fDoorType').value; data.doorText = $('fDoorText').value; }
+      }
     }
     const r = await call('saveOffer', data);
     msg('oMsg', 'تم حفظ العرض رقم <b>'+r.offerNo+'</b>'+(r.revision > 1 ? ' (تعديل رقم '+r.revision+' لنفس العميل)' : '')+' — '+esc(r.client)+' — الإجمالي شامل الضريبة <b>'+money(r.total)+'</b> ريال', 'ok');

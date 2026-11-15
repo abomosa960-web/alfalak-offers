@@ -297,8 +297,15 @@ function compute(p){
     const Amax = en81Area(p.load) * 10000;            // cm2
     g.en81 = { load: p.load, amax: Amax / 10000 };
     if(carW * carD > Amax){
-      carD = Math.floor(Amax / carW * 10) / 10;        // keep the width, cut the depth down to the code area
-      carY1 = carY0 + carD;
+      if(side){
+        carD = Math.floor(Amax / carW * 10) / 10;      // side CW: keep the width, cut the depth
+        carY1 = carY0 + carD;
+      } else {
+        // rear CW: depth stays (car 12 cm from the counterweight), the width shrinks and the
+        // rail brackets grow equally on both sides; car + DBG stay together (DBG = car + 12)
+        carW = Math.floor(Amax / carD * 10) / 10;
+        carL = SW/2 - carW/2; carR = carL + carW; DBG = carW + 2*RULES.shoe;
+      }
       g.info.push(`الكود الأوروبي: حمولة ${p.load} كجم أقصى مساحة لها ${(Amax/10000).toFixed(2)} م²، فالكابينة اتظبطت على ${Math.round(carW*10)} × ${Math.round(carD*10)} مم. لو عايز كابينة أكبر لازم الحمولة تزيد.`);
     }
   }
@@ -387,15 +394,17 @@ function compute(p){
     const cwg = counterweight(c, (u,v)=>({x:u, y:SD - v}), cwDBG, "tri");
     P.push(...cwg.prims);
     text(cwg.label.x, cwg.label.y, "COUNTERWEIGHT", "lbl", 0);
-    rect(0, RULES.bracket, railY-4.5, railY+4.5, "bracket");
-    carRail(RULES.bracket, +1, railY);
-    rect(SW - RULES.bracket, SW, railY-4.5, railY+4.5, "bracket");
-    carRail(SW - RULES.bracket, -1, railY);
+    const brk = carL - RULES.shoe - RULES.carRail.h;   // 7 cm normally, bigger when the car is narrowed by the code
+    rect(0, brk, railY-4.5, railY+4.5, "bracket");
+    carRail(brk, +1, railY);
+    rect(SW - brk, SW, railY-4.5, railY+4.5, "bracket");
+    carRail(SW - brk, -1, railY);
     { const f = cwDBG/2 + RULES.cwRail.h;
       tops.push([[0, c-f, "FREE"],[c-f, c-cwDBG/2, "FREE"],[c-cwDBG/2, c+cwDBG/2, "CWDBG"],[c+cwDBG/2, c+f, "FREE"],[c+f, SW, "FREE"]]); }
     g.cwC = c;
-    tops.push([[0,7,"7"],[7,13.5,"6.5"],[13.5,SW-13.5,"DBG"],[SW-13.5,SW-7,"6.5"],[SW-7,SW,"7"]]);
-    tops.push([[13.5,carL,"6"],[carL,carR,"CAR"],[carR,carR+6,"6"]]);
+    { const t0 = brk + RULES.carRail.h;
+      tops.push([[0,brk,"FREE"],[brk,t0,"6.5"],[t0,SW-t0,"DBG"],[SW-t0,SW-brk,"6.5"],[SW-brk,SW,"FREE"]]);
+      tops.push([[t0,carL,"6"],[carL,carR,"CAR"],[carR,carR+6,"6"]]); }
   }
 
   // mirror the right-hand case

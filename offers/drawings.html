@@ -95,6 +95,7 @@ small.hint{color:var(--muted);font-size:12px}
         <label>عدد الوقفات<input id="stops" lang="en" inputmode="decimal" type="text" pattern="[0-9]*" value="3"></label>
         <label>ارتفاع الدور (سم)<input id="fh" lang="en" inputmode="decimal" type="text" pattern="[0-9.]*" value="350"></label>
         <label>ارتفاع الباب (سم)<input id="dh" lang="en" inputmode="decimal" type="text" pattern="[0-9.]*" value="200"></label>
+        <label>الحمولة (كجم)<input id="load" lang="en" inputmode="decimal" type="text" pattern="[0-9]*" value="450"></label>
         <label>ارتفاع الكابينة (سم)<input id="ch" lang="en" inputmode="decimal" type="text" pattern="[0-9.]*" value="230"></label>
       </div>
       <div class="grid2">
@@ -219,6 +220,13 @@ const RULES = {
   doorFrame: { center:{a:12, b:12}, side:{open:12, stack:12} }, frameSafety: 1, wallMin: 10
 };
 const sum = a => a.reduce((s,v)=>s+v,0);
+/* EN 81-1:1998 Table 1.1 - rated load (kg) -> maximum available car area (m2); linear between rows */
+const EN81 = [[100,.37],[180,.58],[225,.70],[300,.90],[375,1.10],[400,1.17],[450,1.30],[525,1.45],[600,1.60],[630,1.66],[675,1.75],[750,1.90],[800,2.00],[825,2.05],[900,2.20],[975,2.35],[1000,2.40],[1050,2.50],[1125,2.65],[1200,2.80],[1250,2.90],[1275,2.95],[1350,3.10],[1425,3.25],[1500,3.40],[1600,3.56],[2000,4.20],[2500,5.00]];
+function en81Area(kg){
+  if(kg <= EN81[0][0]) return EN81[0][1];
+  if(kg >= 2500) return 5.00 + (kg - 2500) / 100 * 0.16;
+  for(let i=1;i<EN81.length;i++){ const [k1,a1] = EN81[i-1], [k2,a2] = EN81[i]; if(kg <= k2) return a1 + (a2-a1) * (kg-k1) / (k2-k1); }
+}
 
 /* ---------- inputs ---------- */
 const $ = id => document.getElementById(id);
@@ -227,7 +235,7 @@ const toLatin = s => String(s).replace(/[\u0660-\u0669]/g, d => d.charCodeAt(0)-
 function num(id){ const el = $(id), v = toLatin(el.value); if(v !== el.value) el.value = v; return parseFloat(v); }
 function readInputs(){
   return { SW:num("sw"), SD:num("sd"), pit:num("pit"), oh:num("oh"),
-           cw:radio("cw"), off:$("off").value, door:radio("door"), DW:num("dw"), unit:radio("unit"), carmode:radio("carmode"), manW:num("manW"), manD:num("manD"), client:$("client").value.trim(), stops:Math.max(2, Math.round(num("stops")||2)), fh:num("fh"), dh:num("dh"), ch:num("ch"), etype:$("etype").value, stype:$("stype").value, view:radio("view"), orient:$("orient").value, offer:$("offer").value.trim(), project:$("project").value.trim() };
+           cw:radio("cw"), off:$("off").value, door:radio("door"), DW:num("dw"), unit:radio("unit"), carmode:radio("carmode"), load:num("load"), manW:num("manW"), manD:num("manD"), client:$("client").value.trim(), stops:Math.max(2, Math.round(num("stops")||2)), fh:num("fh"), dh:num("dh"), ch:num("ch"), etype:$("etype").value, stype:$("stype").value, view:radio("view"), orient:$("orient").value, offer:$("offer").value.trim(), project:$("project").value.trim() };
 }
 
 /* ---------- geometry ---------- */
@@ -283,7 +291,17 @@ function compute(p){
     carL = tipL + RULES.shoe; carR = carL + carW;
     back = RULES.side.toRailC + RULES.side.toFrame + RULES.side.frame + RULES.side.gap; carY1 = SD - back; // 12.5+12.5+5+2 = 32
   }
-  const carD = carY1 - carY0;
+  let carD = carY1 - carY0;
+  // EN 81-1 Table 1.1: the car area may not exceed the maximum for the rated load
+  if(p.load > 0){
+    const Amax = en81Area(p.load) * 10000;            // cm2
+    g.en81 = { load: p.load, amax: Amax / 10000 };
+    if(carW * carD > Amax){
+      carD = Math.floor(Amax / carW * 10) / 10;        // keep the width, cut the depth down to the code area
+      carY1 = carY0 + carD;
+      g.info.push(`الكود الأوروبي: حمولة ${p.load} كجم أقصى مساحة لها ${(Amax/10000).toFixed(2)} م²، فالكابينة اتظبطت على ${Math.round(carW*10)} × ${Math.round(carD*10)} مم. لو عايز كابينة أكبر لازم الحمولة تزيد.`);
+    }
+  }
   if(carW < 60 || carD < 60){
     g.err = [`الكابينة الناتجة ${fix(carW)} × ${fix(carD)} سم صغيرة جدًا على هذا البير.`]; g.errEn=[`Resulting car ${fix(carW)} x ${fix(carD)} cm is too small for this shaft.`]; return g;
   }
@@ -604,6 +622,7 @@ function render(g){
     row("Overhead", MM(p.oh || 0));
     if(!g.err){
       if(p.carmode !== "hide") row("Car internal (W x D)", `${Math.round(g.lblW*10)} x ${Math.round(g.lblD*10)} mm`);
+      if(g.en81) row("Rated load (EN 81)", `${g.en81.load} kg - max ${g.en81.amax.toFixed(2)} m2`);
       row("DBG car", MM(g.DBG));
       row("DBG counterweight", MM(g.cwDBG || RULES.cwDBG));
       row("Car guide rails", "T 70 x 65 x 9 mm");
@@ -1121,7 +1140,7 @@ $("svgBtn").addEventListener("click", async () => {
   const setv = (id, v) => { if(v !== undefined && v !== null && v !== "" && !isNaN(v)) $(id).value = String(v); };
   const cm = v => { const n = parseFloat(String(v||"").replace(/[^\d.]/g,"")); return n > 0 ? +(n/10).toFixed(1) : ""; };
   setv("sw", cm(d.shaftW)); setv("sd", cm(d.shaftD)); setv("pit", cm(d.pit)); setv("oh", cm(d.overhead));
-  setv("dw", cm(d.doorW)); if(d.stops) $("stops").value = String(parseInt(d.stops)||3);
+  setv("dw", cm(d.doorW)); if(d.load) setv("load", parseFloat(d.load)); if(d.stops) $("stops").value = String(parseInt(d.stops)||3);
   if(d.doorType === "جانبي") $("door-side").checked = true; else if(d.doorType === "سنتر") $("door-center").checked = true;
   if(/MR\b/.test(d.type||"") && !/MRL/.test(d.type||"")) $("etype").value = "MR";
   if(d.client) $("client").value = d.client;

@@ -297,15 +297,17 @@ function compute(p){
     const Amax = en81Area(p.load) * 10000;            // cm2
     g.en81 = { load: p.load, amax: Amax / 10000 };
     if(carW * carD > Amax){
-      if(side){
-        carD = Math.floor(Amax / carW * 10) / 10;      // side CW: keep the width, cut the depth
-        carY1 = carY0 + carD;
-      } else {
-        // rear CW: depth stays (car 12 cm from the counterweight), the width shrinks and the
-        // rail brackets grow equally on both sides; car + DBG stay together (DBG = car + 12)
-        carW = Math.floor(Amax / carD * 10) / 10;
-        carL = SW/2 - carW/2; carR = carL + carW; DBG = carW + 2*RULES.shoe;
-      }
+      // aim for a square car: side = sqrt(area); the shaft limits one side, the other takes the rest.
+      // Gaps behind the car and the rail brackets grow as needed (12.5 / 7 cm are minimums).
+      const sq = Math.sqrt(Amax), maxW = carW, maxD = carD;
+      let W = Math.min(maxW, sq), D = Math.min(maxD, sq);
+      if(W < sq) D = Math.min(maxD, Amax / W);
+      if(D < sq) W = Math.min(maxW, Amax / D);
+      W = Math.floor(W); D = Math.floor(D);
+      carD = D; carY1 = carY0 + carD;
+      if(side){ carW = W; carR = carL + carW; }             // car stays on the counterweight rail; far bracket grows
+      else { carW = W; carL = SW/2 - carW/2; carR = carL + carW; }   // centred; both brackets grow
+      DBG = carW + 2*RULES.shoe;
       g.info.push(`الكود الأوروبي: حمولة ${p.load} كجم أقصى مساحة لها ${(Amax/10000).toFixed(2)} م²، فالكابينة اتظبطت على ${Math.round(carW*10)} × ${Math.round(carD*10)} مم. لو عايز كابينة أكبر لازم الحمولة تزيد.`);
     }
   }
@@ -370,12 +372,13 @@ function compute(p){
     P.push(...cwg.prims);
     text(cwg.label.x, cwg.label.y, "COUNTERWEIGHT", "lbl", -90);
     carRail(S.toRailC+S.toFrame+S.frame+S.gap, +1, railY);
-    rect(SW - RULES.bracket, SW, railY-4.5, railY+4.5, "bracket");
-    carRail(SW - RULES.bracket, -1, railY);
+    const fbx = carR + RULES.shoe + RULES.carRail.h;    // far rail foot (bracket grows when the car is narrowed)
+    rect(fbx, SW, railY-4.5, railY+4.5, "bracket");
+    carRail(fbx, -1, railY);
 
     const T = [
       [0,12.5,"12.5"],[12.5,25,"12.5"],[25,30,"5"],[30,32,"2"],[32,38.5,"6.5"],
-      [38.5,SW-13.5,"DBG"],[SW-13.5,SW-7,"6.5"],[SW-7,SW,"7"]];
+      [38.5,fbx-6.5,"DBG"],[fbx-6.5,fbx,"6.5"],[fbx,SW,"FREE"]];
     tops.push(T);
     tops.push([[38.5,carL,"6"],[carL,carR,"CAR"],[carR,carR+6,"6"]]);
     vCw.push([[0,z0,"CLEAR"],[z0,c-cwDBG/2,"FREE"],[c-cwDBG/2,c+cwDBG/2,"CWDBG"],[c+cwDBG/2,z1,"FREE"],[z1,SD,"BACKGAP"]]);
@@ -494,8 +497,8 @@ function compute(p){
   let y = 0; const dchain = [];
   fr.forEach(v => { dchain.push([y, y+v, fmt(v)]); y += v; });
   dchain.push([carY0, carY1, p.carmode === "hide" ? "" : "CD=" + fmt(lblD)]);
-  if(side) dchain.push([carY1, SD, fmt(back)]);
-  else { const S = RULES.side; dchain.push([carY1, SD-30, fmt(S.gap)]); dchain.push([SD-30, SD-25, fmt(S.frame)]); dchain.push([SD-25, SD-12.5, fmt(S.toFrame)]); dchain.push([SD-12.5, SD, fmt(S.toRailC)]); }
+  if(side) dchain.push([carY1, SD, fmt(SD - carY1)]);
+  else { const S = RULES.side; dchain.push([carY1, SD-30, fmt(SD-30-carY1)]); dchain.push([SD-30, SD-25, fmt(S.frame)]); dchain.push([SD-25, SD-12.5, fmt(S.toFrame)]); dchain.push([SD-12.5, SD, fmt(S.toRailC)]); }
   const depthSide = cw === "left" ? "right" : "left";
   g.dims.v = { left:[], right:[] };
   g.dims.v[depthSide].push(dchain, [[0, SD, "SD=" + fmt(SD)]]);

@@ -1213,8 +1213,21 @@ $("svgBtn").addEventListener("click", async () => {
   try{ token = sessionStorage.getItem("alfalak_t") || localStorage.getItem("alfalak_t"); }catch(e){}
   try{ d = JSON.parse(sessionStorage.getItem("alfalak_draw") || localStorage.getItem("alfalak_draw") || "null"); }catch(e){}
   if(!token){ location.replace("../?next=" + encodeURIComponent(location.href)); return; }
+  const CODE_HASH = "fb634ff372a857bd7da49efc61f1e2b15524c28451f7277fad92a8b216167145";
+  let codeOK = false; try{ codeOK = localStorage.getItem("alfalak_draw_code") === CODE_HASH; }catch(e){}
+  if(codeOK && (!d || (d.role !== "مدير" && d.access !== "code"))) d = Object.assign({}, d || {}, {access:"code"});
   if(!d || (d.role !== "مدير" && d.access !== "code")){
-    document.querySelector(".wrap").innerHTML = '<div class="panel" style="grid-column:1/-1;text-align:center;font-size:18px">المخططات الهندسية: جاري العمل عليها، سيتم الإتاحة فيما بعد.<br><br><a href="./" style="color:var(--accent)">الرجوع للعروض</a></div>';
+    // direct link: whoever has the drawing code can open the page from his own account
+    const wrap = document.querySelector(".wrap"), saved = wrap.innerHTML;
+    wrap.innerHTML = '<div class="panel" style="grid-column:1/-1;text-align:center;font-size:18px">المخططات الهندسية: جاري العمل عليها، سيتم الإتاحة فيما بعد.<br><br><span style="font-size:14px">لو معاك كود الدخول اكتبه هنا:</span><br><input id="dcode" dir="ltr" style="width:160px;padding:6px 10px;margin:8px"> <button type="button" id="dcodeBtn" style="padding:6px 14px">دخول</button><div id="dcodeMsg" style="color:#c0392b;font-size:14px"></div><br><a href="./" style="color:var(--accent)">الرجوع للعروض</a></div>';
+    document.getElementById("dcodeBtn").onclick = async () => {
+      const v = document.getElementById("dcode").value.trim().toUpperCase();
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(v));
+      const hx = [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2,"0")).join("");
+      if(hx !== CODE_HASH){ document.getElementById("dcodeMsg").textContent = "الكود غير صحيح."; return; }
+      try{ localStorage.setItem("alfalak_draw_code", hx); localStorage.setItem("alfalak_draw", JSON.stringify({access:"code"})); }catch(e){}
+      location.reload();
+    };
     return;
   }
   const setv = (id, v) => { if(v !== undefined && v !== null && v !== "" && !isNaN(v)) $(id).value = String(v); };

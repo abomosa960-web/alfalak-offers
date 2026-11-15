@@ -205,7 +205,7 @@ const RULES = {
   minPit: 80, minOH: 400,
   engineerMsg: "راجع المهندس المسؤول أو راجع مهندس محمد",
   // depth from landing-door wall: frame, landing sill, gap, car sill, car entrance
-  front: { center:[6,7.5,3,7.5,4], side:[6,9,3,9,5], semi:[6,7.5,3,7.5,4] },
+  front: { center:[6,7.5,3,7.5,4], side:[6,9,3,9,5], semi:[5.5,0,2.5,0,10] },   // semi-auto: door 5.5 (from inside the shaft), 2.5 gap, car entrance 10, no sills
   frontNames: ["فريم","عتبة","فراغ","عتبة كابينة","مدخل"],
   doorClear: { center:29, side:35, semi:29 },     // no counterweight in front of this
   back: 11,                              // car to back wall (side counterweight)
@@ -495,8 +495,7 @@ function computeOne(p){
   const sx0 = Math.max(sillMargin, sillExt[0]), sx1 = Math.min(SW-sillMargin, sillExt[1]);
 
   const D = [];
-  rect(sx0, sx1, lsY[0], lsY[1], "sill", D);
-  rect(sx0, sx1, csY[0], csY[1], "sill", D);
+  if(door !== "semi"){ rect(sx0, sx1, lsY[0], lsY[1], "sill", D); rect(sx0, sx1, csY[0], csY[1], "sill", D); }
   const DF = RULES.doorFrame;
   let jL, jR;
   if(door === "center" || door === "semi"){ jL = DF[door].a; jR = DF[door].b; }
@@ -505,7 +504,7 @@ function computeOne(p){
   rect(dx0-jL, dx0, 0, sillY0, "jamb", D); rect(dx1, dx1+jR, 0, sillY0, "jamb", D);
   if(wo0 < RULES.wallMin || SW - wo1 < RULES.wallMin) g.warn.push("الحيطة جنب الباب أقل من 10 سم. راجع مقاس البير أو نوع الباب.");
   const panels = (y0,y1) => {
-    if(door === "semi"){ const yc = (y0+y1)/2; rect(dx0, dx1, yc-1.1, yc+1.1, "door", D); }
+    if(door === "semi") return;
     else if(door === "center"){
       const yc = (y0+y1)/2;
       const dc = (dx0+dx1)/2; rect(dx0, dc+0.3, yc-1.1, yc+1.1, "door", D); rect(dc-0.3, dx1, yc-1.1, yc+1.1, "door", D);
@@ -516,6 +515,7 @@ function computeOne(p){
     }
   };
   panels(lsY[0], lsY[1]); panels(csY[0], csY[1]);
+  if(door === "semi") rect(dx0, dx1, 0, sillY0, "door", D);   // swing landing door, 5.5 cm, inside the shaft
   // second (rear) entrance: copy every door element mirrored about the shaft depth
   if(two){ const n = D.length; for(let i=0;i<n;i++){ const q = D[i]; if(q.t === "rect") D.push({...q, y0: SD - q.y1, y1: SD - q.y0}); } }
   D.push({t:"poly", cls:"car", pts:[[dx0,carY0-ent],[dx0,carY0],[carL,carY0],[carL,carY1],
@@ -552,9 +552,9 @@ function computeOne(p){
     [[0, wo0, fmt(wo0)], [wo0, wo1, "OPENING=" + fmt(wo1-wo0)], [wo1, SW, fmt(SW - wo1)]]];
   // depth chain on the side without a side counterweight
   let y = 0; const dchain = [];
-  fr.forEach(v => { dchain.push([y, y+v, fmt(v)]); y += v; });
+  fr.forEach(v => { if(v > 0) dchain.push([y, y+v, fmt(v)]); y += v; });
   dchain.push([carY0, carY1, p.carmode === "hide" ? "" : "CD=" + fmt(lblD)]);
-  if(two){ let yb = carY1; [...fr].reverse().forEach(v => { dchain.push([yb, yb+v, fmt(v)]); yb += v; }); }
+  if(two){ let yb = carY1; [...fr].reverse().forEach(v => { if(v > 0) dchain.push([yb, yb+v, fmt(v)]); yb += v; }); }
   else if(side) dchain.push([carY1, SD, fmt(SD - carY1)]);
   else { const rc = g.rearRC || 12.5, f = SD - rc - 7.5; dchain.push([carY1, f, fmt(f - carY1)]); dchain.push([f, SD - rc, fmt(7.5)]); dchain.push([SD - rc, SD, fmt(rc)]); }
   const depthSide = cw === "left" ? "right" : "left";

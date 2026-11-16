@@ -816,7 +816,7 @@ function render(g){
   const doorName = g.door === "semi" ? "Semi-automatic" : g.door === "center" ? "Center opening" : "Side opening (telescopic)";
   const yT = -T - 8 - step*2 - fs*1.8;
   Tx(SW/2, yT, `SHAFT PLAN  ${fmt(SW)} x ${fmt(SD)}`, "title", 1.25);
-  { const lw = fs*12, lh = lw*ARLBL_AR; o.push(`<image href="${ARLBL}" xlink:href="${ARLBL}" x="${(+X(SW/2) - lw/2).toFixed(2)}" y="${(+Y(yT - fs*2.7)).toFixed(2)}" width="${lw.toFixed(2)}" height="${lh.toFixed(2)}"/>`); }
+  Tx(SW/2, yT - fs*2.7, "Elevator Drawing", "title", 1.25);
   Tx(SW/2, yT - fs*1.8, `Counterweight: ${cwName}   |   Door: ${doorName} DW=${fmt(g.DW)}   |   Pit ${fmt(p.pit)}   |   Overhead ${fmt(p.oh)}   |   Dimensions in ${UNIT === "mm" ? "mm" : "cm"}`, "meta", 0.85);
   panel(); border();
   o.push(`</svg>`);

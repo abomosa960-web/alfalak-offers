@@ -325,7 +325,19 @@ function computeOne(p){
   }
   let carD = carY1 - carY0;
   // EN 81-1 Table 1.1: the car area may not exceed the maximum for the rated load
-  if(p.load > 0){
+  const manualCar = p.carmode === "manual" && p.manW > 0 && p.manD > 0;
+  if(manualCar){
+    // the engineer's own car size is drawn as given (code or not); DBG is always the car + 12 cm (6 cm shoe each side)
+    const maxW = carW, maxD = carD;
+    carW = p.manW; carD = p.manD; carY1 = carY0 + carD;
+    if(side) carR = carL + carW; else { carL = SW/2 - carW/2; carR = carL + carW; }
+    DBG = carW + 2*RULES.shoe;
+    if(carW > maxW + 0.01 || carD > maxD + 0.01) g.warn.push(`الكابينة ${fix(carW*10,0)} × ${fix(carD*10,0)} مم أكبر من المساحة المتاحة في البير (${fix(maxW*10,0)} × ${fix(maxD*10,0)} مم).`);
+    if(p.load > 0){
+      const Amax = en81Area(p.load) * 10000; g.en81 = { load: p.load, amax: Amax / 10000 };
+      if(carW * carD > Amax + 1) g.info.push(`للعلم: مساحة الكابينة ${(carW*carD/10000).toFixed(2)} م² أكبر من أقصى مساحة في الكود لحمولة ${p.load} كجم (${(Amax/10000).toFixed(2)} م²). المقترح حسب الكود: ${Math.floor(Math.sqrt(Amax))*10} × ${Math.floor(Math.sqrt(Amax))*10} مم تقريباً.`);
+    }
+  } else if(p.load > 0){
     const Amax = en81Area(p.load) * 10000;            // cm2
     g.en81 = { load: p.load, amax: Amax / 10000 };
     if(carW * carD > Amax){
@@ -351,7 +363,7 @@ function computeOne(p){
   else if(DW > carW - 10){
     g.err = [`فتحة الباب ${DW} سم لا تناسب عرض الكابينة ${fix(carW)} سم.`]; g.errEn=[`Door opening ${DW} cm does not fit car width ${fix(carW)} cm.`]; return g;
   }
-  const railY = (carY0 + carY1)/2;
+  let railY = (carY0 + carY1)/2;
 
   /* --- counterweight in (u along rail axis, v from wall) --- */
   /* Combination: a 5 cm U channel fixed to the wall (legs to the wall, base toward the car).
@@ -405,6 +417,8 @@ function computeOne(p){
     if(cwDBG < RULES.cwDBG) g.info.push(`مساحة الثقل صغرت: DBG الثقل ${fix(cwDBG)} سم بدل ${RULES.cwDBG}.`);
     P.push(...cwg.prims);
     text(cwg.label.x, cwg.label.y, "COUNTERWEIGHT", "lbl", -90);
+    // car rails sit 17 cm behind the centre of the counterweight DBG (kept inside the car depth)
+    railY = Math.min(Math.max(c + 17, carY0 + 15), carY1 - 15);
     carRail(S.toRailC+S.toFrame+S.frame+S.gap, +1, railY);
     const fbx = carR + RULES.shoe + RULES.carRail.h;    // far rail foot (bracket grows when the car is narrowed)
     rect(fbx, SW, railY-4.5, railY+4.5, "bracket");
@@ -564,7 +578,8 @@ function computeOne(p){
   else { const rc = g.rearRC || 12.5, f = SD - rc - 7.5; dchain.push([carY1, f, fmt(f - carY1)]); dchain.push([f, SD - rc, fmt(7.5)]); dchain.push([SD - rc, SD, fmt(rc)]); }
   const depthSide = cw === "left" ? "right" : "left";
   g.dims.v = { left:[], right:[] };
-  g.dims.v[depthSide].push(dchain, [[0, SD, "SD=" + fmt(SD)]]);
+  // car rail centre: forward to the landing sill line, and back to the rear wall
+  g.dims.v[depthSide].push(dchain, [[lsY[1], railY, fmt(railY - lsY[1])], [railY, SD, fmt(SD - railY)]], [[0, SD, "SD=" + fmt(SD)]]);
   if(side){
     const other = depthSide === "left" ? "right" : "left";
     g.dims.v[other].push(vCw[0].map(s => [s[0], s[1], (s[2]==="CWDBG" ? "DBG CW=" : "") + fmt(s[1]-s[0])]));

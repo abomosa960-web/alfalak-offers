@@ -1231,7 +1231,8 @@ $("svgBtn").addEventListener("click", async () => {
   const CODE_HASH = "fb634ff372a857bd7da49efc61f1e2b15524c28451f7277fad92a8b216167145";
   let codeOK = false; try{ codeOK = localStorage.getItem("alfalak_draw_code") === CODE_HASH; }catch(e){}
   if(codeOK && (!d || (d.role !== "مدير" && d.access !== "code"))) d = Object.assign({}, d || {}, {access:"code"});
-  if(!d || (d.role !== "مدير" && d.access !== "code")){
+  const fromPortal = new URLSearchParams(location.search).get("embed") === "1"; // hidden engine used by the offers page (portal login already checked above)
+  if(!fromPortal && (!d || (d.role !== "مدير" && d.access !== "code"))){
     // direct link: whoever has the drawing code can open the page from his own account
     const wrap = document.querySelector(".wrap"), saved = wrap.innerHTML;
     wrap.innerHTML = '<div class="panel" style="grid-column:1/-1;text-align:center;font-size:18px">المخططات الهندسية: جاري العمل عليها، سيتم الإتاحة فيما بعد.<br><br><span style="font-size:14px">لو معاك كود الدخول اكتبه هنا:</span><br><input id="dcode" dir="ltr" style="width:160px;padding:6px 10px;margin:8px"> <button type="button" id="dcodeBtn" style="padding:6px 14px">دخول</button><div id="dcodeMsg" style="color:#c0392b;font-size:14px"></div><br><a href="./" style="color:var(--accent)">الرجوع للعروض</a></div>';

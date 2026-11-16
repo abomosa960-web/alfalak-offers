@@ -611,11 +611,6 @@ function drawAccess(){
 /** زرار «حفظ العرض شامل المخططات الهندسية» — تحت التجربة: المديرين + اللي معاه الكود */
 function saveWithDrawings(){
   if (/GKE/i.test($('fType').value)){ msg('oMsg', 'المخططات الهندسية متاحة للعروض المحلية (MR / MRL) فقط، مش لعروض GKE.', 'warn'); return; }
-  if (!drawAccess()){
-    S.afterCode = saveWithDrawings;
-    msg('oMsg', 'المخططات الهندسية: جاري العمل عليها، سيتم الإتاحة فيما بعد.<br><span class="small">لو معاك كود الدخول اكتبه هنا:</span> <input id="drawCode" dir="ltr" style="width:130px;padding:4px 8px"> <button type="button" class="btn ghost" style="padding:4px 12px" onclick="checkDrawCode()">دخول</button>', 'ok');
-    return;
-  }
   S.withDrawings = true;
   const f = $('fOffer');
   if (f.requestSubmit) f.requestSubmit($('oBtn')); else $('oBtn').click();
